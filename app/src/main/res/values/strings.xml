@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Kotobyte</string>
+
+    <string name="action_search">Search</string>
+    <string name="action_clear_query">Clear query</string>
+    <string name="action_clear_history">Clear history</string>
+
+    <string name="search_hint">Enter search query</string>
+</resources>
