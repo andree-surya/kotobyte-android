@@ -2,8 +2,14 @@
     <string name="app_name">Kotobyte</string>
 
     <string name="action_search">Search</string>
+    <string name="action_retry">Retry</string>
     <string name="action_clear_query">Clear query</string>
     <string name="action_clear_history">Clear history</string>
 
-    <string name="search_hint">Enter search query</string>
+    <string name="hint_search">Enter search query</string>
+
+    <string name="error_search">Failed to search for “%s”.</string>
+    <string name="error_no_results">No search results for “%s”.</string>
+    <string name="error_unknown">An unknown error occurred.</string>
+    <string name="error_network">A network error occurred.</string>
 </resources>

@@ -53,7 +53,7 @@
                         android:layout_toStartOf="@id/clear_image_button"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
-                        android:hint="@string/search_hint"
+                        android:hint="@string/hint_search"
                         android:background="@android:color/transparent"
                         android:imeOptions="actionSearch"
                         android:inputType="text" />

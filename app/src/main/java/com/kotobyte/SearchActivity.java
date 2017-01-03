@@ -70,11 +70,11 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void executeSearch(String query) {
-        SearchFragment searchFragment = SearchFragment.newInstance(query);
+        SearchResultsFragment searchResultsFragment = SearchResultsFragment.newInstance(query);
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, searchFragment)
+                .replace(R.id.fragment_container, searchResultsFragment)
                 .addToBackStack(null)
                 .commit();
     }
@@ -155,8 +155,8 @@ public class SearchActivity extends AppCompatActivity {
             String query = null;
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
 
-            if (fragment instanceof SearchFragment) {
-                query = ((SearchFragment) fragment).getQuery();
+            if (fragment instanceof SearchResultsFragment) {
+                query = ((SearchResultsFragment) fragment).getQuery();
             }
 
             mBinding.queryEditText.setText(query);
