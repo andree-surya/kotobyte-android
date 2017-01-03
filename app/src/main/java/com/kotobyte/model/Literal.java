@@ -13,15 +13,15 @@ public class Literal {
     @SerializedName("status")
     private Status mStatus;
 
-    String getText() {
+    public String getText() {
         return mText;
     }
 
-    Status getStatus() {
+    public Status getStatus() {
         return mStatus;
     }
 
-    enum Status {
+    public enum Status {
         @SerializedName("common") COMMON,
         @SerializedName("irregular") IRREGULAR,
         @SerializedName("outdated") OUTDATED

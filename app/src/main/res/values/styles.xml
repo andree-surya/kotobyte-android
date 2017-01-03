@@ -20,8 +20,14 @@
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
     <style name="Text" parent="TextAppearance.AppCompat">
-        <item name="android:textColor">@color/normal_text</item>
+        <item name="android:textColor">@color/primary_text</item>
         <item name="android:textSize">@dimen/normal_text</item>
+
+        <item name="android:lineSpacingMultiplier">1.2</item>
+    </style>
+
+    <style name="Text.Large">
+        <item name="android:textSize">@dimen/large_text</item>
     </style>
 
 </resources>

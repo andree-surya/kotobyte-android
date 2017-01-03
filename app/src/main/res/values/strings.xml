@@ -7,6 +7,9 @@
     <string name="action_clear_history">Clear history</string>
 
     <string name="hint_search">Enter search query</string>
+    <string name="hint_common">&#127808;</string>
+    <string name="hint_irregular">&#127810;</string>
+    <string name="hint_outdated">&#127810;</string>
 
     <string name="error_search">Failed to search for “%s”.</string>
     <string name="error_no_results">No search results for “%s”.</string>
