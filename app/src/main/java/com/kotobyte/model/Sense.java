@@ -18,15 +18,15 @@ public class Sense {
     @SerializedName("extras")
     private List<String> mExtras;
 
-    String getText() {
+    public String getText() {
         return mText;
     }
 
-    List<String> getCategories() {
+    public List<String> getCategories() {
         return mCategories;
     }
 
-    List<String> getExtras() {
+    public List<String> getExtras() {
         return mExtras;
     }
 }

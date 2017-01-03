@@ -19,19 +19,21 @@ public class Word {
     @SerializedName("senses")
     private List<Sense> mSenses;
 
-    int getID () {
+    private transient String mSensesDisplayText;
+
+    public int getID () {
         return mID;
     }
 
-    List<Literal> getLiterals() {
+    public List<Literal> getLiterals() {
         return mLiterals;
     }
 
-    List<Literal> getReadings() {
+    public List<Literal> getReadings() {
         return mReadings;
     }
 
-    List<Sense> getSenses() {
+    public List<Sense> getSenses() {
         return mSenses;
     }
 }
