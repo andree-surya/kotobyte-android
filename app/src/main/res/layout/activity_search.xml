@@ -77,7 +77,6 @@
                 android:layout_marginBottom="32dp"
                 android:src="@mipmap/ic_silhouette"
                 android:contentDescription="@string/app_name" />
-
         </FrameLayout>
     </android.support.design.widget.CoordinatorLayout>
 </layout>

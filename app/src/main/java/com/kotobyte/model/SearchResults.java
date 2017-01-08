@@ -12,8 +12,8 @@ public class SearchResults {
     @SerializedName("words")
     private List<Word> mWords;
 
-    public Word getWord(int index) {
-        return mWords.get(index);
+    public List<Word> getWords() {
+        return mWords;
     }
 
     public int getSize() {
