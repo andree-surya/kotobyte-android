@@ -32,6 +32,9 @@
 
     <style name="Text.Light">
         <item name="android:textColor">@color/light_text</item>
+    </style>
+
+    <style name="Text.Light.Italic">
         <item name="android:textStyle">italic</item>
     </style>
 

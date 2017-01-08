@@ -1,6 +1,7 @@
 package com.kotobyte;
 
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,14 +59,18 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Vie
 
     static class ViewHolder extends RecyclerView.ViewHolder {
 
+        private CardView mContainerView;
         private TextView mLiteralsTextView;
         private TextView mSensesTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
 
+            mContainerView = (CardView) itemView.findViewById(R.id.container_view);
             mLiteralsTextView = (TextView) itemView.findViewById(R.id.literals_text_view);
             mSensesTextView = (TextView) itemView.findViewById(R.id.senses_text_view);
         }
+
+        c
     }
  }

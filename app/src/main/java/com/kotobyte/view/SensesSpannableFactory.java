@@ -34,9 +34,8 @@ public class SensesSpannableFactory extends SpannableStringFactory {
             builder.append("▸  ");
 
             appendBuilderWithHighlightableText(builder, sense.getText());
-
-
-            appendBuilderWithSenseMetadata(builder, sense);
+            appendBuilderWithCategories(builder, sense.getCategories());
+            appendBuilderWithExtras(builder, sense.getExtras());
 
             if (i < senses.size() - 1) {
                 builder.append('\n');
@@ -44,29 +43,45 @@ public class SensesSpannableFactory extends SpannableStringFactory {
         }
     }
 
-    private void appendBuilderWithSenseMetadata(SpannableStringBuilder builder, Sense sense) {
+    private void appendBuilderWithCategories(SpannableStringBuilder builder, List<String> categories) {
 
-        int metadataStartIndex = builder.length();
-
-        List<String> categories = sense.getCategories();
-        List<String> extras = sense.getExtras();
-
-        builder.append(" [");
+        int categoriesStartIndex = builder.length();
 
         for (int i = 0; i < categories.size(); i++) {
+
+            if (i == 0) {
+                builder.append(" [");
+            }
+
             builder.append(categories.get(i));
 
             if (i < categories.size() - 1) {
                 builder.append(", ");
+
+            } else {
+                builder.append(']');
             }
         }
 
-        builder.append("] ");
+        int categoriesEndIndex = builder.length();
+
+        builder.setSpan(
+                new TextAppearanceSpan(getContext(), R.style.Text_Light),
+                categoriesStartIndex,
+                categoriesEndIndex,
+                Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+    }
+
+
+
+    private void appendBuilderWithExtras(SpannableStringBuilder builder, List<String> extras) {
+
+        int extrasStartIndex = builder.length();
 
         for (int i = 0; i < extras.size(); i++) {
 
             if (i == 0) {
-                builder.append('ー');
+                builder.append(" ー");
             }
 
             builder.append(extras.get(i));
@@ -76,12 +91,12 @@ public class SensesSpannableFactory extends SpannableStringFactory {
             }
         }
 
-        int metadataEndIndex = builder.length();
+        int extrasEndIndex = builder.length();
 
         builder.setSpan(
-                new TextAppearanceSpan(getContext(), R.style.Text_Light),
-                metadataStartIndex,
-                metadataEndIndex,
+                new TextAppearanceSpan(getContext(), R.style.Text_Light_Italic),
+                extrasStartIndex,
+                extrasEndIndex,
                 Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 }

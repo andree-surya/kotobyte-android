@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -26,9 +26,11 @@
             android:layout_below="@id/literals_text_view"
             android:layout_marginTop="12dp" />
     </RelativeLayout>
-    
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/divider" />
-</LinearLayout>
+        android:background="@color/divider"
+        android:layout_gravity="bottom" />
+
+</android.support.v7.widget.CardView>
