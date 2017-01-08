@@ -15,11 +15,11 @@ import java.util.List;
 /**
  * Created by andree.surya on 2017/01/08.
  */
-public class LiteralSpannableFactory extends SpannableStringFactory {
+public class LiteralsSpannableFactory extends SpannableStringFactory {
 
     private List<Word> mWords;
 
-    public LiteralSpannableFactory(Context context, List<Word> words) {
+    public LiteralsSpannableFactory(Context context, List<Word> words) {
         super(context, words.size());
         mWords = words;
     }

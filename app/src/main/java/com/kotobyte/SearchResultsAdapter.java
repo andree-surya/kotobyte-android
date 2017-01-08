@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.kotobyte.model.SearchResults;
-import com.kotobyte.view.LiteralSpannableFactory;
-import com.kotobyte.view.SenseSpannableFactory;
+import com.kotobyte.view.LiteralsSpannableFactory;
+import com.kotobyte.view.SensesSpannableFactory;
 
 /**
  * Created by andree.surya on 2017/01/03.
@@ -19,8 +19,8 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Vie
     private Context mContext;
     private SearchResults mSearchResults;
 
-    private LiteralSpannableFactory mLiteralSpannableFactory;
-    private SenseSpannableFactory mSenseSpannableFactory;
+    private LiteralsSpannableFactory mLiteralsSpannableFactory;
+    private SensesSpannableFactory mSensesSpannableFactory;
 
     SearchResultsAdapter(Context context) {
         mContext = context;
@@ -29,8 +29,8 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Vie
     void setSearchResults(SearchResults searchResults) {
         mSearchResults = searchResults;
 
-        mLiteralSpannableFactory = new LiteralSpannableFactory(mContext, searchResults.getWords());
-        mSenseSpannableFactory = new SenseSpannableFactory(mContext, searchResults.getWords());
+        mLiteralsSpannableFactory = new LiteralsSpannableFactory(mContext, searchResults.getWords());
+        mSensesSpannableFactory = new SensesSpannableFactory(mContext, searchResults.getWords());
 
         notifyDataSetChanged();
     }
@@ -52,8 +52,8 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Vie
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
 
-        viewHolder.mLiteralsTextView.setText(mLiteralSpannableFactory.getSpannable(position));
-        viewHolder.mSensesTextView.setText(mSenseSpannableFactory.getSpannable(position));
+        viewHolder.mLiteralsTextView.setText(mLiteralsSpannableFactory.getSpannable(position));
+        viewHolder.mSensesTextView.setText(mSensesSpannableFactory.getSpannable(position));
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

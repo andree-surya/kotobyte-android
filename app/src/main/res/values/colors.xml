@@ -4,10 +4,11 @@
     <color name="primary_dark">#b73538</color>
     <color name="accent">#00b0ff</color>
     <color name="background">#ffffff</color>
-    <color name="divider">#ddd</color>
+    <color name="divider">#eee</color>
     <color name="primary_text">#333</color>
+    <color name="light_text">#aaa</color>
     <color name="highlight">#fffaba</color>
     <color name="literal_common">#2ecc71</color>
-    <color name="literal_irregular">#90e74c3c</color>
-    <color name="literal_outdated">#908e44ad</color>
+    <color name="literal_irregular">#e74c3c</color>
+    <color name="literal_outdated">#8e44ad</color>
 </resources>
