@@ -5,7 +5,6 @@ import android.graphics.Color;
 import android.support.annotation.DimenRes;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.style.BackgroundColorSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.model.Literal;
@@ -18,14 +17,14 @@ import java.util.List;
 /**
  * Created by andree.surya on 2017/01/08.
  */
-public class LiteralsSpannableFactory extends SpannableStringFactory {
+public class LiteralsStringFactory extends SpannableStringFactory {
 
     private static final char HIGHLIGHT_START = '{';
     private static final char HIGHLIGHT_END = '}';
 
     private List<Word> mWords;
 
-    public LiteralsSpannableFactory(Context context, List<Word> words) {
+    public LiteralsStringFactory(Context context, List<Word> words) {
         super(context, words.size());
         mWords = words;
     }

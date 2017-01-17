@@ -16,14 +16,14 @@ import java.util.List;
 /**
  * Created by andree.surya on 2017/01/08.
  */
-public class SensesSpannableFactory extends SpannableStringFactory {
+public class SensesStringFactory extends SpannableStringFactory {
 
     private static final char HIGHLIGHT_START = '{';
     private static final char HIGHLIGHT_END = '}';
 
     private List<Word> mWords;
 
-    public SensesSpannableFactory(Context context, List<Word> words) {
+    public SensesStringFactory(Context context, List<Word> words) {
         super(context, words.size());
         mWords = words;
     }

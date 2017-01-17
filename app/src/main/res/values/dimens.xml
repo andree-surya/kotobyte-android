@@ -8,4 +8,6 @@
 
     <dimen name="underline_thickness">2dp</dimen>
     <dimen name="underline_margin">4dp</dimen>
+
+    <dimen name="selected_card_elevation">4dp</dimen>
 </resources>
