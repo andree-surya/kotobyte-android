@@ -3,11 +3,13 @@ package com.kotobyte.view;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.TextAppearanceSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.model.Sense;
 import com.kotobyte.model.Word;
+import com.kotobyte.util.ColorUtil;
 
 import java.util.List;
 
@@ -15,6 +17,9 @@ import java.util.List;
  * Created by andree.surya on 2017/01/08.
  */
 public class SensesSpannableFactory extends SpannableStringFactory {
+
+    private static final char HIGHLIGHT_START = '{';
+    private static final char HIGHLIGHT_END = '}';
 
     private List<Word> mWords;
 
@@ -34,7 +39,6 @@ public class SensesSpannableFactory extends SpannableStringFactory {
             builder.append("▸  ");
 
             appendBuilderWithHighlightableText(builder, sense.getText());
-            appendBuilderWithCategories(builder, sense.getCategories());
             appendBuilderWithExtras(builder, sense.getExtras());
 
             if (i < senses.size() - 1) {
@@ -43,36 +47,32 @@ public class SensesSpannableFactory extends SpannableStringFactory {
         }
     }
 
-    private void appendBuilderWithCategories(SpannableStringBuilder builder, List<String> categories) {
+    private void appendBuilderWithHighlightableText(SpannableStringBuilder builder, CharSequence text) {
 
-        int categoriesStartIndex = builder.length();
+        int startHighlightIndex = -1;
 
-        for (int i = 0; i < categories.size(); i++) {
+        for (int j = 0; j < text.length(); j++) {
+            char character = text.charAt(j);
 
-            if (i == 0) {
-                builder.append(" [");
-            }
+            if (character == HIGHLIGHT_START) {
+                startHighlightIndex = builder.length();
 
-            builder.append(categories.get(i));
+            } else if (character == HIGHLIGHT_END && startHighlightIndex >= 0) {
+                int endHighlightIndex = builder.length();
 
-            if (i < categories.size() - 1) {
-                builder.append(", ");
+                builder.setSpan(
+                        new BackgroundColorSpan(ColorUtil.getColor(getContext(), R.color.highlight)),
+                        startHighlightIndex,
+                        endHighlightIndex,
+                        Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+
+                startHighlightIndex = -1;
 
             } else {
-                builder.append(']');
+                builder.append(character);
             }
         }
-
-        int categoriesEndIndex = builder.length();
-
-        builder.setSpan(
-                new TextAppearanceSpan(getContext(), R.style.Text_Light),
-                categoriesStartIndex,
-                categoriesEndIndex,
-                Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
     }
-
-
 
     private void appendBuilderWithExtras(SpannableStringBuilder builder, List<String> extras) {
 

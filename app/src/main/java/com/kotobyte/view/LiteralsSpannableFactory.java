@@ -2,20 +2,26 @@ package com.kotobyte.view;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.support.annotation.ColorInt;
+import android.support.annotation.DimenRes;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.BackgroundColorSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.model.Literal;
 import com.kotobyte.model.Word;
+import com.kotobyte.util.ColorUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by andree.surya on 2017/01/08.
  */
 public class LiteralsSpannableFactory extends SpannableStringFactory {
+
+    private static final char HIGHLIGHT_START = '{';
+    private static final char HIGHLIGHT_END = '}';
 
     private List<Word> mWords;
 
@@ -54,42 +60,70 @@ public class LiteralsSpannableFactory extends SpannableStringFactory {
 
     private void appendBuilderWithLiteral(SpannableStringBuilder builder, Literal literal) {
 
+        String text = literal.getText();
+
         int literalStartIndex = builder.length();
         Literal.Status status = literal.getStatus();
 
-        appendBuilderWithHighlightableText(builder, literal.getText());
+        List<LiteralSpan.HighlightInterval> highlightIntervals = new ArrayList<>(1);
+        LiteralSpan.HighlightInterval currentHighlightInterval = null;
 
-        if (status != null) {
-            int literalEndIndex = builder.length();
+        for (int j = 0; j < text.length(); j++) {
+            char character = text.charAt(j);
 
-            Object styleableUnderlineSpan = new StyleableUnderlineSpan(
-                    getColorForLiteralStatus(status),
-                    getDimensionPixelSize(R.dimen.underline_thickness),
-                    getDimensionPixelSize(R.dimen.underline_margin));
+            if (character == HIGHLIGHT_START) {
 
-            builder.setSpan(
-                    styleableUnderlineSpan,
-                    literalStartIndex,
-                    literalEndIndex,
-                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                currentHighlightInterval = new LiteralSpan.HighlightInterval();
+                currentHighlightInterval.setStart(builder.length() - literalStartIndex);
+
+            } else if (character == HIGHLIGHT_END && currentHighlightInterval != null) {
+
+                currentHighlightInterval.setEnd(builder.length() - literalStartIndex);
+                highlightIntervals.add(currentHighlightInterval);
+
+                currentHighlightInterval = null;
+
+            } else {
+                builder.append(character);
+            }
         }
+
+        int literalEndIndex = builder.length();
+
+        Object literalSpan = new LiteralSpan(
+                highlightIntervals,
+                getDimensionPixelSize(R.dimen.underline_margin),
+                getDimensionPixelSize(R.dimen.underline_thickness),
+                getColorForLiteralStatus(status),
+                ColorUtil.getColor(getContext(), R.color.highlight));
+
+        builder.setSpan(
+                literalSpan,
+                literalStartIndex,
+                literalEndIndex,
+                Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 
-    @ColorInt
+    private int getDimensionPixelSize(@DimenRes int dimenRes) {
+        return getContext().getResources().getDimensionPixelSize(dimenRes);
+    }
+
     private int getColorForLiteralStatus(Literal.Status status) {
 
-        switch (status) {
-            case COMMON:
-                return getColor(R.color.literal_common);
+        if (status != null) {
 
-            case IRREGULAR:
-                return getColor(R.color.literal_irregular);
+            switch (status) {
+                case COMMON:
+                    return ColorUtil.getColor(getContext(), R.color.literal_common);
 
-            case OUTDATED:
-                return getColor(R.color.literal_outdated);
+                case IRREGULAR:
+                    return ColorUtil.getColor(getContext(), R.color.literal_irregular);
 
-            default:
-                return Color.TRANSPARENT;
+                case OUTDATED:
+                    return ColorUtil.getColor(getContext(), R.color.literal_outdated);
+            }
         }
+
+        return Color.TRANSPARENT;
     }
 }

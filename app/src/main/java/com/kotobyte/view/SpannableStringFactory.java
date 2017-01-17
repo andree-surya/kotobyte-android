@@ -19,9 +19,6 @@ import com.kotobyte.R;
  */
 abstract class SpannableStringFactory {
 
-    private static final char HIGHLIGHT_START = '{';
-    private static final char HIGHLIGHT_END = '}';
-
     private Context mContext;
     private SparseArray<Spannable> mSpannables;
     private SpannableStringBuilder mSpannableBuilder;
@@ -55,50 +52,4 @@ abstract class SpannableStringFactory {
     }
 
     abstract void createSpannableWithBuilder(SpannableStringBuilder builder, int position);
-
-    void appendBuilderWithHighlightableText(SpannableStringBuilder builder, CharSequence text) {
-
-        int startHighlightIndex = -1;
-
-        for (int j = 0; j < text.length(); j++) {
-            char character = text.charAt(j);
-
-            if (character == HIGHLIGHT_START) {
-                startHighlightIndex = builder.length();
-
-            } else if (character == HIGHLIGHT_END && startHighlightIndex >= 0) {
-                int endHighlightIndex = builder.length();
-
-                builder.setSpan(
-                        new BackgroundColorSpan(getColor(R.color.highlight)),
-                        startHighlightIndex,
-                        endHighlightIndex,
-                        Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-
-                startHighlightIndex = -1;
-
-            } else {
-                builder.append(character);
-            }
-        }
-    }
-
-    @ColorInt
-    int getColor(@ColorRes int colorRes) {
-        int highlightColor;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            highlightColor = mContext.getColor(colorRes);
-
-        } else {
-            highlightColor = mContext.getResources().getColor(colorRes);
-        }
-
-        return highlightColor;
-    }
-
-    @Dimension
-    int getDimensionPixelSize(@DimenRes int dimenRes) {
-        return mContext.getResources().getDimensionPixelSize(dimenRes);
-    }
 }

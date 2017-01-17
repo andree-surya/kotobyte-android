@@ -70,7 +70,5 @@ class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.Vie
             mLiteralsTextView = (TextView) itemView.findViewById(R.id.literals_text_view);
             mSensesTextView = (TextView) itemView.findViewById(R.id.senses_text_view);
         }
-
-        c
     }
  }
