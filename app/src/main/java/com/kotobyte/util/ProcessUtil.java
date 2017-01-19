@@ -7,7 +7,11 @@ import android.os.Handler;
  */
 public class ProcessUtil {
 
-    public static void executeLater(Runnable runnable) {
+    public static void executeSoon(Runnable runnable) {
         new Handler().post(runnable);
+    }
+
+    public static void executeAfterDelay(long delayInMillis, Runnable runnable) {
+        new Handler().postDelayed(runnable, delayInMillis);
     }
 }

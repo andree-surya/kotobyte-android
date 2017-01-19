@@ -32,7 +32,7 @@ class AppConfig {
 
         if (sInstance == null) {
             AssetManager assetManager = context.getAssets();
-            Properties properties = null;
+            Properties properties;
 
             try (InputStream defaultInput = assetManager.open(DEFAULT_PROPERTIES_NAME, 0)) {
 

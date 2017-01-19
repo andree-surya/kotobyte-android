@@ -27,27 +27,27 @@ public class Kanji {
     @SerializedName("strokes")
     private List<String> mStrokes;
 
-    int getID() {
+    public int getID() {
         return mID;
     }
 
-    String getLiteral() {
+    public String getLiteral() {
         return mLiteral;
     }
 
-    List<String> getReadings() {
+    public List<String> getReadings() {
         return mReadings;
     }
 
-    List<String> getMeanings() {
+    public List<String> getMeanings() {
         return mMeanings;
     }
 
-    List<String> getExtras() {
+    public List<String> getExtras() {
         return mExtras;
     }
 
-    List<String> getStrokes() {
+    public List<String> getStrokes() {
         return mStrokes;
     }
 }

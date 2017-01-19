@@ -1,8 +1,11 @@
 package com.kotobyte;
 
 import android.support.v4.app.Fragment;
+import android.util.SparseArray;
 
-import com.kotobyte.model.SearchResults;
+import com.kotobyte.model.KanjiSearchResults;
+import com.kotobyte.model.Literal;
+import com.kotobyte.model.WordSearchResults;
 import com.kotobyte.util.WebService;
 
 import retrofit2.Call;
@@ -14,8 +17,10 @@ import retrofit2.Response;
  */
 public class SearchWorkerFragment extends Fragment {
 
-    private String mQuery;
-    private SearchResults mSearchResults;
+    public static final String TAG = SearchWorkerFragment.class.getSimpleName();
+
+    private WordSearchResults mWordSearchResults;
+    private SparseArray<KanjiSearchResults> mKanjiSearchResults;
 
     private Listener mListener;
 
@@ -27,50 +32,83 @@ public class SearchWorkerFragment extends Fragment {
         mListener = listener;
     }
 
-    void setQuery(String query) {
-        mQuery = query;
-        mSearchResults = null;
-    }
+    void searchWords(final String query) {
 
-    void execute() {
-
-        if (mSearchResults == null) {
-            mListener.onStartSearching();
+        if (mWordSearchResults == null) {
 
             WebService.Interface webService = WebService.getInstance(getContext()).getInterface();
 
-            webService.searchWords(mQuery).enqueue(new Callback<SearchResults>() {
+            webService.searchWords(query).enqueue(new Callback<WordSearchResults>() {
 
                 @Override
-                public void onResponse(Call<SearchResults> call, Response<SearchResults> response) {
+                public void onResponse(Call<WordSearchResults> call, Response<WordSearchResults> response) {
 
                     if (response.isSuccessful()) {
-                        mSearchResults = response.body();
+                        mWordSearchResults = response.body();
+                        mKanjiSearchResults = new SparseArray<>(mWordSearchResults.getSize());
 
-                        mListener.onFinish(mSearchResults);
-
-                    } else if (response.code() == 404) {
-                        mListener.onError(WebService.Error.NOT_FOUND);
+                        mListener.onReceiveWordSearchResults(mWordSearchResults);
 
                     } else {
-                        mListener.onError(WebService.Error.UNKNOWN);
+                        mListener.onReceiveErrorWhileSearchingForWords(WebService.Error.UNKNOWN);
                     }
                 }
 
                 @Override
-                public void onFailure(Call<SearchResults> call, Throwable t) {
-                    mListener.onError(WebService.Error.NETWORK);
+                public void onFailure(Call<WordSearchResults> call, Throwable t) {
+                    mListener.onReceiveErrorWhileSearchingForWords(WebService.Error.NETWORK);
                 }
             });
 
         } else {
-            mListener.onFinish(mSearchResults);
+            mListener.onReceiveWordSearchResults(mWordSearchResults);
+        }
+    }
+
+    void searchKanji(final int position) {
+
+        KanjiSearchResults kanjiSearchResults = mKanjiSearchResults.get(position);
+
+        if (kanjiSearchResults == null) {
+
+            StringBuilder queryBuilder = new StringBuilder();
+
+            for (Literal literal : mWordSearchResults.getWord(position).getLiterals()) {
+                queryBuilder.append(literal.getText());
+            }
+
+            WebService.Interface webService = WebService.getInstance(getContext()).getInterface();
+
+            webService.searchKanji(queryBuilder.toString()).enqueue(new Callback<KanjiSearchResults>() {
+
+                @Override
+                public void onResponse(Call<KanjiSearchResults> call, Response<KanjiSearchResults> response) {
+
+                    if (response.isSuccessful()) {
+                        mKanjiSearchResults.setValueAt(position, response.body());
+                        mListener.onReceiveKanjiSearchResults(response.body(), position);
+
+                    } else {
+                        mListener.onReceiveErrorWhileSearchingForKanji(WebService.Error.UNKNOWN, position);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<KanjiSearchResults> call, Throwable t) {
+                    mListener.onReceiveErrorWhileSearchingForKanji(WebService.Error.NETWORK, position);
+                }
+            });
+
+        } else {
+            mListener.onReceiveKanjiSearchResults(kanjiSearchResults, position);
         }
     }
 
     interface Listener {
-        void onStartSearching();
-        void onFinish(SearchResults searchResults);
-        void onError(WebService.Error error);
+        void onReceiveWordSearchResults(WordSearchResults wordSearchResults);
+        void onReceiveKanjiSearchResults(KanjiSearchResults kanjiSearchResults, int position);
+
+        void onReceiveErrorWhileSearchingForWords(WebService.Error error);
+        void onReceiveErrorWhileSearchingForKanji(WebService.Error error, int position);
     }
 }

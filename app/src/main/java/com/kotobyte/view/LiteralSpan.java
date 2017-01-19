@@ -48,13 +48,16 @@ class LiteralSpan extends ReplacementSpan {
     @Override
     public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top, int y, int bottom, Paint paint) {
 
-        for (HighlightInterval highlightInterval : mHighlightIntervals) {
+        if (mHighlightIntervals != null) {
 
-            int highlightStart = start + highlightInterval.mStart;
-            int highlightEnd = start + highlightInterval.mEnd;
+            for (HighlightInterval highlightInterval : mHighlightIntervals) {
 
-            float highlightStopX = x + paint.measureText(text, highlightStart, highlightEnd);
-            canvas.drawRect(x, top, highlightStopX, bottom, mHighlightPaint);
+                int highlightStart = start + highlightInterval.mStart;
+                int highlightEnd = start + highlightInterval.mEnd;
+
+                float highlightStopX = x + paint.measureText(text, highlightStart, highlightEnd);
+                canvas.drawRect(x, top, highlightStopX, bottom, mHighlightPaint);
+            }
         }
 
         float underlineCenterY = y + mUnderlineMargin + mUnderlinePaint.getStrokeWidth() / 2f;

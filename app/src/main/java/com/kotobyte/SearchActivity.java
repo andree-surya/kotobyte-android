@@ -74,7 +74,7 @@ public class SearchActivity extends AppCompatActivity {
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, searchResultsFragment)
+                .replace(R.id.fragment_container, searchResultsFragment, SearchResultsFragment.TAG)
                 .addToBackStack(null)
                 .commit();
     }

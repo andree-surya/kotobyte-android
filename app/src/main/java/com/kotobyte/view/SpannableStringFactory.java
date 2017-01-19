@@ -1,18 +1,9 @@
 package com.kotobyte.view;
 
 import android.content.Context;
-import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DimenRes;
-import android.support.annotation.Dimension;
-import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
-import android.text.style.BackgroundColorSpan;
 import android.util.SparseArray;
-
-import com.kotobyte.R;
 
 /**
  * Created by andree.surya on 2017/01/08.
@@ -20,35 +11,35 @@ import com.kotobyte.R;
 abstract class SpannableStringFactory {
 
     private Context mContext;
-    private SparseArray<Spannable> mSpannables;
-    private SpannableStringBuilder mSpannableBuilder;
+    private SparseArray<SpannableString> mSpannableStrings;
+    private SpannableStringBuilder mSpannableStringBuilder;
 
     SpannableStringFactory(Context context, int initialCapacity) {
         mContext = context;
 
-        mSpannables = new SparseArray<>(initialCapacity);
-        mSpannableBuilder = new SpannableStringBuilder();
+        mSpannableStrings = new SparseArray<>(initialCapacity);
+        mSpannableStringBuilder = new SpannableStringBuilder();
     }
 
     Context getContext() {
         return mContext;
     }
 
-    public Spannable getSpannable(int position) {
+    public SpannableString getSpannableString(int position) {
 
-        Spannable spannable = mSpannables.get(position);
+        SpannableString spannableString = mSpannableStrings.get(position);
 
-        if (spannable == null) {
-            createSpannableWithBuilder(mSpannableBuilder, position);
-            spannable = SpannableString.valueOf(mSpannableBuilder);
+        if (spannableString == null) {
+            createSpannableWithBuilder(mSpannableStringBuilder, position);
+            spannableString = SpannableString.valueOf(mSpannableStringBuilder);
 
-            mSpannableBuilder.clearSpans();
-            mSpannableBuilder.clear();
+            mSpannableStringBuilder.clearSpans();
+            mSpannableStringBuilder.clear();
 
-            mSpannables.put(position, spannable);
+            mSpannableStrings.put(position, spannableString);
         }
 
-        return spannable;
+        return spannableString;
     }
 
     abstract void createSpannableWithBuilder(SpannableStringBuilder builder, int position);

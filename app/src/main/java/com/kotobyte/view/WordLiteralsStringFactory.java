@@ -17,15 +17,16 @@ import java.util.List;
 /**
  * Created by andree.surya on 2017/01/08.
  */
-public class LiteralsStringFactory extends SpannableStringFactory {
+public class WordLiteralsStringFactory extends SpannableStringFactory {
 
     private static final char HIGHLIGHT_START = '{';
     private static final char HIGHLIGHT_END = '}';
 
     private List<Word> mWords;
 
-    public LiteralsStringFactory(Context context, List<Word> words) {
+    public WordLiteralsStringFactory(Context context, List<Word> words) {
         super(context, words.size());
+
         mWords = words;
     }
 
@@ -91,7 +92,7 @@ public class LiteralsStringFactory extends SpannableStringFactory {
 
         Object literalSpan = new LiteralSpan(
                 highlightIntervals,
-                getDimensionPixelSize(R.dimen.underline_margin),
+                getDimensionPixelSize(R.dimen.normal_underline_margin),
                 getDimensionPixelSize(R.dimen.underline_thickness),
                 getColorForLiteralStatus(status),
                 ColorUtil.getColor(getContext(), R.color.highlight));

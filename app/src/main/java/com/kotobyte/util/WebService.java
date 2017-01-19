@@ -2,14 +2,13 @@ package com.kotobyte.util;
 
 import android.content.Context;
 
-import com.kotobyte.model.Kanji;
-import com.kotobyte.model.SearchResults;
+import com.kotobyte.model.KanjiSearchResults;
+import com.kotobyte.model.WordSearchResults;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
-import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /**
@@ -54,10 +53,10 @@ public class WebService {
 
     public interface Interface {
 
-        @GET("search.json")
-        Call<SearchResults> searchWords(@Query("query") String query);
+        @GET("words.json")
+        Call<WordSearchResults> searchWords(@Query("query") String query);
 
-        @GET("kanji/{literal}.json")
-        Call<Kanji> getKanji(@Path("literal") String literal);
+        @GET("kanji.json")
+        Call<KanjiSearchResults> searchKanji(@Query("query") String query);
     }
 }
