@@ -11,7 +11,6 @@ import android.widget.TextView;
 import com.kotobyte.R;
 import com.kotobyte.model.Kanji;
 import com.kotobyte.model.KanjiSearchResults;
-import com.kotobyte.view.KanjiLiteralStringFactory;
 import com.kotobyte.view.KanjiMeaningsStringFactory;
 import com.kotobyte.view.KanjiReadingsStringFactory;
 
@@ -25,7 +24,6 @@ class KanjiSearchResultsAdapter extends RecyclerView.Adapter<KanjiSearchResultsA
 
     private KanjiSearchResults mKanjiSearchResults;
 
-    private KanjiLiteralStringFactory mKanjiLiteralStringFactory;
     private KanjiReadingsStringFactory mKanjiReadingsStringFactory;
     private KanjiMeaningsStringFactory mKanjiMeaningsStringFactory;
 
@@ -37,7 +35,6 @@ class KanjiSearchResultsAdapter extends RecyclerView.Adapter<KanjiSearchResultsA
     void setKanjiSearchResults(KanjiSearchResults kanjiSearchResults) {
         mKanjiSearchResults = kanjiSearchResults;
 
-        mKanjiLiteralStringFactory = new KanjiLiteralStringFactory(mContext, kanjiSearchResults.getKanjiList());
         mKanjiReadingsStringFactory = new KanjiReadingsStringFactory(mContext, kanjiSearchResults.getKanjiList());
         mKanjiMeaningsStringFactory = new KanjiMeaningsStringFactory(mContext, kanjiSearchResults.getKanjiList());
 
@@ -58,7 +55,7 @@ class KanjiSearchResultsAdapter extends RecyclerView.Adapter<KanjiSearchResultsA
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.mLiteralTextView.setText(mKanjiLiteralStringFactory.getSpannableString(position));
+        holder.mLiteralTextView.setText(mKanjiSearchResults.getKanji(position).getLiteral());
         holder.mReadingsTextView.setText(mKanjiReadingsStringFactory.getSpannableString(position));
         holder.mMeaningsTextView.setText(mKanjiMeaningsStringFactory.getSpannableString(position));
     }

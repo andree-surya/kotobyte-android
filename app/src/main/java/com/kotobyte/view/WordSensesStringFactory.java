@@ -18,9 +18,6 @@ import java.util.List;
  */
 public class WordSensesStringFactory extends SpannableStringFactory {
 
-    private static final char HIGHLIGHT_START = '{';
-    private static final char HIGHLIGHT_END = '}';
-
     private List<Word> mWords;
 
     public WordSensesStringFactory(Context context, List<Word> words) {
@@ -43,33 +40,6 @@ public class WordSensesStringFactory extends SpannableStringFactory {
 
             if (i < senses.size() - 1) {
                 builder.append('\n');
-            }
-        }
-    }
-
-    private void appendBuilderWithHighlightableText(SpannableStringBuilder builder, CharSequence text) {
-
-        int startHighlightIndex = -1;
-
-        for (int j = 0; j < text.length(); j++) {
-            char character = text.charAt(j);
-
-            if (character == HIGHLIGHT_START) {
-                startHighlightIndex = builder.length();
-
-            } else if (character == HIGHLIGHT_END && startHighlightIndex >= 0) {
-                int endHighlightIndex = builder.length();
-
-                builder.setSpan(
-                        new BackgroundColorSpan(ColorUtil.getColor(getContext(), R.color.highlight)),
-                        startHighlightIndex,
-                        endHighlightIndex,
-                        Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-
-                startHighlightIndex = -1;
-
-            } else {
-                builder.append(character);
             }
         }
     }

@@ -1,17 +1,18 @@
 package com.kotobyte.view;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.support.annotation.DimenRes;
+import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.model.Literal;
 import com.kotobyte.model.Word;
 import com.kotobyte.util.ColorUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,8 +20,7 @@ import java.util.List;
  */
 public class WordLiteralsStringFactory extends SpannableStringFactory {
 
-    private static final char HIGHLIGHT_START = '{';
-    private static final char HIGHLIGHT_END = '}';
+
 
     private List<Word> mWords;
 
@@ -60,70 +60,20 @@ public class WordLiteralsStringFactory extends SpannableStringFactory {
 
     private void appendBuilderWithLiteral(SpannableStringBuilder builder, Literal literal) {
 
-        String text = literal.getText();
-
         int literalStartIndex = builder.length();
-        Literal.Status status = literal.getStatus();
 
-        List<LiteralSpan.HighlightInterval> highlightIntervals = new ArrayList<>(1);
-        LiteralSpan.HighlightInterval currentHighlightInterval = null;
-
-        for (int j = 0; j < text.length(); j++) {
-            char character = text.charAt(j);
-
-            if (character == HIGHLIGHT_START) {
-
-                currentHighlightInterval = new LiteralSpan.HighlightInterval();
-                currentHighlightInterval.setStart(builder.length() - literalStartIndex);
-
-            } else if (character == HIGHLIGHT_END && currentHighlightInterval != null) {
-
-                currentHighlightInterval.setEnd(builder.length() - literalStartIndex);
-                highlightIntervals.add(currentHighlightInterval);
-
-                currentHighlightInterval = null;
-
-            } else {
-                builder.append(character);
-            }
-        }
+        appendBuilderWithHighlightableText(builder, literal.getText());
 
         int literalEndIndex = builder.length();
 
-        Object literalSpan = new LiteralSpan(
-                highlightIntervals,
-                getDimensionPixelSize(R.dimen.normal_underline_margin),
-                getDimensionPixelSize(R.dimen.underline_thickness),
-                getColorForLiteralStatus(status),
-                ColorUtil.getColor(getContext(), R.color.highlight));
+        if (literal.getStatus() == Literal.Status.OUTDATED ||
+                literal.getStatus() == Literal.Status.IRREGULAR) {
 
-        builder.setSpan(
-                literalSpan,
-                literalStartIndex,
-                literalEndIndex,
-                Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-    }
-
-    private int getDimensionPixelSize(@DimenRes int dimenRes) {
-        return getContext().getResources().getDimensionPixelSize(dimenRes);
-    }
-
-    private int getColorForLiteralStatus(Literal.Status status) {
-
-        if (status != null) {
-
-            switch (status) {
-                case COMMON:
-                    return ColorUtil.getColor(getContext(), R.color.literal_common);
-
-                case IRREGULAR:
-                    return ColorUtil.getColor(getContext(), R.color.literal_irregular);
-
-                case OUTDATED:
-                    return ColorUtil.getColor(getContext(), R.color.literal_outdated);
-            }
+            builder.setSpan(
+                    new ForegroundColorSpan(ColorUtil.getColor(getContext(), R.color.light_text)),
+                    literalStartIndex,
+                    literalEndIndex,
+                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
         }
-
-        return Color.TRANSPARENT;
     }
 }

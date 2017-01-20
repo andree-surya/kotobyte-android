@@ -119,7 +119,6 @@ public class WordSearchResultsAdapter
         viewHolder.mSensesTextView.setText(mWordSensesStringFactory.getSpannableString(position));
 
         if (position == mExpandedCellPosition) {
-            viewHolder.mTopExpansionMarker.setVisibility(View.VISIBLE);
 
             viewHolder.mCardContainer.setCardElevation(
                     mContext.getResources().getDimensionPixelSize(R.dimen.expanded_card_elevation));
@@ -140,7 +139,6 @@ public class WordSearchResultsAdapter
             viewHolder.mCardContainer.setCardElevation(0);
             viewHolder.mProgressBar.setVisibility(View.GONE);
             viewHolder.mKanjiListView.setVisibility(View.GONE);
-            viewHolder.mTopExpansionMarker.setVisibility(View.GONE);
         }
     }
 
@@ -162,7 +160,6 @@ public class WordSearchResultsAdapter
         private TextView mSensesTextView;
         private ProgressBar mProgressBar;
         private RecyclerView mKanjiListView;
-        private View mTopExpansionMarker;
 
         private KanjiSearchResultsAdapter mKanjiSearchResultsAdapter;
 
@@ -175,7 +172,6 @@ public class WordSearchResultsAdapter
             mSensesTextView = (TextView) itemView.findViewById(R.id.senses_text_view);
             mProgressBar = (ProgressBar) itemView.findViewById(R.id.progress_bar);
             mKanjiListView = (RecyclerView) itemView.findViewById(R.id.kanji_list_view);
-            mTopExpansionMarker = itemView.findViewById(R.id.top_expansion_marker);
 
             mKanjiSearchResultsAdapter = kanjiSearchResultsAdapter;
             mKanjiListView.setAdapter(kanjiSearchResultsAdapter);

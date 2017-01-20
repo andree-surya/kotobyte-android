@@ -7,9 +7,5 @@
     <dimen name="large_text">20sp</dimen>
     <dimen name="gigantic_text">36sp</dimen>
 
-    <dimen name="underline_thickness">2dp</dimen>
-    <dimen name="normal_underline_margin">4dp</dimen>
-    <dimen name="wide_underline_margin">8dp</dimen>
-
     <dimen name="expanded_card_elevation">2dp</dimen>
 </resources>
