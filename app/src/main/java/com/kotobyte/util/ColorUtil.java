@@ -10,15 +10,15 @@ import android.support.annotation.ColorRes;
 public class ColorUtil {
 
     public static int getColor(Context context, @ColorRes int colorRes) {
-        int highlightColor;
+        int color;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            highlightColor = context.getColor(colorRes);
+            color = context.getColor(colorRes);
 
         } else {
-            highlightColor = context.getResources().getColor(colorRes);
+            color = context.getResources().getColor(colorRes);
         }
 
-        return highlightColor;
+        return color;
     }
 }

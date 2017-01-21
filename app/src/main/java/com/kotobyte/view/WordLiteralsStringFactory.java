@@ -1,12 +1,9 @@
 package com.kotobyte.view;
 
 import android.content.Context;
-import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.model.Literal;

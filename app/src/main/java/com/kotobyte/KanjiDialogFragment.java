@@ -15,10 +15,13 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import com.kotobyte.databinding.FragmentKanjiDialogBinding;
 import com.kotobyte.model.Kanji;
 import com.kotobyte.util.ColorUtil;
+import com.kotobyte.view.KanjiStrokeView;
+import com.wefika.flowlayout.FlowLayout;
 
 import java.util.List;
 
@@ -74,6 +77,8 @@ public class KanjiDialogFragment extends DialogFragment {
         binding.literalTextView.setText(mKanji.getLiteral());
         binding.readingsTextView.setText(createReadingsString());
         binding.meaningsTextView.setText(createMeaningsString());
+
+        setupKanjiStrokeViews(binding.kanjiStrokesContainer);
 
         return binding.getRoot();
     }
@@ -131,7 +136,7 @@ public class KanjiDialogFragment extends DialogFragment {
             stringBuilder.append(extras.get(i));
 
             if (i < extras.size() - 1) {
-                stringBuilder.append(", ");
+                stringBuilder.append("; ");
 
             } else {
                 stringBuilder.setSpan(
@@ -143,5 +148,33 @@ public class KanjiDialogFragment extends DialogFragment {
         }
 
         return SpannableString.valueOf(stringBuilder);
+    }
+
+    private void setupKanjiStrokeViews(ViewGroup container) {
+
+        container.removeAllViews();
+
+        List<String> strokes = mKanji.getStrokes();
+
+        if (strokes != null) { // If we do have strokes, then do some drawing.
+
+            int margin = getContext().getResources().getDimensionPixelSize(R.dimen.kanji_stroke_view_margin);
+
+            for (int i = 1; i <= strokes.size(); i++) {
+                KanjiStrokeView strokeView = new KanjiStrokeView(getActivity(), strokes, i);
+
+                FlowLayout.LayoutParams layoutParams =  new FlowLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+                layoutParams.setMargins(margin, margin, margin, margin);
+
+                container.addView(strokeView, layoutParams);
+            }
+
+            container.setVisibility(View.VISIBLE);
+
+        } else {
+            container.setVisibility(View.INVISIBLE);
+        }
     }
 }

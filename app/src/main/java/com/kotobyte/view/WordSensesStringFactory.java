@@ -3,13 +3,11 @@ package com.kotobyte.view;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.style.BackgroundColorSpan;
 import android.text.style.TextAppearanceSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.model.Sense;
 import com.kotobyte.model.Word;
-import com.kotobyte.util.ColorUtil;
 
 import java.util.List;
 

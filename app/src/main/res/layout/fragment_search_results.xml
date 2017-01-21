@@ -12,6 +12,7 @@
            android:layout_width="match_parent"
            android:layout_height="match_parent"
            android:scrollbars="vertical"
+           app:spanCount="@integer/search_results_span_count"
            app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager" />
 
        <ProgressBar
