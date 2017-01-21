@@ -168,7 +168,7 @@ public class SearchResultsFragment extends Fragment implements
 
     @Override
     public void onClickKanji(Kanji kanji) {
-
+        KanjiDialogFragment.newInstance(kanji).show(getFragmentManager(), KanjiDialogFragment.TAG);
     }
 
     @Override

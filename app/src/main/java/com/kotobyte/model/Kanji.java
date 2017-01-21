@@ -1,5 +1,8 @@
 package com.kotobyte.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
@@ -7,10 +10,10 @@ import java.util.List;
 /**
  * Created by andree.surya on 2017/01/02.
  */
-public class Kanji {
+public class Kanji implements Parcelable {
 
     @SerializedName("id")
-    private int mID;
+    private long mID;
 
     @SerializedName("literal")
     private String mLiteral;
@@ -27,7 +30,16 @@ public class Kanji {
     @SerializedName("strokes")
     private List<String> mStrokes;
 
-    public int getID() {
+    private Kanji(Parcel in) {
+        mID = in.readLong();
+        mLiteral = in.readString();
+        mReadings = in.createStringArrayList();
+        mMeanings = in.createStringArrayList();
+        mExtras = in.createStringArrayList();
+        mStrokes = in.createStringArrayList();
+    }
+
+    public long getID() {
         return mID;
     }
 
@@ -50,4 +62,32 @@ public class Kanji {
     public List<String> getStrokes() {
         return mStrokes;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(mID);
+        dest.writeString(mLiteral);
+        dest.writeStringList(mReadings);
+        dest.writeStringList(mMeanings);
+        dest.writeStringList(mExtras);
+        dest.writeStringList(mStrokes);
+    }
+
+    public static final Creator<Kanji> CREATOR = new Creator<Kanji>() {
+
+        @Override
+        public Kanji createFromParcel(Parcel in) {
+            return new Kanji(in);
+        }
+
+        @Override
+        public Kanji[] newArray(int size) {
+            return new Kanji[size];
+        }
+    };
 }

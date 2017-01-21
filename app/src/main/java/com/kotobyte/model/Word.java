@@ -8,7 +8,7 @@ import java.util.List;
 public class Word {
 
     @SerializedName("id")
-    private int mID;
+    private long mID;
 
     @SerializedName("literals")
     private List<Literal> mLiterals;
@@ -21,7 +21,7 @@ public class Word {
 
     private transient String mSensesDisplayText;
 
-    public int getID () {
+    public long getID () {
         return mID;
     }
 
