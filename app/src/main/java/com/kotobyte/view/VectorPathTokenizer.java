@@ -7,6 +7,7 @@ class VectorPathTokenizer {
 
     private String mPath = null;
     private int mOffset = 0;
+    private char mLastCommand = 0;
 
     private StringBuilder mFloatStringBuilder = new StringBuilder();
 
@@ -15,16 +16,26 @@ class VectorPathTokenizer {
         this.mOffset = 0;
     }
 
-    boolean hasNext() {
-        return mOffset < mPath.length();
-    }
+    char nextCommand() {
 
-    char nextChar() {
-        char c = mPath.charAt(mOffset);
+        for (int i = mOffset; i < mPath.length(); i++) {
+            char c = mPath.charAt(i);
 
-        mOffset += 1;
+            if (Character.isLetter(c)) {
+                mOffset = i + 1;
+                mLastCommand = c;
 
-        return c;
+                return c;
+            }
+
+            if (! Character.isWhitespace(c)) {
+                mOffset = i;
+
+                return mLastCommand;
+            }
+        }
+
+        return 0;
     }
 
     float nextFloat() {
@@ -49,5 +60,17 @@ class VectorPathTokenizer {
         } while (hasNext());
 
         return Float.parseFloat(mFloatStringBuilder.toString());
+    }
+
+    private char nextChar() {
+        char c = mPath.charAt(mOffset);
+
+        mOffset += 1;
+
+        return c;
+    }
+
+    private boolean hasNext() {
+        return mOffset < mPath.length();
     }
 }

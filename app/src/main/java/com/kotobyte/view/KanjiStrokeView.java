@@ -88,9 +88,9 @@ public class KanjiStrokeView extends View {
         for (int i = 0; i < drawLimit; i++) {
             vectorPathTokenizer.setString(strokes.get(i));
 
-            // Parse path string.
-            while (vectorPathTokenizer.hasNext()) {
-                char command = vectorPathTokenizer.nextChar();
+            char command = vectorPathTokenizer.nextCommand();
+
+            while (command != 0) {
 
                 // SVG move commands (M = absolute, m = relative)
                 if (command == 'M' || command == 'm') {
@@ -127,6 +127,8 @@ public class KanjiStrokeView extends View {
                         mStrokePath.rCubicTo(x1, y1, x2, y2, x, y);
                     }
                 }
+
+                command = vectorPathTokenizer.nextCommand();
             }
         }
     }

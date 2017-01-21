@@ -74,7 +74,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:alpha="0.05"
-                android:layout_marginBottom="32dp"
                 android:src="@mipmap/ic_silhouette"
                 android:contentDescription="@string/app_name" />
         </FrameLayout>
