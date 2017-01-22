@@ -100,6 +100,9 @@ public class SearchActivity extends AppCompatActivity {
 
             if (v.length() > 0) {
                 executeSearch(v.getText().toString());
+
+                mBinding.clearImageButton.requestFocus();
+                mBinding.queryEditText.clearFocus();
             }
 
             return false;
