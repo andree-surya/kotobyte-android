@@ -3,19 +3,19 @@ package com.kotobyte;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.kotobyte.adapter.WordSearchResultsAdapter;
 import com.kotobyte.databinding.FragmentSearchResultsBinding;
 import com.kotobyte.model.Kanji;
 import com.kotobyte.model.KanjiSearchResults;
 import com.kotobyte.model.WordSearchResults;
 import com.kotobyte.util.ProcessUtil;
 import com.kotobyte.util.WebService;
-import com.kotobyte.adapter.WordSearchResultsAdapter;
 
 /**
  * Created by andree.surya on 2016/12/29.
@@ -115,12 +115,12 @@ public class SearchResultsFragment extends Fragment implements
         });
     }
 
-    private void showSnackbarForError(WebService.Error error) {
+    private void showMessageForError(WebService.Error error) {
 
         int messageResource = error == WebService.Error.NETWORK ?
                 R.string.error_network : R.string.error_unknown;
 
-        Snackbar.make(mBinding.searchResultsView, messageResource, Snackbar.LENGTH_LONG).show();
+        Toast.makeText(getContext(), messageResource, Toast.LENGTH_LONG).show();
     }
 
     private void executeRunnableAfterRequiredAnimationDelay(Runnable runnable) {
@@ -187,11 +187,14 @@ public class SearchResultsFragment extends Fragment implements
     @Override
     public void onReceiveErrorWhileSearchingForWords(WebService.Error error) {
         mBinding.progressBar.setVisibility(View.GONE);
+
         mBinding.retryButton.setVisibility(View.VISIBLE);
+        mBinding.retryButton.requestFocus();
+
         mBinding.problemTextView.setVisibility(View.VISIBLE);
         mBinding.problemTextView.setText(getString(R.string.error_search, mQuery));
 
-        showSnackbarForError(error);
+        showMessageForError(error);
     }
 
     @Override
@@ -215,7 +218,7 @@ public class SearchResultsFragment extends Fragment implements
             public void run() {
                 mWordSearchResultsAdapter.collapseCellAtPosition(position);
 
-                showSnackbarForError(error);
+                showMessageForError(error);
             }
         });
     }
