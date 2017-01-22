@@ -14,6 +14,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
@@ -22,6 +23,8 @@ import com.kotobyte.databinding.ActivitySearchBinding;
 public class SearchActivity extends AppCompatActivity {
 
     private ActivitySearchBinding mBinding;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +35,6 @@ public class SearchActivity extends AppCompatActivity {
         mBinding.toolbar.inflateMenu(R.menu.menu_search);
         mBinding.toolbar.setOnMenuItemClickListener(mOnMenuitemClickListener);
 
-        mBinding.queryEditText.setOnFocusChangeListener(mOnQueryFocusChangeListener);
         mBinding.queryEditText.setOnEditorActionListener(mOnEditorActionListener);
         mBinding.queryEditText.addTextChangedListener(mQueryTextWatcher);
 
@@ -59,13 +61,13 @@ public class SearchActivity extends AppCompatActivity {
             executeSearch(query);
 
             mBinding.clearImageButton.setVisibility(View.VISIBLE);
-            mBinding.clearImageButton.requestFocus();
-
             mBinding.queryEditText.setText(query);
+
+            setFocusOnQueryEditText(false);
         }
 
         if (Intent.ACTION_MAIN.equals(action)) {
-            mBinding.queryEditText.requestFocus();
+            setFocusOnQueryEditText(true);
         }
     }
 
@@ -74,9 +76,29 @@ public class SearchActivity extends AppCompatActivity {
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_container, searchResultsFragment, SearchResultsFragment.TAG)
+                .add(R.id.fragment_container, searchResultsFragment, SearchResultsFragment.TAG)
                 .addToBackStack(null)
                 .commit();
+
+        setFocusOnQueryEditText(false);
+    }
+
+    private void setFocusOnQueryEditText(boolean shouldFocus) {
+
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        if (shouldFocus) {
+            mBinding.queryEditText.requestFocus();
+
+            inputMethodManager.showSoftInput(
+                    mBinding.queryEditText, InputMethodManager.SHOW_IMPLICIT);
+
+        } else {
+            mBinding.queryEditText.clearFocus();
+
+            inputMethodManager.hideSoftInputFromWindow(
+                    mBinding.queryEditText.getWindowToken(), 0);
+        }
     }
 
     private TextWatcher mQueryTextWatcher = new TextWatcher() {
@@ -96,33 +118,21 @@ public class SearchActivity extends AppCompatActivity {
     private TextView.OnEditorActionListener mOnEditorActionListener = new TextView.OnEditorActionListener() {
 
         @Override
-        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        public boolean onEditorAction(TextView textView, int actionId, KeyEvent event) {
 
-            if (v.length() > 0) {
-                executeSearch(v.getText().toString());
+            if (textView.length() > 0) {
 
-                mBinding.clearImageButton.requestFocus();
-                mBinding.queryEditText.clearFocus();
+                boolean acceptableAction = actionId == EditorInfo.IME_ACTION_SEARCH ||
+                        ((actionId == EditorInfo.IME_ACTION_UNSPECIFIED && event.getAction() == KeyEvent.ACTION_DOWN));
+
+                if (acceptableAction) {
+                    executeSearch(textView.getText().toString());
+
+                    return true;
+                }
             }
 
             return false;
-        }
-    };
-
-    private View.OnFocusChangeListener mOnQueryFocusChangeListener = new View.OnFocusChangeListener() {
-
-        @Override
-        public void onFocusChange(View v, boolean hasFocus) {
-
-            InputMethodManager inputMethodManager =
-                    (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-            if (hasFocus) {
-                inputMethodManager.showSoftInput(v, InputMethodManager.SHOW_IMPLICIT);
-
-            } else {
-                inputMethodManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
-            }
         }
     };
 
@@ -131,7 +141,8 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             mBinding.queryEditText.setText(null);
-            mBinding.queryEditText.requestFocus();
+
+            setFocusOnQueryEditText(true);
         }
     };
 
@@ -163,6 +174,10 @@ public class SearchActivity extends AppCompatActivity {
             }
 
             mBinding.queryEditText.setText(query);
+
+            if (query != null) {
+                mBinding.queryEditText.setSelection(query.length());
+            }
         }
     };
 }

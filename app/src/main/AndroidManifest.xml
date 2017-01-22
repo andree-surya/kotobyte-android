@@ -15,7 +15,8 @@
         <activity
             android:name=".SearchActivity"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateVisible">
 
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
