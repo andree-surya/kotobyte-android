@@ -18,8 +18,6 @@ import java.util.List;
 /**
  * Created by andree.surya on 2017/01/21.
  */
-
-@SuppressLint("ViewConstructor")
 public class KanjiStrokeView extends View {
 
     // Assuming supplied Kanji strokes are drawn on 109x109 SVG canvas (KanjiVG format).
@@ -69,8 +67,8 @@ public class KanjiStrokeView extends View {
         super(context, attributeSet);
     }
 
-
     public void drawKanjiStrokes(List<String> strokes, int drawLimit) {
+        // TODO: Simply throw exceptions and log when invalid SVG command is encountered.
 
         mStrokePath.rewind();
         mMarkPath.rewind();
@@ -89,6 +87,9 @@ public class KanjiStrokeView extends View {
             vectorPathTokenizer.setString(strokes.get(i));
 
             char command = vectorPathTokenizer.nextCommand();
+
+            // Parameters for the last 'c' command, to calculate parameters for next 's' command.
+            float lastX2 = 0, lastY2 = 0, lastX = 0, lastY = 0;
 
             while (command != 0) {
 
@@ -110,20 +111,27 @@ public class KanjiStrokeView extends View {
                     }
                 }
 
-                // SVG draw commands (C = absolute, c = relative)
-                if (command == 'C' || command == 'c') {
-                    float x1 = vectorPathTokenizer.nextFloat();
-                    float y1 = vectorPathTokenizer.nextFloat();
-                    float x2 = vectorPathTokenizer.nextFloat();
-                    float y2 = vectorPathTokenizer.nextFloat();
-                    float x = vectorPathTokenizer.nextFloat();
-                    float y = vectorPathTokenizer.nextFloat();
+                // SVG cubic bezier commands (C & S = absolute, s & c = relative)
+                if (command == 'C' || command == 'c' || command == 'S' || command == 's') {
 
-                    if (command == 'C') {
+                    float x1 = lastX - lastX2;
+                    float y1 = lastY - lastY2;
+
+                    if (command == 'C' || command == 'c') {
+                        x1 = vectorPathTokenizer.nextFloat();
+                        y1 = vectorPathTokenizer.nextFloat();
+                    }
+
+                    float x2 = lastX2 = vectorPathTokenizer.nextFloat();
+                    float y2 = lastY2 = vectorPathTokenizer.nextFloat();
+                    float x = lastX = vectorPathTokenizer.nextFloat();
+                    float y = lastY = vectorPathTokenizer.nextFloat();
+
+                    if (command == 'C' || command == 'S') {
                         mStrokePath.cubicTo(x1, y1, x2, y2, x, y);
                     }
 
-                    if (command == 'c') {
+                    if (command == 'c' || command == 's') {
                         mStrokePath.rCubicTo(x1, y1, x2, y2, x, y);
                     }
                 }
