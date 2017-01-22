@@ -61,6 +61,7 @@ public class KanjiDialogFragment extends DialogFragment {
                 new BottomSheetDialog(getContext(), getTheme()) :
                 new Dialog(getActivity(), getTheme());
 
+        dialog.requestWindowFeature(STYLE_NO_TITLE);
         dialog.setContentView(createContentView(savedInstanceState));
 
         return dialog;
