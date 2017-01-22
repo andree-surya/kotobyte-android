@@ -62,12 +62,12 @@ public class KanjiDialogFragment extends DialogFragment {
                 new Dialog(getActivity(), getTheme());
 
         dialog.requestWindowFeature(STYLE_NO_TITLE);
-        dialog.setContentView(createContentView(savedInstanceState));
+        dialog.setContentView(createContentView());
 
         return dialog;
     }
 
-    private View createContentView(Bundle savedInstanceState) {
+    private View createContentView() {
 
         FragmentKanjiDialogBinding binding = DataBindingUtil.inflate(
                 LayoutInflater.from(getContext()),

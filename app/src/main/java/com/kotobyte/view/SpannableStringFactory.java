@@ -50,7 +50,7 @@ abstract class SpannableStringFactory {
         return spannableString;
     }
 
-    protected void appendBuilderWithHighlightableText(SpannableStringBuilder builder, CharSequence text) {
+    void appendBuilderWithHighlightableText(SpannableStringBuilder builder, CharSequence text) {
 
         int startHighlightIndex = -1;
 

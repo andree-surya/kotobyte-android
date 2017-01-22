@@ -3,7 +3,6 @@ package com.kotobyte;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.DialogFragment;
 
 /**

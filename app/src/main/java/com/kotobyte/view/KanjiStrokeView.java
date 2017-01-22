@@ -1,6 +1,5 @@
 package com.kotobyte.view;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -67,7 +66,7 @@ public class KanjiStrokeView extends View {
         super(context, attributeSet);
     }
 
-    public void drawKanjiStrokes(List<String> strokes, int drawLimit) {
+    private void drawKanjiStrokes(List<String> strokes, int drawLimit) {
         // TODO: Simply throw exceptions and log when invalid SVG command is encountered.
 
         mStrokePath.rewind();
