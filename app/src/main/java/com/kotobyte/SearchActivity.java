@@ -24,8 +24,6 @@ public class SearchActivity extends AppCompatActivity {
 
     private ActivitySearchBinding mBinding;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,7 +150,9 @@ public class SearchActivity extends AppCompatActivity {
         public boolean onMenuItemClick(MenuItem item) {
 
             switch (item.getItemId()) {
-                case R.id.action_clear:
+                case R.id.action_about:
+                    new AboutDialogFragment().show(getSupportFragmentManager(), AboutDialogFragment.TAG);
+
                     return true;
 
                 default:
