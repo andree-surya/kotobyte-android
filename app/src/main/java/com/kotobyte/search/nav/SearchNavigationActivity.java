@@ -1,6 +1,7 @@
 package com.kotobyte.search.nav;
 
 import android.app.SearchManager;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -32,7 +33,6 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         super.onCreate(savedInstanceState);
 
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_search_navigation);
-
         mBinding.toolbar.inflateMenu(R.menu.menu_search);
         mBinding.toolbar.setOnMenuItemClickListener(mOnMenuitemClickListener);
         mBinding.queryEditor.setOnEditorActionListener(mOnEditorActionListener);
@@ -116,6 +116,13 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         }
     }
 
+    private CharSequence getPlainTextFromClipboard() {
+        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+
+        return clipboardManager.getPrimaryClip().getItemAt(0).getText();
+
+    }
+
     private TextWatcher mQueryTextWatcher = new TextWatcher() {
 
         @Override
@@ -171,6 +178,10 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
 
                     return true;
 
+                case R.id.action_paste:
+                    mPresenter.onClickPasteMenuItem(getPlainTextFromClipboard());
+                    return true;
+
                 default:
                     return false;
             }
@@ -184,11 +195,12 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
 
             if (fragment instanceof SearchPageFragment) {
-                mBinding.queryEditor.setText(((SearchPageFragment) fragment).getQuery());
-                mBinding.queryEditor.clearFocus();
+                setTextOnQueryEditor(((SearchPageFragment) fragment).getQuery());
+
+                assignFocusToQueryEditor(false);
 
             } else {
-                mBinding.queryEditor.setText(null);
+                setTextOnQueryEditor(null);
             }
         }
     };

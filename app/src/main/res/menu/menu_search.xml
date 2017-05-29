@@ -4,8 +4,15 @@
     tools:context="com.kotobyte.search.nav.SearchNavigationActivity">
 
     <item
+        android:id="@+id/action_paste"
+        android:title="@string/search.nav.paste"
+        android:icon="@drawable/ic_content_paste_white_24dp"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/action_about"
-        android:orderInCategory="200"
         android:title="@string/search.nav.about"
+        android:orderInCategory="200"
         app:showAsAction="never" />
 </menu>

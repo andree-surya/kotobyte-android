@@ -18,6 +18,7 @@ interface SearchNavigationContracts {
         void onDestroy();
 
         void onClickClearButton();
+        void onClickPasteMenuItem(CharSequence text);
         void onClickAboutMenuItem();
 
         void onChangeTextOnQueryEditor(CharSequence text);

@@ -25,6 +25,12 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
     }
 
     @Override
+    public void onClickPasteMenuItem(CharSequence text) {
+        mView.setTextOnQueryEditor(text);
+        mView.assignFocusToQueryEditor(true);
+    }
+
+    @Override
     public void onClickAboutMenuItem() {
         mView.showAboutApplicationScreen();
     }

@@ -5,6 +5,7 @@
     <string name="about.attributions">The dictionary entries in this software are derived from JMdict and KANJIDIC2 projects from EDRDG. www.edrdg.org\n\nThe Kanji strokes diagram are the work of Ulrich Apel and team in KanjiVG. kanjivg.tagaini.net</string>
 
     <string name="search.nav.search">Search</string>
+    <string name="search.nav.paste">Paste</string>
     <string name="search.nav.about">About</string>
     <string name="search.nav.clear">Clear query</string>
     <string name="search.nav.hint">Enter search query</string>
