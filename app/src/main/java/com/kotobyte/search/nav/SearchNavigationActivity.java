@@ -1,6 +1,8 @@
 package com.kotobyte.search.nav;
 
 import android.app.SearchManager;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -119,8 +121,11 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
     private CharSequence getPlainTextFromClipboard() {
         ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 
-        return clipboardManager.getPrimaryClip().getItemAt(0).getText();
+        if (clipboardManager.hasPrimaryClip()) {
+            return clipboardManager.getPrimaryClip().getItemAt(0).getText();
+        }
 
+        return null;
     }
 
     private TextWatcher mQueryTextWatcher = new TextWatcher() {
