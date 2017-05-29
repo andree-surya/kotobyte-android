@@ -1,8 +1,6 @@
 package com.kotobyte.search.nav;
 
 import android.app.SearchManager;
-import android.content.ClipData;
-import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -44,7 +43,6 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         getSupportFragmentManager().addOnBackStackChangedListener(mOnBackStackChangedListener);
 
         mPresenter = new SearchNavigationPresenter(this);
-        mPresenter.onCreate();
 
         handleIntent(getIntent());
     }
@@ -54,8 +52,6 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         super.onDestroy();
 
         getSupportFragmentManager().removeOnBackStackChangedListener(mOnBackStackChangedListener);
-
-        mPresenter.onDestroy();
     }
 
     @Override
@@ -76,21 +72,13 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
     }
 
     @Override
-    public void assignFocusToQueryEditor(boolean focus) {
+    public void assignFocusToQueryEditor() {
+
+        mBinding.queryEditor.requestFocus();
+        mBinding.queryEditor.selectAll();
 
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        if (focus) {
-            mBinding.queryEditor.requestFocus();
-            mBinding.queryEditor.selectAll();
-
-            inputMethodManager.showSoftInput(mBinding.queryEditor, InputMethodManager.SHOW_IMPLICIT);
-
-        } else {
-            mBinding.queryEditor.clearFocus();
-
-            inputMethodManager.hideSoftInputFromWindow(mBinding.queryEditor.getWindowToken(), 0);
-        }
+        inputMethodManager.showSoftInput(mBinding.queryEditor, InputMethodManager.SHOW_IMPLICIT);
     }
 
     @Override
@@ -101,18 +89,26 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
     @Override
     public void showSearchResultsScreen(CharSequence query) {
 
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, SearchPageFragment.newInstance(query), SearchPageFragment.TAG)
-                .addToBackStack(null)
-                .commit();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, SearchPageFragment.newInstance(query), SearchPageFragment.TAG);
+
+        if (Intent.ACTION_MAIN.equals(getIntent().getAction())) {
+            fragmentTransaction.addToBackStack(null);
+        }
+
+        fragmentTransaction.commit();
     }
 
     private void handleIntent(Intent intent) {
-        String action = intent.getAction();
 
-        if (Intent.ACTION_SEARCH.equals(action)) {
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
+
+            mPresenter.onReceiveSearchRequest(query);
+        }
+
+        if (Intent.ACTION_SEND.equals(intent.getAction())) {
+            String query = intent.getStringExtra(Intent.EXTRA_TEXT);
 
             mPresenter.onReceiveSearchRequest(query);
         }
@@ -201,8 +197,6 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
 
             if (fragment instanceof SearchPageFragment) {
                 setTextOnQueryEditor(((SearchPageFragment) fragment).getQuery());
-
-                assignFocusToQueryEditor(false);
 
             } else {
                 setTextOnQueryEditor(null);

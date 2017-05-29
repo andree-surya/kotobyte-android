@@ -9,13 +9,10 @@ interface SearchNavigationContracts {
         void showSearchResultsScreen(CharSequence query);
 
         void setTextOnQueryEditor(CharSequence text);
-        void assignFocusToQueryEditor(boolean focus);
+        void assignFocusToQueryEditor();
     }
 
     interface Presenter {
-
-        void onCreate();
-        void onDestroy();
 
         void onClickClearButton();
         void onClickPasteMenuItem(CharSequence text);
