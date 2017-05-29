@@ -1,17 +1,15 @@
 <resources>
     <string name="app_name">Kotobyte</string>
-    <string name="app_copyright">&#169; Kotobyte 2017, Andree Surya</string>
-    <string name="app_attributions">The dictionary entries in this software are derived from JMdict and KANJIDIC2 projects from EDRDG. www.edrdg.org\n\nThe Kanji strokes diagram are the work of Ulrich Apel and team in KanjiVG. kanjivg.tagaini.net</string>
 
-    <string name="action_search">Search</string>
-    <string name="action_about">About</string>
-    <string name="action_retry">Retry</string>
-    <string name="action_clear_query">Clear query</string>
+    <string name="about.copyright">&#169; Kotobyte 2017, Andree Surya</string>
+    <string name="about.attributions">The dictionary entries in this software are derived from JMdict and KANJIDIC2 projects from EDRDG. www.edrdg.org\n\nThe Kanji strokes diagram are the work of Ulrich Apel and team in KanjiVG. kanjivg.tagaini.net</string>
 
-    <string name="hint_search">Enter search query</string>
+    <string name="search.nav.search">Search</string>
+    <string name="search.nav.about">About</string>
+    <string name="search.nav.clear">Clear query</string>
+    <string name="search.nav.hint">Enter search query</string>
 
-    <string name="error_search">Failed to search for “%s”.</string>
-    <string name="error_no_results">No search results for “%s”.</string>
-    <string name="error_unknown">An unknown error occurred.</string>
-    <string name="error_network">A network error occurred.</string>
+    <string name="search.words.empty">Sorry, no matching search results.\nPlease try again with a different query.</string>
+
+    <string name="common.unknown_error">Sorry, an unknown error occurred.</string>
 </resources>
