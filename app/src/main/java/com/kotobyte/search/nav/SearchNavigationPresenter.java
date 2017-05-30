@@ -11,13 +11,13 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
     @Override
     public void onClickClearButton() {
         mView.setTextOnQueryEditor(null);
-        mView.assignFocusToQueryEditor();
+        mView.assignFocusToQueryEditor(false);
     }
 
     @Override
     public void onClickPasteMenuItem(CharSequence text) {
         mView.setTextOnQueryEditor(text);
-        mView.assignFocusToQueryEditor();
+        mView.assignFocusToQueryEditor(false);
     }
 
     @Override
@@ -33,6 +33,8 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
     @Override
     public void onReceiveSearchRequest(CharSequence query) {
         mView.setTextOnQueryEditor(query);
+        mView.assignFocusToQueryEditor(false);
+
         mView.showSearchResultsScreen(query);
     }
 }

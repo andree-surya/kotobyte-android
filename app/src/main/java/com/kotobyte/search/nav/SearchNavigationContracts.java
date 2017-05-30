@@ -9,7 +9,7 @@ interface SearchNavigationContracts {
         void showSearchResultsScreen(CharSequence query);
 
         void setTextOnQueryEditor(CharSequence text);
-        void assignFocusToQueryEditor();
+        void assignFocusToQueryEditor(boolean focus);
     }
 
     interface Presenter {

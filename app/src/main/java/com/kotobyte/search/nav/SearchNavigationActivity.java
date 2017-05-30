@@ -69,16 +69,24 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
     @Override
     public void setTextOnQueryEditor(CharSequence text) {
         mBinding.queryEditor.setText(text);
+        mBinding.queryEditor.selectAll();
     }
 
     @Override
-    public void assignFocusToQueryEditor() {
-
-        mBinding.queryEditor.requestFocus();
-        mBinding.queryEditor.selectAll();
+    public void assignFocusToQueryEditor(boolean focus) {
 
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.showSoftInput(mBinding.queryEditor, InputMethodManager.SHOW_IMPLICIT);
+
+        if (focus) {
+            mBinding.queryEditor.requestFocus();
+
+            inputMethodManager.showSoftInput(mBinding.queryEditor, InputMethodManager.SHOW_IMPLICIT);
+
+        } else {
+            mBinding.queryEditor.clearFocus();
+
+            inputMethodManager.hideSoftInputFromWindow(mBinding.queryEditor.getWindowToken(), 0);
+        }
     }
 
     @Override
