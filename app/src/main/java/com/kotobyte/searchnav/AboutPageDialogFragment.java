@@ -1,4 +1,4 @@
-package com.kotobyte.search.nav;
+package com.kotobyte.searchnav;
 
 import android.app.Dialog;
 import android.os.Bundle;

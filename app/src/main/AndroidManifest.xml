@@ -14,13 +14,8 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".search.nav.SearchNavigationActivity"
-            android:launchMode="singleTop"
+            android:name=".searchnav.SearchNavigationActivity"
             android:theme="@style/AppTheme.NoActionBar">
-
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,10 +37,6 @@
                 <data android:host="kotobyte.com" android:scheme="http" />
             </intent-filter>
         </activity>
-
-        <meta-data
-            android:name="android.app.default_searchable"
-            android:value="com.kotobyte.SearchActivity" />
     </application>
 
 </manifest>

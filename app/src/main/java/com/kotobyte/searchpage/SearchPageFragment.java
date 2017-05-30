@@ -1,4 +1,4 @@
-package com.kotobyte.search.page;
+package com.kotobyte.searchpage;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;

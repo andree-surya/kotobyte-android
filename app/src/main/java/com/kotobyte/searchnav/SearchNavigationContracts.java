@@ -1,4 +1,4 @@
-package com.kotobyte.search.nav;
+package com.kotobyte.searchnav;
 
 interface SearchNavigationContracts {
 

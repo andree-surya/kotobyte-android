@@ -1,4 +1,4 @@
-package com.kotobyte.search.page;
+package com.kotobyte.searchpage;
 
 import com.kotobyte.base.DataRepository;
 import com.kotobyte.models.Kanji;

@@ -1,6 +1,5 @@
-package com.kotobyte.search.nav;
+package com.kotobyte.searchnav;
 
-import android.app.SearchManager;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +21,7 @@ import android.widget.Toolbar;
 
 import com.kotobyte.R;
 import com.kotobyte.databinding.ActivitySearchNavigationBinding;
-import com.kotobyte.search.page.SearchPageFragment;
+import com.kotobyte.searchpage.SearchPageFragment;
 
 public class SearchNavigationActivity extends FragmentActivity implements SearchNavigationContracts.View {
 
@@ -52,13 +51,6 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         super.onDestroy();
 
         getSupportFragmentManager().removeOnBackStackChangedListener(mOnBackStackChangedListener);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
-        handleIntent(intent);
     }
 
     @Override
@@ -108,12 +100,6 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
     }
 
     private void handleIntent(Intent intent) {
-
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-
-            mPresenter.onReceiveSearchRequest(query);
-        }
 
         if (Intent.ACTION_SEND.equals(intent.getAction())) {
             String query = intent.getStringExtra(Intent.EXTRA_TEXT);

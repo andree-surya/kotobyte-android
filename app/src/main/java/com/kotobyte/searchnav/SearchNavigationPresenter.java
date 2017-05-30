@@ -1,4 +1,4 @@
-package com.kotobyte.search.nav;
+package com.kotobyte.searchnav;
 
 class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
 
@@ -11,13 +11,13 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
     @Override
     public void onClickClearButton() {
         mView.setTextOnQueryEditor(null);
-        mView.assignFocusToQueryEditor(false);
+        mView.assignFocusToQueryEditor(true);
     }
 
     @Override
     public void onClickPasteMenuItem(CharSequence text) {
         mView.setTextOnQueryEditor(text);
-        mView.assignFocusToQueryEditor(false);
+        mView.assignFocusToQueryEditor(true);
     }
 
     @Override
