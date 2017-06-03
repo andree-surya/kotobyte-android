@@ -37,11 +37,13 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         mBinding.toolbar.setOnMenuItemClickListener(mOnMenuItemClickListener);
         mBinding.queryEditor.setOnEditorActionListener(mOnEditorActionListener);
         mBinding.queryEditor.addTextChangedListener(mQueryTextWatcher);
-        mBinding.clearButton.setOnClickListener(mOnClearButtonClickListener);
+        mBinding.clearButton.setOnClickListener(mOnButtonClickListener);
+        mBinding.searchButton.setOnClickListener(mOnButtonClickListener);
 
         getSupportFragmentManager().addOnBackStackChangedListener(mOnBackStackChangedListener);
 
         mPresenter = new SearchNavigationPresenter(this);
+        mPresenter.onCreate();
 
         handleIntent(getIntent());
     }
@@ -51,6 +53,11 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         super.onDestroy();
 
         getSupportFragmentManager().removeOnBackStackChangedListener(mOnBackStackChangedListener);
+    }
+
+    @Override
+    public void enableSearchButton(boolean enable) {
+        mBinding.searchButton.setEnabled(enable);
     }
 
     @Override
@@ -154,11 +161,23 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         }
     };
 
-    private View.OnClickListener mOnClearButtonClickListener = new View.OnClickListener() {
+    private View.OnClickListener mOnButtonClickListener = new View.OnClickListener() {
 
         @Override
         public void onClick(View v) {
-            mPresenter.onClickClearButton();
+
+            switch (v.getId()) {
+                case R.id.search_button:
+                    mPresenter.onReceiveSearchRequest(mBinding.queryEditor.getText());
+                    break;
+
+                case R.id.clear_button:
+                    mPresenter.onClickClearButton();
+                    break;
+
+                default:
+                    break;
+            }
         }
     };
 

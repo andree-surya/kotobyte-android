@@ -9,13 +9,22 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
     }
 
     @Override
+    public void onCreate() {
+
+        mView.showClearButton(false);
+        mView.enableSearchButton(false);
+    }
+
+    @Override
     public void onClickClearButton() {
+
         mView.setTextOnQueryEditor(null);
         mView.assignFocusToQueryEditor(true);
     }
 
     @Override
     public void onClickPasteMenuItem(CharSequence text) {
+
         mView.setTextOnQueryEditor(text);
         mView.assignFocusToQueryEditor(true);
     }
@@ -27,14 +36,16 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
 
     @Override
     public void onChangeTextOnQueryEditor(CharSequence text) {
+
         mView.showClearButton(text.length() > 0);
+        mView.enableSearchButton(text.length() > 0);
     }
 
     @Override
     public void onReceiveSearchRequest(CharSequence query) {
+
         mView.setTextOnQueryEditor(query);
         mView.assignFocusToQueryEditor(false);
-
         mView.showSearchResultsScreen(query);
     }
 }

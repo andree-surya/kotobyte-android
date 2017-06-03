@@ -4,6 +4,7 @@ interface SearchNavigationContracts {
 
     interface View {
 
+        void enableSearchButton(boolean enable);
         void showClearButton(boolean show);
         void showAboutApplicationScreen();
         void showSearchResultsScreen(CharSequence query);
@@ -13,6 +14,8 @@ interface SearchNavigationContracts {
     }
 
     interface Presenter {
+
+        void onCreate();
 
         void onClickClearButton();
         void onClickPasteMenuItem(CharSequence text);
