@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
 import android.graphics.SurfaceTexture;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
@@ -23,6 +24,7 @@ public class KanjiStrokesTextureView extends TextureView {
 
     private List<VectorPath> mVectorPaths;
 
+    private int mBackgroundColor;
     private float mGridSize;
     private float mGridSpacing;
     private float mMarkRadius;
@@ -63,6 +65,7 @@ public class KanjiStrokesTextureView extends TextureView {
         mGridSize = getResources().getDimension(R.dimen.kanji_stroke_grid_size);
         mGridSpacing = getResources().getDimension(R.dimen.kanji_stroke_grid_spacing);
         mMarkRadius = getResources().getDimension(R.dimen.kanji_stroke_mark_radius);
+        mBackgroundColor = ContextCompat.getColor(getContext(), R.color.background);
 
         float strokeWidth = getResources().getDimension(R.dimen.kanji_stroke_line_width);
         int strokeColor = ContextCompat.getColor(getContext(), R.color.primary_text);
@@ -184,6 +187,7 @@ public class KanjiStrokesTextureView extends TextureView {
             }
         }
 
+        canvas.drawColor(mBackgroundColor, PorterDuff.Mode.SRC);
         canvas.drawPath(mGuidePath, mGuidePaint);
         canvas.drawPath(mStrokePath, mStrokePaint);
         canvas.drawPath(mMarkPath, mMarkPaint);
