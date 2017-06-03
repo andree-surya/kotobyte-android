@@ -5,8 +5,8 @@
     <dimen name="large_text">20sp</dimen>
     <dimen name="gigantic_text">36sp</dimen>
 
-    <dimen name="kanji_stroke_view_size">64dp</dimen>
-    <dimen name="kanji_stroke_view_margin">4dp</dimen>
-    <dimen name="kanji_stroke_width">1dp</dimen>
-    <dimen name="kanji_stroke_mark_radius">2dp</dimen>
+    <dimen name="kanji_stroke_grid_size">72dp</dimen>
+    <dimen name="kanji_stroke_grid_spacing">8dp</dimen>
+    <dimen name="kanji_stroke_line_width">2dp</dimen>
+    <dimen name="kanji_stroke_mark_radius">3dp</dimen>
 </resources>

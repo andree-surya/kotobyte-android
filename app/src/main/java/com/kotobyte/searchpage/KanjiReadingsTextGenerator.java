@@ -6,12 +6,17 @@ import android.text.SpannableStringBuilder;
 import com.kotobyte.utils.SpannableTextGenerator;
 import com.kotobyte.models.Kanji;
 
+import java.util.Collections;
 import java.util.List;
 
 
 class KanjiReadingsTextGenerator extends SpannableTextGenerator {
 
     private List<Kanji> mKanjiList;
+
+    KanjiReadingsTextGenerator(Context context, Kanji kanji) {
+        this(context, Collections.singletonList(kanji));
+    }
 
     KanjiReadingsTextGenerator(Context context, List<Kanji> kanjiList) {
         super(context, kanjiList.size());

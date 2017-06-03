@@ -31,6 +31,10 @@ public abstract class SpannableTextGenerator {
         return mContext;
     }
 
+    public SpannableString getSpannableString() {
+        return getSpannableString(0);
+    }
+
     public SpannableString getSpannableString(int position) {
 
         SpannableString spannableString = mSpannableStrings.get(position);

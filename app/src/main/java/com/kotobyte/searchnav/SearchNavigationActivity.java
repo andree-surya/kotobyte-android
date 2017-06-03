@@ -34,7 +34,7 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
 
         mBinding = DataBindingUtil.setContentView(this, R.layout.activity_search_navigation);
         mBinding.toolbar.inflateMenu(R.menu.menu_search);
-        mBinding.toolbar.setOnMenuItemClickListener(mOnMenuitemClickListener);
+        mBinding.toolbar.setOnMenuItemClickListener(mOnMenuItemClickListener);
         mBinding.queryEditor.setOnEditorActionListener(mOnEditorActionListener);
         mBinding.queryEditor.addTextChangedListener(mQueryTextWatcher);
         mBinding.clearButton.setOnClickListener(mOnClearButtonClickListener);
@@ -162,7 +162,7 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         }
     };
 
-    private Toolbar.OnMenuItemClickListener mOnMenuitemClickListener = new Toolbar.OnMenuItemClickListener() {
+    private Toolbar.OnMenuItemClickListener mOnMenuItemClickListener = new Toolbar.OnMenuItemClickListener() {
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {

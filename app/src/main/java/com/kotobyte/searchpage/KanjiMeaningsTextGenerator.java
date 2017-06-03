@@ -2,19 +2,30 @@ package com.kotobyte.searchpage;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 
+import com.kotobyte.R;
 import com.kotobyte.utils.SpannableTextGenerator;
 import com.kotobyte.models.Kanji;
 
+import java.util.Collections;
 import java.util.List;
 
 
 class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
 
     private List<Kanji> mKanjiList;
+    private boolean mShouldShowExtras;
+
+    KanjiMeaningsTextGenerator(Context context, Kanji kanji) {
+        this(context, Collections.singletonList(kanji));
+
+        mShouldShowExtras = true;
+    }
 
     KanjiMeaningsTextGenerator(Context context, List<Kanji> kanjiList) {
         super(context, kanjiList.size());
@@ -26,6 +37,7 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
         List<String> meanings = mKanjiList.get(position).getMeanings();
+        List<String> extras = mKanjiList.get(position).getExtras();
 
         for (int i = 0; i < meanings.size(); i++) {
 
@@ -41,6 +53,30 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
 
             if (i < meanings.size() - 1) {
                 builder.append(", ");
+            }
+        }
+
+        if (mShouldShowExtras) {
+            int extrasStartIndex = builder.length();
+
+            for (int i = 0; i < extras.size(); i++) {
+
+                if (i == 0) {
+                    builder.append(" ー");
+                }
+
+                builder.append(extras.get(i));
+
+                if (i < extras.size() - 1) {
+                    builder.append("; ");
+
+                } else {
+                    builder.setSpan(
+                            new ForegroundColorSpan(ContextCompat.getColor(getContext(), R.color.light_text)),
+                            extrasStartIndex,
+                            builder.length(),
+                            Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                }
             }
         }
     }

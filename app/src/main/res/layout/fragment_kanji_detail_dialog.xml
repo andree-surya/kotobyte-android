@@ -42,8 +42,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
 
-            <com.wefika.flowlayout.FlowLayout
-                android:id="@+id/kanji_strokes_container"
+            <com.kotobyte.searchpage.KanjiStrokesTextureView
+                android:id="@+id/kanji_strokes_texture_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp" />
