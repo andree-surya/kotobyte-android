@@ -3,7 +3,10 @@ require_relative 'word'
 require 'nokogiri'
 
 class WordsSourceReader
+  PRIORITY_PREFIXES = ['ichi', 'news', 'spec', 'gai']
   IRREGULAR_CODES = ['iK', 'ik', 'oK', 'ok', 'io']
+
+  PRIORITY = { default: 1, mid: 1.5, high: 2 }
 
   def initialize(source_xml: '<JMdict />')
     @xml = source_xml
@@ -45,17 +48,18 @@ class WordsSourceReader
       case node.name
       when 'entry'
         @current_word = Word.new
+        @current_word.priority = PRIORITY[:default]
 
       when 'ent_seq'
         @current_word.id = node.inner_xml.to_i
 
       when 'k_ele'
         @current_word.literals ||= []
-        @current_word.literals << '~'
+        @current_word.literals << '='
 
       when 'r_ele'
         @current_word.readings ||= []
-        @current_word.readings << '~'
+        @current_word.readings << '='
 
       when 'keb'
         @current_word.literals.last[1..-1] = node.inner_xml
@@ -65,9 +69,11 @@ class WordsSourceReader
 
       when 'ke_pri'
         @current_word.literals.last[0] = '+'
+        process_priority(node.inner_xml)
 
       when 're_pri'
         @current_word.readings.last[0] = '+'
+        process_priority(node.inner_xml)
 
       when 'ke_inf'
         if IRREGULAR_CODES.include? clean_xml_entity(node.inner_xml)
@@ -136,5 +142,24 @@ class WordsSourceReader
 
     def clean_xml_entity(text)
       text.tr('\&\;', '')
+    end
+
+    def process_priority(code)
+      PRIORITY_PREFIXES.each do |prefix|
+
+       if code.start_with? prefix
+         priority_class = code.sub(prefix, '').to_i
+
+         if priority_class == 1
+           priority = PRIORITY[:high]
+         else
+           priority = PRIORITY[:mid]
+         end
+
+         if @current_word.priority < priority
+           @current_word.priority = priority
+         end
+       end
+     end
     end
 end
