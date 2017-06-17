@@ -7,7 +7,6 @@ class Word
   attr_accessor :literals
   attr_accessor :readings
   attr_accessor :senses
-  attr_accessor :match_score
 
   def initialize
     yield self if block_given?

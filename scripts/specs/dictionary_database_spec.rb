@@ -30,52 +30,28 @@ describe DictionaryDatabase do
     end
   end
 
-  describe '#search_words' do
+  describe '#insert_word' do
     let(:database) { DictionaryDatabase.new(database_file) }
 
-    before(:each) do
-      words_source_reader = WordsSourceReader.new(source_xml: IO.read(WORDS_SOURCE_FILE))
+    it 'should insert all words in the test source file without error' do
+
+      words_source_reader = WordsSourceReader.new(
+          source_xml: IO.read(WORDS_SOURCE_FILE)
+      )
 
       database.transaction do |db|
         words_source_reader.read_each { |word| db.insert_word(word) }
       end
 
-      database.optimize_indexes
-    end
-
-    it 'should be able to search with Japanese literals' do
-      words = database.search_words('やっと実行したか！')
-
-      expect(words).not_to be_empty
-      expect(words.first.literals.join).to include('実行')
-    end
-
-    it 'should be able to search with Japanese readings' do
-      words = database.search_words('ことばって、なんのことば？')
-
-      expect(words).not_to be_empty
-      expect(words.first.readings.join).to include('ことば')
-    end
-
-    it 'should be able to search with Romanized Japanese readings' do
-      words = database.search_words('So, what do you mean by "Gendou"?')
-
-      expect(words).not_to be_empty
-      expect(words.first.readings.first).to include('げんどう')
-    end
-
-    it 'should be able to search with English meanings' do
-      words = database.search_words('Let\'s put this into action!!')
-
-      expect(words).not_to be_empty
-      expect(words.first.senses.first.texts.first).to include('action')
+      database.optimize_space
     end
   end
 
-  describe '#search_kanji' do
+  describe '#insert_kanji' do
     let(:database) { DictionaryDatabase.new(database_file) }
 
-    before(:each) do
+    it 'should insert all Kanji in the test source file without error' do
+
       kanji_source_reader = KanjiSourceReader.new(
           source_xml: IO.read(KANJI_SOURCE_FILE),
           strokes_xml: IO.read(KANJI_STROKES_FILE)
@@ -84,13 +60,8 @@ describe DictionaryDatabase do
       database.transaction do |db|
         kanji_source_reader.read_all.map { |kanji| db.insert_kanji(kanji) }
       end
-    end
 
-    it 'should be able to look up Kanji characters in the given query' do
-      kanji_list = database.search_kanji('あいつ露西亜に行ったんだ。')
-
-      expect(kanji_list).not_to be_empty
-      expect(kanji_list.first.literal).to eq('亜')
+      database.optimize_space
     end
   end
 end

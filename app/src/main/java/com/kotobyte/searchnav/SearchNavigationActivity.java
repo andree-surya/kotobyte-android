@@ -11,19 +11,27 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.kotobyte.R;
+import com.kotobyte.base.Configuration;
+import com.kotobyte.base.ServiceLocator;
 import com.kotobyte.databinding.ActivitySearchNavigationBinding;
 import com.kotobyte.searchpage.SearchPageFragment;
+import com.kotobyte.utils.ProgressDialogFragment;
 
 public class SearchNavigationActivity extends FragmentActivity implements SearchNavigationContracts.View {
+
+    private static final String TAG = SearchNavigationActivity.class.getSimpleName();
+    private static final String MIGRATION_PROGRESS_DIALOG_TAG = "migration_progress_dialog";
 
     private ActivitySearchNavigationBinding mBinding;
     private SearchNavigationContracts.Presenter mPresenter;
@@ -42,15 +50,14 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
 
         getSupportFragmentManager().addOnBackStackChangedListener(mOnBackStackChangedListener);
 
-        mPresenter = new SearchNavigationPresenter(this);
-        mPresenter.onCreate();
-
-        handleIntent(getIntent());
+        prepareAndKickStartPresenter();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        mPresenter.onDestroy();
 
         getSupportFragmentManager().removeOnBackStackChangedListener(mOnBackStackChangedListener);
     }
@@ -89,8 +96,28 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
     }
 
     @Override
-    public void showAboutApplicationScreen() {
-        new AboutPageDialogFragment().show(getSupportFragmentManager(), AboutPageDialogFragment.TAG);
+    public void showError(Throwable error) {
+        Log.e(TAG, error.getLocalizedMessage(), error);
+
+        Toast.makeText(this, R.string.common_unknown_error, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showMigrationProgressDialog() {
+
+        ProgressDialogFragment.newInstance(getString(R.string.search_nav_migration))
+                .show(getSupportFragmentManager(), MIGRATION_PROGRESS_DIALOG_TAG);
+    }
+
+    @Override
+    public void closeMigrationProgressDialog() {
+
+        ProgressDialogFragment progressDialogFragment = (ProgressDialogFragment)
+                getSupportFragmentManager().findFragmentByTag(MIGRATION_PROGRESS_DIALOG_TAG);
+
+        if (progressDialogFragment != null) {
+            progressDialogFragment.dismiss();
+        }
     }
 
     @Override
@@ -106,12 +133,22 @@ public class SearchNavigationActivity extends FragmentActivity implements Search
         fragmentTransaction.commit();
     }
 
-    private void handleIntent(Intent intent) {
+    @Override
+    public void showAboutApplicationScreen() {
+        new AboutPageDialogFragment().show(getSupportFragmentManager(), AboutPageDialogFragment.TAG);
+    }
 
-        if (Intent.ACTION_SEND.equals(intent.getAction())) {
-            String query = intent.getStringExtra(Intent.EXTRA_TEXT);
+    private void prepareAndKickStartPresenter() {
 
-            mPresenter.onReceiveSearchRequest(query);
+        Configuration configuration = ServiceLocator.getInstance().getConfiguration();
+
+        mPresenter = new SearchNavigationPresenter(this,
+                new DatabaseMigrationManager(configuration, getAssets()));
+
+        mPresenter.onCreate();
+
+        if (getIntent().hasExtra(Intent.EXTRA_TEXT)) {
+            mPresenter.onReceiveSearchRequest(getIntent().getStringExtra(Intent.EXTRA_TEXT));
         }
     }
 

@@ -9,6 +9,7 @@
     <string name="search.nav.about">About</string>
     <string name="search.nav.clear">Clear query</string>
     <string name="search.nav.hint">Enter search query</string>
+    <string name="search.nav.migration">Preparing dictionary …</string>
 
     <string name="search.words.empty">Sorry, no matching search results.\nPlease try again with a different query.</string>
 

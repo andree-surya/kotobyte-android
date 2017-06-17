@@ -1,11 +1,29 @@
 package com.kotobyte.searchnav;
 
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+
 class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
 
     private SearchNavigationContracts.View mView;
+    private SearchNavigationContracts.DatabaseMigrationManager mDatabaseMigrationManager;
 
-    SearchNavigationPresenter(SearchNavigationContracts.View view) {
+    private String mMostRecentSearchRequestQuery;
+    private Disposable mDatabaseMigrationSubscription;
+
+    private Scheduler mBackgroundScheduler = Schedulers.io();
+    private Scheduler mMainThreadScheduler = AndroidSchedulers.mainThread();
+
+    SearchNavigationPresenter(
+            SearchNavigationContracts.View view,
+            SearchNavigationContracts.DatabaseMigrationManager databaseMigrationManager) {
+
         mView = view;
+        mDatabaseMigrationManager = databaseMigrationManager;
     }
 
     @Override
@@ -13,6 +31,16 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
 
         mView.showClearButton(false);
         mView.enableSearchButton(false);
+
+        executeDatabaseMigrationIfNeeded();
+    }
+
+    @Override
+    public void onDestroy() {
+
+        if (mDatabaseMigrationSubscription != null) {
+            mDatabaseMigrationSubscription.dispose();
+        }
     }
 
     @Override
@@ -43,9 +71,56 @@ class SearchNavigationPresenter implements SearchNavigationContracts.Presenter {
 
     @Override
     public void onReceiveSearchRequest(CharSequence query) {
+        mMostRecentSearchRequestQuery = query.toString().trim();
 
-        mView.setTextOnQueryEditor(query);
-        mView.assignFocusToQueryEditor(false);
-        mView.showSearchResultsScreen(query);
+        if (! mDatabaseMigrationManager.isMigrationInProgress()) {
+            executeSearchForMostRecentQuery();
+        }
+    }
+
+    private void executeSearchForMostRecentQuery() {
+
+        if (mMostRecentSearchRequestQuery != null) {
+
+            mView.setTextOnQueryEditor(mMostRecentSearchRequestQuery);
+            mView.showSearchResultsScreen(mMostRecentSearchRequestQuery);
+
+            mView.assignFocusToQueryEditor(false);
+        }
+    }
+
+    private void executeDatabaseMigrationIfNeeded() {
+
+        if (! mDatabaseMigrationManager.isMigrationNeeded()) {
+            return;
+        }
+
+        if (mDatabaseMigrationManager.isMigrationInProgress()) {
+            return;
+        }
+
+        mView.showMigrationProgressDialog();
+
+        mDatabaseMigrationSubscription = mDatabaseMigrationManager.executeMigration()
+                .subscribeOn(mBackgroundScheduler)
+                .observeOn(mMainThreadScheduler)
+                .subscribe(new Consumer<Boolean>() {
+
+                    @Override
+                    public void accept(@NonNull Boolean aBoolean) throws Exception {
+
+                        mView.closeMigrationProgressDialog();
+                        executeSearchForMostRecentQuery();
+                    }
+
+                }, new Consumer<Throwable>() {
+
+                    @Override
+                    public void accept(@NonNull Throwable throwable) throws Exception {
+
+                        mView.closeMigrationProgressDialog();
+                        mView.showError(throwable);
+                    }
+                });
     }
 }

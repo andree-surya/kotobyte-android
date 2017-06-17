@@ -7,7 +7,6 @@ class Kanji
   attr_accessor :jlpt
   attr_accessor :grade
   attr_accessor :strokes
-  attr_accessor :match_score
 
   def initialize
     yield self if block_given?
