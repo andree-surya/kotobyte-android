@@ -3,7 +3,7 @@ package com.kotobyte.searchnav;
 import android.content.res.AssetManager;
 
 import com.kotobyte.base.Configuration;
-import com.kotobyte.utils.DictionaryDatabase;
+import com.kotobyte.models.db.DictionaryDatabase;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -55,8 +55,8 @@ class DatabaseMigrationManager implements SearchNavigationContracts.DatabaseMigr
             @Override
             public void subscribe(@NonNull SingleEmitter<Boolean> e) throws Exception {
 
-                copyDatabaseFileFromAssetsFolder();
-                rebuildDatabaseIndexes();
+                importDatabaseFile();
+                buildDatabaseIndexes();
 
                 e.onSuccess(true);
             }
@@ -77,7 +77,7 @@ class DatabaseMigrationManager implements SearchNavigationContracts.DatabaseMigr
         });
     }
     
-    private void copyDatabaseFileFromAssetsFolder() throws IOException {
+    private void importDatabaseFile() throws IOException {
 
         InputStream inputStream = null;
         OutputStream outputStream = null;
@@ -87,7 +87,7 @@ class DatabaseMigrationManager implements SearchNavigationContracts.DatabaseMigr
             outputStream = new FileOutputStream(mConfiguration.getDictionaryFilePath());
 
             byte[] bytesBuffer = new byte[inputStream.available()];
-            int numberOfBytesRead = 0;
+            int numberOfBytesRead;
 
             while ((numberOfBytesRead = inputStream.read(bytesBuffer)) > 0) {
                 outputStream.write(bytesBuffer, 0, numberOfBytesRead);
@@ -105,7 +105,11 @@ class DatabaseMigrationManager implements SearchNavigationContracts.DatabaseMigr
         }
     }
 
-    private void rebuildDatabaseIndexes() {
-        new DictionaryDatabase(mConfiguration.getDictionaryFilePath()).rebuildIndexes();
+    private void buildDatabaseIndexes() throws Exception {
+        String dictionaryFilePath = mConfiguration.getDictionaryFilePath().getAbsolutePath();
+
+        try (DictionaryDatabase dictionaryDatabase = new DictionaryDatabase(dictionaryFilePath, false)) {
+            dictionaryDatabase.buildIndexes();
+        }
     }
 }

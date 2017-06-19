@@ -1,6 +1,5 @@
 package com.kotobyte.searchpage;
 
-import com.kotobyte.base.DataRepository;
 import com.kotobyte.models.Kanji;
 import com.kotobyte.models.Literal;
 import com.kotobyte.models.Word;
@@ -18,7 +17,7 @@ import io.reactivex.schedulers.Schedulers;
 class SearchPagePresenter implements SearchPageContracts.Presenter {
 
     private SearchPageContracts.View mView;
-    private DataRepository mDataRepository;
+    private SearchPageContracts.DataSource mDataSource;
     private String mSearchQuery;
 
     private Scheduler mBackgroundScheduler = Schedulers.io();
@@ -26,10 +25,13 @@ class SearchPagePresenter implements SearchPageContracts.Presenter {
     private Disposable mWordSearchOperationSubscription;
     private Disposable mKanjiSearchOperationSubscription;
 
-    SearchPagePresenter(SearchPageContracts.View view, DataRepository dataRepository, String searchQuery) {
-        mView = view;
+    SearchPagePresenter(
+            SearchPageContracts.View view,
+            SearchPageContracts.DataSource dataSource,
+            String searchQuery) {
 
-        mDataRepository = dataRepository;
+        mView = view;
+        mDataSource = dataSource;
         mSearchQuery = searchQuery;
     }
 
@@ -66,7 +68,7 @@ class SearchPagePresenter implements SearchPageContracts.Presenter {
         mView.showNoWordSearchResultsLabel(false);
         mView.showWordSearchResultsView(false);
 
-        mWordSearchOperationSubscription = mDataRepository.searchWords(mSearchQuery)
+        mWordSearchOperationSubscription = mDataSource.searchWords(mSearchQuery)
                 .subscribeOn(mBackgroundScheduler)
                 .observeOn(mMainThreadScheduler)
                 .subscribe(new Consumer<List<Word>>() {
@@ -103,7 +105,7 @@ class SearchPagePresenter implements SearchPageContracts.Presenter {
             mKanjiSearchOperationSubscription.dispose();
         }
 
-        mKanjiSearchOperationSubscription = mDataRepository.searchKanji(getKanjiSearchQueryForWord(word))
+        mKanjiSearchOperationSubscription = mDataSource.searchKanji(getKanjiSearchQueryForWord(word))
                 .subscribeOn(mBackgroundScheduler)
                 .observeOn(mMainThreadScheduler)
                 .delaySubscription(100, TimeUnit.MILLISECONDS)

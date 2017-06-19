@@ -1,30 +1,53 @@
 package com.kotobyte.models;
 
-import com.google.gson.annotations.SerializedName;
-
-import java.util.List;
-
-
 public class Sense {
 
-    @SerializedName("text")
-    private String mText;
+    private String[] mTexts;
+    private String[] mCategories;
+    private String[] mExtras;
 
-    @SerializedName("categories")
-    private List<String> mCategories;
-
-    @SerializedName("extras")
-    private List<String> mExtras;
-
-    public String getText() {
-        return mText;
+    public String[] getTexts() {
+        return mTexts;
     }
 
-    public List<String> getCategories() {
+    public String[] getCategories() {
         return mCategories;
     }
 
-    public List<String> getExtras() {
+    public String[] getExtras() {
         return mExtras;
+    }
+
+    public static class Builder {
+
+        private String[] mTexts;
+        private String[] mCategories;
+        private String[] mExtras;
+
+        public void setTexts(String[] texts) {
+            mTexts = texts;
+        }
+
+        public void setCategories(String[] categories) {
+            mCategories = categories;
+        }
+
+        public void setExtras(String[] extras) {
+            mExtras = extras;
+        }
+
+        public Sense buildAndReset() {
+            Sense sense = new Sense();
+
+            sense.mTexts = mTexts;
+            sense.mCategories = mCategories;
+            sense.mExtras = mExtras;
+
+            mTexts = null;
+            mCategories = null;
+            mExtras = null;
+
+            return sense;
+        }
     }
 }

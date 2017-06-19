@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.kotobyte.R;
+import com.kotobyte.base.Configuration;
 import com.kotobyte.base.ServiceLocator;
 import com.kotobyte.databinding.FragmentSearchPageBinding;
 import com.kotobyte.models.Kanji;
@@ -25,7 +26,8 @@ public class SearchPageFragment extends Fragment implements SearchPageContracts.
     private static final String ARG_QUERY = "query";
 
     private FragmentSearchPageBinding mBinding;
-    private SearchPageContracts.Presenter mPresenter;
+    private SearchPageDataSource mDataSource;
+    private SearchPagePresenter mPresenter;
     private SearchResultsAdapter mSearchResultsAdapter;
 
     public static SearchPageFragment newInstance(CharSequence query) {
@@ -47,7 +49,10 @@ public class SearchPageFragment extends Fragment implements SearchPageContracts.
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mPresenter = new SearchPagePresenter(this, ServiceLocator.getInstance().getDataRepository(), getQuery());
+        Configuration configuration = ServiceLocator.getInstance().getConfiguration();
+
+        mDataSource = new SearchPageDataSource(configuration.getDictionaryFilePath());
+        mPresenter = new SearchPagePresenter(this, mDataSource, getQuery());
     }
 
     @Nullable
@@ -70,6 +75,7 @@ public class SearchPageFragment extends Fragment implements SearchPageContracts.
         super.onDestroy();
 
         mPresenter.onDestroy();
+        mDataSource.close();
     }
 
     @Override

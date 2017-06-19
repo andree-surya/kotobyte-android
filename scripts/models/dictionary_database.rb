@@ -8,25 +8,21 @@ require 'sqlite3'
 CREATE_TABLE_STATEMENTS = <<-EOS
 
   CREATE TABLE words (
-      literals TEXT,
-      readings TEXT NOT NULL,
-      senses TEXT NOT NULL,
-      priority INT NOT NULL
+      id INTEGER PRIMARY KEY,
+      priority INT NOT NULL,
+      encoded TEXT NOT NULL
   );
 
   CREATE TABLE kanji (
-      literal TEXT NOT NULL,
-      readings TEXT,
-      meanings TEXT,
-      jlpt INTEGER,
-      grade INTEGER,
-      strokes TEXT
+      id INTEGER PRIMARY KEY,
+      encoded TEXT NOT NULL
   );
 EOS
 
 DELIMITER_L1 = '⋮'
 DELIMITER_L2 = '¦'
-DELIMITER_L3 = '‡'
+DELIMITER_L3 = '†'
+DELIMITER_L4 = '‡'
 
 class DictionaryDatabase
 
@@ -54,57 +50,55 @@ class DictionaryDatabase
   end
 
   def insert_word(word)
-
-    @insert_word ||= @database.prepare <<-EOS
-      INSERT INTO words VALUES (?, ?, ?, ?);
-    EOS
-
+    @insert_word ||= @database.prepare('INSERT INTO words VALUES (?, ?, ?)')
     @insert_word.execute(pack_word_for_recording(word))
   end
 
   def insert_kanji(kanji)
-
-    @insert_kanji ||= @database.prepare <<-EOS
-      INSERT INTO kanji VALUES (?, ? , ?, ?, ?, ?);
-    EOS
-
+    @insert_kanji ||= @database.prepare('INSERT INTO kanji VALUES (?, ?)')
     @insert_kanji.execute(pack_kanji_for_recording(kanji))
-  end
-
-  def optimize_space
-    @database.execute 'VACUUM'
   end
 
   private
 
     def pack_word_for_recording(word)
       [
-        word.literals&.join,
-        word.readings&.join,
+        word.id,
+        word.priority,
 
-        word.senses.map do |s|
-          [
-            s.texts&.join(DELIMITER_L1),
-            s.categories&.join(DELIMITER_L1),
-            s.sources&.join(DELIMITER_L1),
-            s.labels&.join(DELIMITER_L1),
-            s.notes&.join(DELIMITER_L1)
+        [
+          word.id,
+          word.literals&.join,
+          word.readings&.join,
 
-          ].join(DELIMITER_L2)
-        end.join(DELIMITER_L3),
+          word.senses.map do |s|
+            [
+              s.texts&.join(DELIMITER_L1),
+              s.categories&.join(DELIMITER_L1),
+              s.sources&.join(DELIMITER_L1),
+              s.labels&.join(DELIMITER_L1),
+              s.notes&.join(DELIMITER_L1)
 
-        word.priority
+            ].join(DELIMITER_L2)
+          end.join(DELIMITER_L3)
+        ].join(DELIMITER_L4)
       ]
     end
 
     def pack_kanji_for_recording(kanji)
       [
-        kanji.literal,
-        kanji.readings&.join(DELIMITER_L1),
-        kanji.meanings&.join(DELIMITER_L1),
-        kanji.jlpt,
-        kanji.grade,
-        kanji.strokes&.join(DELIMITER_L1)
+        kanji.id,
+
+        [
+          kanji.id,
+          kanji.literal,
+          kanji.readings&.join(DELIMITER_L1),
+          kanji.meanings&.join(DELIMITER_L1),
+          kanji.jlpt,
+          kanji.grade,
+          kanji.strokes&.join(DELIMITER_L1)
+
+        ].join(DELIMITER_L4)
       ]
     end
 end

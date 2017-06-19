@@ -3,6 +3,7 @@ package com.kotobyte.searchpage;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.text.style.TextAppearanceSpan;
 
 import com.kotobyte.R;
@@ -32,7 +33,7 @@ class WordSensesTextGenerator extends SpannableTextGenerator {
 
             builder.append("▸  ");
 
-            appendBuilderWithHighlightableText(builder, sense.getText());
+            appendBuilderWithHighlightableText(builder, TextUtils.join("; ", sense.getTexts()));
             appendBuilderWithExtras(builder, sense.getExtras());
 
             if (i < senses.size() - 1) {

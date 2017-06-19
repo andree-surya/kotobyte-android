@@ -1,27 +1,27 @@
 package com.kotobyte.models;
 
-import com.google.gson.annotations.SerializedName;
-
+import android.support.annotation.Nullable;
 
 public class Literal {
 
-    @SerializedName("text")
     private String mText;
-
-    @SerializedName("status")
     private Status mStatus;
+
+    public Literal(String text, Status status) {
+        mText = text;
+        mStatus = status;
+    }
 
     public String getText() {
         return mText;
     }
 
+    @Nullable
     public Status getStatus() {
         return mStatus;
     }
 
     public enum Status {
-        @SerializedName("common") COMMON,
-        @SerializedName("irregular") IRREGULAR,
-        @SerializedName("outdated") OUTDATED
+        COMMON, IRREGULAR
     }
 }

@@ -5,6 +5,8 @@ import com.kotobyte.models.Word;
 
 import java.util.List;
 
+import io.reactivex.Single;
+
 interface SearchPageContracts {
 
     interface View {
@@ -25,5 +27,10 @@ interface SearchPageContracts {
 
         void onRequestKanjiListForWord(int position, Word word);
         void onRequestDetailForKanji(Kanji kanji);
+    }
+
+    interface DataSource {
+        Single<List<Word>> searchWords(String query);
+        Single<List<Kanji>> searchKanji(String query);
     }
 }

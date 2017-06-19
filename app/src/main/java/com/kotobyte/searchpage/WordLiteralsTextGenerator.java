@@ -27,8 +27,8 @@ class WordLiteralsTextGenerator extends SpannableTextGenerator {
     @Override
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
-        List<Literal> readings = mWords.get(position).getReadings();
-        List<Literal> literals = mWords.get(position).getLiterals();
+        String[] readings = mWords.get(position).getReadings();
+        String[] literals = mWords.get(position).getLiterals();
 
         for (int i = 0; i < readings.size(); i++) {
             Literal reading = readings.get(i);
@@ -60,8 +60,7 @@ class WordLiteralsTextGenerator extends SpannableTextGenerator {
 
         int literalEndIndex = builder.length();
 
-        if (literal.getStatus() == Literal.Status.OUTDATED ||
-                literal.getStatus() == Literal.Status.IRREGULAR) {
+        if (literal.getStatus() == Literal.Status.IRREGULAR) {
 
             builder.setSpan(
                     new ForegroundColorSpan(ContextCompat.getColor(getContext(), R.color.light_text)),

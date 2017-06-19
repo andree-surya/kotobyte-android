@@ -47,11 +47,17 @@ public class DefaultConfiguration implements Configuration {
 
     @Override
     public void clearCurrentDictionaryVersion() {
-        mSharedPreferences.edit().remove(KEY_CURRENT_DICTIONARY_VERSION).commit();
+
+        mSharedPreferences.edit()
+                .remove(KEY_CURRENT_DICTIONARY_VERSION)
+                .apply();
     }
 
     @Override
     public void updateCurrentDictionaryVersionToLatest() {
-        mSharedPreferences.edit().putInt(KEY_CURRENT_DICTIONARY_VERSION, mLatestDictionaryVersion).commit();
+
+        mSharedPreferences.edit()
+                .putInt(KEY_CURRENT_DICTIONARY_VERSION, mLatestDictionaryVersion)
+                .apply();
     }
 }
