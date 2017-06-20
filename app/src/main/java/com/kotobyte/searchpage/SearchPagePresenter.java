@@ -1,7 +1,7 @@
 package com.kotobyte.searchpage;
 
 import com.kotobyte.models.Kanji;
-import com.kotobyte.models.Literal;
+import com.kotobyte.models.WordLiteral;
 import com.kotobyte.models.Word;
 
 import java.util.List;
@@ -130,8 +130,8 @@ class SearchPagePresenter implements SearchPageContracts.Presenter {
     private String getKanjiSearchQueryForWord(Word word) {
         StringBuilder queryBuilder = new StringBuilder();
 
-        for (Literal literal : word.getLiterals()) {
-            queryBuilder.append(literal.getText());
+        for (WordLiteral wordLiteral : word.getLiterals()) {
+            queryBuilder.append(wordLiteral.getText());
         }
 
         return queryBuilder.toString();

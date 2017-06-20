@@ -7,56 +7,56 @@ import java.util.List;
 public class Word {
 
     private long mID;
-    private Literal[] mLiterals;
-    private Literal[] mReadings;
-    private Sense[] mSenses;
+    private WordLiteral[] mLiterals;
+    private WordLiteral[] mReadings;
+    private WordSense[] mSenses;
 
     public long getID () {
         return mID;
     }
 
-    public Literal[] getLiterals() {
+    public WordLiteral[] getLiterals() {
         return mLiterals;
     }
 
-    public Literal[] getReadings() {
+    public WordLiteral[] getReadings() {
         return mReadings;
     }
 
-    public Sense[] getSenses() {
+    public WordSense[] getSenses() {
         return mSenses;
     }
 
     public static class Builder {
 
         private long mID;
-        private List<Literal> mReadings = new ArrayList<>();
-        private List<Literal> mLiterals = new ArrayList<>();
-        private List<Sense> mSenses = new ArrayList<>();
+        private List<WordLiteral> mReadings = new ArrayList<>();
+        private List<WordLiteral> mLiterals = new ArrayList<>();
+        private List<WordSense> mSenses = new ArrayList<>();
 
         public void setID(long ID) {
             mID = ID;
         }
 
-        public void addReading(Literal reading) {
+        public void addReading(WordLiteral reading) {
             mReadings.add(reading);
         }
 
-        public void addLiteral(Literal literal) {
-            mLiterals.add(literal);
+        public void addLiteral(WordLiteral wordLiteral) {
+            mLiterals.add(wordLiteral);
         }
 
-        public void addSense(Sense sense) {
-            mSenses.add(sense);
+        public void addSense(WordSense wordSense) {
+            mSenses.add(wordSense);
         }
 
         public Word buildAndReset() {
             Word word = new Word();
 
             word.mID = mID;
-            word.mLiterals = mLiterals.toArray(new Literal[mLiterals.size()]);
-            word.mReadings = mReadings.toArray(new Literal[mReadings.size()]);
-            word.mSenses = mSenses.toArray(new Sense[mSenses.size()]);
+            word.mLiterals = mLiterals.toArray(new WordLiteral[mLiterals.size()]);
+            word.mReadings = mReadings.toArray(new WordLiteral[mReadings.size()]);
+            word.mSenses = mSenses.toArray(new WordSense[mSenses.size()]);
 
             mID = 0;
             mLiterals.clear();

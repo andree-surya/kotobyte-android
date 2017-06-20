@@ -10,18 +10,19 @@ import java.util.List;
 public class DictionaryDatabase implements AutoCloseable {
 
     static {
-        System.loadLibrary("dictdb");
+        System.loadLibrary("dictionary");
     }
 
     private static final short SEARCH_RESULTS_LIMIT = 50;
 
     @SuppressWarnings("unused")
-    private long mDatabaseRef;
+    /* native */ private long mDatabaseRef;
 
     @SuppressWarnings("unused")
-    private short mSearchResultsCount;
+    /* native */ private short mSearchResultsCount;
 
-    private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
+    @SuppressWarnings("MismatchedReadAndWriteOfArray")
+    /* native */ private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
 
     public DictionaryDatabase(String dictionaryFilePath) {
         this(dictionaryFilePath, true);

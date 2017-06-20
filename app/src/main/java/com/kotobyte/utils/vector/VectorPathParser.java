@@ -9,10 +9,10 @@ public class VectorPathParser {
     private int mCurrentOffset;
     private char mCurrentCommandCode;
 
-    public static List<VectorPath> parse(List<String> strings) {
+    public static List<VectorPath> parse(String[] strings) {
 
         VectorPathParser parser = new VectorPathParser();
-        List<VectorPath> vectorPaths = new ArrayList<>(strings.size());
+        List<VectorPath> vectorPaths = new ArrayList<>(strings.length);
 
         for (String string : strings) {
             vectorPaths.add(parser.parse(string));
@@ -21,7 +21,7 @@ public class VectorPathParser {
         return vectorPaths;
     }
 
-    public VectorPath parse(String string) {
+    VectorPath parse(String string) {
 
         List<VectorPathCommand> commands = new ArrayList<>();
 

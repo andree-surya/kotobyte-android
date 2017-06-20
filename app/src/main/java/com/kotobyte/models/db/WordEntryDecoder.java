@@ -1,79 +1,155 @@
 package com.kotobyte.models.db;
 
-import com.kotobyte.models.Literal;
-import com.kotobyte.models.Sense;
+import com.kotobyte.models.WordLiteral;
+import com.kotobyte.models.WordOrigin;
+import com.kotobyte.models.WordSense;
 import com.kotobyte.models.Word;
+
+import java.util.regex.Pattern;
 
 class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
 
-    private Word.Builder mWordBulder = new Word.Builder();
-    private Sense.Builder mSenseBuilder = new Sense.Builder();
+    private static Pattern WORD_FIELDS_SPLITTER = Pattern.compile("‡");
+    private static Pattern SENSE_ITEMS_SPLITTER = Pattern.compile("†");
+    private static Pattern SENSE_FIELDS_SPLITTER = Pattern.compile("¦");
+    private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("⋮");
+    private static Pattern ORIGIN_FIELDS_SPLITTER = Pattern.compile(":");
+
+    private Word.Builder mWordBuilder = new Word.Builder();
+    private WordSense.Builder mSenseBuilder = new WordSense.Builder();
 
     @Override
     public Word decode(String encodedObject) {
-        String[] wordFieldTokens = SPLITTER_L4.split(encodedObject, -1);
+        String[] wordFieldTokens = WORD_FIELDS_SPLITTER.split(encodedObject, -1);
 
-        mWordBulder.setID(Long.decode(wordFieldTokens[0]));
+        mWordBuilder.setID(Long.decode(wordFieldTokens[0]));
 
         parseLiterals(wordFieldTokens[1]);
         parseReadings(wordFieldTokens[2]);
         parseSenses(wordFieldTokens[3]);
 
-        return mWordBulder.buildAndReset();
+        return mWordBuilder.buildAndReset();
     }
 
     private void parseLiterals(String literalsField) {
 
-        if (! literalsField.isEmpty()) {
+        if (literalsField.isEmpty()) {
+            return;
+        }
 
-            for (String literalToken : SPLITTER_L3.split(literalsField)) {
-                mWordBulder.addLiteral(decodeLiteral(literalToken));
-            }
+        for (String literalToken : STRING_ITEMS_SPLITTER.split(literalsField)) {
+            mWordBuilder.addLiteral(decodeLiteral(literalToken));
         }
     }
 
     private void parseReadings(String readingsField) {
 
-        for (String readingToken : SPLITTER_L3.split(readingsField)) {
-            mWordBulder.addReading(decodeLiteral(readingToken));
+        if (readingsField.isEmpty()) {
+            return;
+        }
+
+        for (String readingToken : STRING_ITEMS_SPLITTER.split(readingsField)) {
+            mWordBuilder.addReading(decodeLiteral(readingToken));
         }
     }
 
     private void parseSenses(String sensesField) {
 
+        if (sensesField.isEmpty()) {
+            return;
+        }
+
         String[] mLastSenseCategories = null;
 
-        for (String senseToken : SPLITTER_L3.split(sensesField)) {
-            String[] senseFieldTokens = SPLITTER_L2.split(senseToken, -1);
+        for (String senseToken : SENSE_ITEMS_SPLITTER.split(sensesField)) {
+            String[] senseFieldTokens = SENSE_FIELDS_SPLITTER.split(senseToken, -1);
 
-            mSenseBuilder.setTexts(SPLITTER_L1.split(senseFieldTokens[0]));
+            parseSenseTexts(senseFieldTokens[0]);
 
-            if (! senseFieldTokens[1].isEmpty()) {
-                mLastSenseCategories = SPLITTER_L1.split(senseFieldTokens[1]);
-            }
+            mLastSenseCategories = parseSenseCategories(senseFieldTokens[1], mLastSenseCategories);
 
-            if (mLastSenseCategories != null) {
-                mSenseBuilder.setCategories(mLastSenseCategories);
-            }
+            parseWordOrigins(senseFieldTokens[2]);
+            parseSenseLabels(senseFieldTokens[3]);
+            parseSenseNotes(senseFieldTokens[4]);
 
-            mWordBulder.addSense(mSenseBuilder.buildAndReset());
+            mWordBuilder.addSense(mSenseBuilder.buildAndReset());
         }
     }
 
-    private static Literal decodeLiteral(String encodedLiteral) {
-        String text = encodedLiteral.substring(0, encodedLiteral.length());
+    private void parseSenseTexts(String senseTextsField) {
 
-        Literal.Status status = null;
+        if (senseTextsField.isEmpty()) {
+            return;
+        }
+
+        mSenseBuilder.addTexts(STRING_ITEMS_SPLITTER.split(senseTextsField));
+    }
+
+    private String[] parseSenseCategories(String senseCategoriesField, String[] lastSenseCategories) {
+
+        if (! senseCategoriesField.isEmpty()) {
+            lastSenseCategories = STRING_ITEMS_SPLITTER.split(senseCategoriesField);
+        }
+
+        if (lastSenseCategories != null) {
+            mSenseBuilder.addCategories(lastSenseCategories);
+        }
+
+        return lastSenseCategories;
+    }
+
+    private void parseWordOrigins(String wordOriginsField) {
+
+        if (wordOriginsField.isEmpty()) {
+            return;
+        }
+
+        for (String originToken : STRING_ITEMS_SPLITTER.split(wordOriginsField)) {
+            mSenseBuilder.addOrigin(decodeOrigin(originToken));
+        }
+    }
+
+    private void parseSenseLabels(String senseLabelsField) {
+
+        if (senseLabelsField.isEmpty()) {
+            return;
+        }
+
+        mSenseBuilder.addLabels(STRING_ITEMS_SPLITTER.split(senseLabelsField));
+    }
+
+    private void parseSenseNotes(String senseNotesField) {
+
+        if (senseNotesField.isEmpty()) {
+            return;
+        }
+
+        mSenseBuilder.addNotes(STRING_ITEMS_SPLITTER.split(senseNotesField));
+    }
+
+    private static WordLiteral decodeLiteral(String encodedLiteral) {
+        String text = encodedLiteral.substring(1, encodedLiteral.length());
+
+        WordLiteral.Status status = null;
         char statusCode = encodedLiteral.charAt(0);
 
         if (statusCode == '+') {
-            status = Literal.Status.COMMON;
+            status = WordLiteral.Status.COMMON;
         }
 
         if (statusCode == '-') {
-            status = Literal.Status.IRREGULAR;
+            status = WordLiteral.Status.IRREGULAR;
         }
 
-        return new Literal(text, status);
+        return new WordLiteral(text, status);
+    }
+
+    private static WordOrigin decodeOrigin(String encodedOrigin) {
+        String[] originFields = ORIGIN_FIELDS_SPLITTER.split(encodedOrigin);
+
+        String languageCode = originFields[0];
+        String text = originFields.length > 1 ? originFields[1] : null;
+
+        return new WordOrigin(languageCode, text);
     }
 }

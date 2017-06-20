@@ -68,8 +68,8 @@ class DictionaryDatabase
 
         [
           word.id,
-          word.literals&.join,
-          word.readings&.join,
+          word.literals&.join(DELIMITER_L1),
+          word.readings&.join(DELIMITER_L1),
 
           word.senses.map do |s|
             [

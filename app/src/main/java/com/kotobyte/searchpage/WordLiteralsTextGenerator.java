@@ -8,7 +8,7 @@ import android.text.style.ForegroundColorSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.utils.SpannableTextGenerator;
-import com.kotobyte.models.Literal;
+import com.kotobyte.models.WordLiteral;
 import com.kotobyte.models.Word;
 
 import java.util.List;
@@ -27,40 +27,40 @@ class WordLiteralsTextGenerator extends SpannableTextGenerator {
     @Override
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
-        String[] readings = mWords.get(position).getReadings();
-        String[] literals = mWords.get(position).getLiterals();
+        WordLiteral[] readings = mWords.get(position).getReadings();
+        WordLiteral[] wordLiterals = mWords.get(position).getLiterals();
 
-        for (int i = 0; i < readings.size(); i++) {
-            Literal reading = readings.get(i);
+        for (int i = 0; i < readings.length; i++) {
+            WordLiteral reading = readings[i];
 
             appendBuilderWithLiteral(builder, reading);
 
-            if (i < readings.size() - 1) {
+            if (i < readings.length - 1) {
                 builder.append('、');
             }
         }
 
-        for (int i = 0; i < literals.size(); i++) {
-            Literal literal = literals.get(i);
+        for (int i = 0; i < wordLiterals.length; i++) {
+            WordLiteral wordLiteral = wordLiterals[i];
 
             if (i == 0) {
                 builder.append('【');
             }
 
-            appendBuilderWithLiteral(builder, literal);
-            builder.append(i < literals.size() - 1 ? '、' : '】');
+            appendBuilderWithLiteral(builder, wordLiteral);
+            builder.append(i < wordLiterals.length - 1 ? '、' : '】');
         }
     }
 
-    private void appendBuilderWithLiteral(SpannableStringBuilder builder, Literal literal) {
+    private void appendBuilderWithLiteral(SpannableStringBuilder builder, WordLiteral wordLiteral) {
 
         int literalStartIndex = builder.length();
 
-        appendBuilderWithHighlightableText(builder, literal.getText());
+        appendBuilderWithHighlightableText(builder, wordLiteral.getText());
 
         int literalEndIndex = builder.length();
 
-        if (literal.getStatus() == Literal.Status.IRREGULAR) {
+        if (wordLiteral.getStatus() == WordLiteral.Status.IRREGULAR) {
 
             builder.setSpan(
                     new ForegroundColorSpan(ContextCompat.getColor(getContext(), R.color.light_text)),

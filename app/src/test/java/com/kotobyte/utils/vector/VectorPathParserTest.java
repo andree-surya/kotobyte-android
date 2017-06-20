@@ -1,13 +1,11 @@
-package com.kotobyte;
-
-import com.kotobyte.utils.vector.VectorPath;
-import com.kotobyte.utils.vector.VectorPathCommand;
-import com.kotobyte.utils.vector.VectorPathParser;
+package com.kotobyte.utils.vector;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 
 public class VectorPathParserTest {

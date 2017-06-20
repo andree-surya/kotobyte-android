@@ -27,13 +27,13 @@ class KanjiReadingsTextGenerator extends SpannableTextGenerator {
     @Override
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
-        List<String> readings = mKanjiList.get(position).getReadings();
+        String[] readings = mKanjiList.get(position).getReadings();
 
-        for (int i = 0; i < readings.size(); i++) {
+        for (int i = 0; i < readings.length; i++) {
 
-            builder.append(readings.get(i));
+            builder.append(readings[i]);
 
-            if (i < readings.size() - 1) {
+            if (i < readings.length - 1) {
                 builder.append('、');
             }
         }

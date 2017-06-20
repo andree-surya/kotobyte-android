@@ -3,11 +3,17 @@ package com.kotobyte.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 public class Kanji implements Parcelable {
 
     private long mID;
     private String mLiteral;
+    private short mJLPT;
+    private short mGrade;
     private String[] mReadings;
     private String[] mMeanings;
     private String[] mExtras;
@@ -19,6 +25,14 @@ public class Kanji implements Parcelable {
 
     public String getLiteral() {
         return mLiteral;
+    }
+
+    public short getJLPT() {
+        return mJLPT;
+    }
+
+    public short getGrade() {
+        return mGrade;
     }
 
     public String[] getReadings() {
@@ -77,10 +91,12 @@ public class Kanji implements Parcelable {
 
         private long mID;
         private String mLiteral;
-        private String[] mReadings;
-        private String[] mMeanings;
-        private String[] mExtras;
-        private String[] mStrokes;
+        private short mJLPT;
+        private short mGrade;
+        private List<String> mReadings = new ArrayList<>();
+        private List<String> mMeanings = new ArrayList<>();
+        private List<String> mExtras = new ArrayList<>();
+        private List<String> mStrokes = new ArrayList<>();
 
         public void setID(long ID) {
             mID = ID;
@@ -90,20 +106,28 @@ public class Kanji implements Parcelable {
             mLiteral = literal;
         }
 
-        public void setReadings(String[] readings) {
-            mReadings = readings;
+        public void setJLPT(short JLPT) {
+            mJLPT = JLPT;
         }
 
-        public void setMeanings(String[] meanings) {
-            mMeanings = meanings;
+        public void setGrade(short grade) {
+            mGrade = grade;
         }
 
-        public void setExtras(String[] extras) {
-            mExtras = extras;
+        public void addReadings(String[] readings) {
+            Collections.addAll(mReadings, readings);
         }
 
-        public void setStrokes(String[] strokes) {
-            mStrokes = strokes;
+        public void addMeanings(String[] meanings) {
+            Collections.addAll(mMeanings, meanings);
+        }
+
+        public void addExtras(String[] extras) {
+            Collections.addAll(mExtras, extras);
+        }
+
+        public void addStrokes(String[] strokes) {
+            Collections.addAll(mStrokes, strokes);
         }
 
         public Kanji buildAndReset() {
@@ -111,17 +135,21 @@ public class Kanji implements Parcelable {
 
             kanji.mID = mID;
             kanji.mLiteral = mLiteral;
-            kanji.mReadings = mReadings;
-            kanji.mMeanings = mMeanings;
-            kanji.mExtras = mExtras;
-            kanji.mStrokes = mStrokes;
+            kanji.mJLPT = mJLPT;
+            kanji.mGrade = mGrade;
+            kanji.mReadings = mReadings.toArray(new String[mReadings.size()]);
+            kanji.mMeanings = mMeanings.toArray(new String[mMeanings.size()]);
+            kanji.mExtras = mExtras.toArray(new String[mExtras.size()]);
+            kanji.mStrokes = mStrokes.toArray(new String[mStrokes.size()]);
 
             mID = 0;
             mLiteral = null;
-            mReadings = null;
-            mMeanings = null;
-            mExtras = null;
-            mReadings = null;
+            mJLPT = 0;
+            mGrade = 0;
+            mReadings.clear();
+            mMeanings.clear();
+            mExtras.clear();
+            mReadings.clear();
 
             return kanji;
         }

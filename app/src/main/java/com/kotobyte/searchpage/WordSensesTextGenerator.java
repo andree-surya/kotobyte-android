@@ -7,8 +7,8 @@ import android.text.TextUtils;
 import android.text.style.TextAppearanceSpan;
 
 import com.kotobyte.R;
+import com.kotobyte.models.WordSense;
 import com.kotobyte.utils.SpannableTextGenerator;
-import com.kotobyte.models.Sense;
 import com.kotobyte.models.Word;
 
 import java.util.List;
@@ -26,35 +26,35 @@ class WordSensesTextGenerator extends SpannableTextGenerator {
     @Override
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
-        List<Sense> senses = mWords.get(position).getSenses();
+        WordSense[] wordSenses = mWords.get(position).getSenses();
 
-        for (int i = 0; i < senses.size(); i++) {
-            Sense sense = senses.get(i);
+        for (int i = 0; i < wordSenses.length; i++) {
+            WordSense wordSense = wordSenses[i];
 
             builder.append("▸  ");
 
-            appendBuilderWithHighlightableText(builder, TextUtils.join("; ", sense.getTexts()));
-            appendBuilderWithExtras(builder, sense.getExtras());
+            appendBuilderWithHighlightableText(builder, TextUtils.join("; ", wordSense.getTexts()));
+            appendBuilderWithExtras(builder, wordSense.getNotes());
 
-            if (i < senses.size() - 1) {
+            if (i < wordSenses.length - 1) {
                 builder.append('\n');
             }
         }
     }
 
-    private void appendBuilderWithExtras(SpannableStringBuilder builder, List<String> extras) {
+    private void appendBuilderWithExtras(SpannableStringBuilder builder, String[] extras) {
 
         int extrasStartIndex = builder.length();
 
-        for (int i = 0; i < extras.size(); i++) {
+        for (int i = 0; i < extras.length; i++) {
 
             if (i == 0) {
                 builder.append(" ー");
             }
 
-            builder.append(extras.get(i));
+            builder.append(extras[i]);
 
-            if (i < extras.size() - 1) {
+            if (i < extras.length - 1) {
                 builder.append(", ");
             }
         }

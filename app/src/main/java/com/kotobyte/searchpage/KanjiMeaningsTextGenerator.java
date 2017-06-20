@@ -36,12 +36,12 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
     @Override
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
-        List<String> meanings = mKanjiList.get(position).getMeanings();
-        List<String> extras = mKanjiList.get(position).getExtras();
+        String[] meanings = mKanjiList.get(position).getMeanings();
+        String[] extras = mKanjiList.get(position).getExtras();
 
-        for (int i = 0; i < meanings.size(); i++) {
+        for (int i = 0; i < meanings.length; i++) {
 
-            builder.append(meanings.get(i));
+            builder.append(meanings[i]);
 
             if (i == 0) {
                 builder.setSpan(
@@ -51,7 +51,7 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
                         Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             }
 
-            if (i < meanings.size() - 1) {
+            if (i < meanings.length - 1) {
                 builder.append(", ");
             }
         }
@@ -59,15 +59,15 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
         if (mShouldShowExtras) {
             int extrasStartIndex = builder.length();
 
-            for (int i = 0; i < extras.size(); i++) {
+            for (int i = 0; i < extras.length; i++) {
 
                 if (i == 0) {
                     builder.append(" ー");
                 }
 
-                builder.append(extras.get(i));
+                builder.append(extras[i]);
 
-                if (i < extras.size() - 1) {
+                if (i < extras.length - 1) {
                     builder.append("; ");
 
                 } else {
