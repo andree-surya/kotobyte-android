@@ -7,7 +7,7 @@ import android.text.TextUtils;
 import android.text.style.TextAppearanceSpan;
 
 import com.kotobyte.R;
-import com.kotobyte.models.WordSense;
+import com.kotobyte.models.Sense;
 import com.kotobyte.utils.SpannableTextGenerator;
 import com.kotobyte.models.Word;
 
@@ -26,17 +26,17 @@ class WordSensesTextGenerator extends SpannableTextGenerator {
     @Override
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
-        WordSense[] wordSenses = mWords.get(position).getSenses();
+        Sense[] senses = mWords.get(position).getSenses();
 
-        for (int i = 0; i < wordSenses.length; i++) {
-            WordSense wordSense = wordSenses[i];
+        for (int i = 0; i < senses.length; i++) {
+            Sense sense = senses[i];
 
             builder.append("▸  ");
 
-            appendBuilderWithHighlightableText(builder, TextUtils.join("; ", wordSense.getTexts()));
-            appendBuilderWithExtras(builder, wordSense.getNotes());
+            appendBuilderWithHighlightableText(builder, TextUtils.join("; ", sense.getTexts()));
+            appendBuilderWithExtras(builder, sense.getNotes());
 
-            if (i < wordSenses.length - 1) {
+            if (i < senses.length - 1) {
                 builder.append('\n');
             }
         }

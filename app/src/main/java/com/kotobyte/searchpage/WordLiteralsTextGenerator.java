@@ -8,7 +8,7 @@ import android.text.style.ForegroundColorSpan;
 
 import com.kotobyte.R;
 import com.kotobyte.utils.SpannableTextGenerator;
-import com.kotobyte.models.WordLiteral;
+import com.kotobyte.models.Literal;
 import com.kotobyte.models.Word;
 
 import java.util.List;
@@ -27,11 +27,11 @@ class WordLiteralsTextGenerator extends SpannableTextGenerator {
     @Override
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
-        WordLiteral[] readings = mWords.get(position).getReadings();
-        WordLiteral[] wordLiterals = mWords.get(position).getLiterals();
+        Literal[] readings = mWords.get(position).getReadings();
+        Literal[] wordLiterals = mWords.get(position).getLiterals();
 
         for (int i = 0; i < readings.length; i++) {
-            WordLiteral reading = readings[i];
+            Literal reading = readings[i];
 
             appendBuilderWithLiteral(builder, reading);
 
@@ -41,7 +41,7 @@ class WordLiteralsTextGenerator extends SpannableTextGenerator {
         }
 
         for (int i = 0; i < wordLiterals.length; i++) {
-            WordLiteral wordLiteral = wordLiterals[i];
+            Literal wordLiteral = wordLiterals[i];
 
             if (i == 0) {
                 builder.append('【');
@@ -52,7 +52,7 @@ class WordLiteralsTextGenerator extends SpannableTextGenerator {
         }
     }
 
-    private void appendBuilderWithLiteral(SpannableStringBuilder builder, WordLiteral wordLiteral) {
+    private void appendBuilderWithLiteral(SpannableStringBuilder builder, Literal wordLiteral) {
 
         int literalStartIndex = builder.length();
 
@@ -60,7 +60,7 @@ class WordLiteralsTextGenerator extends SpannableTextGenerator {
 
         int literalEndIndex = builder.length();
 
-        if (wordLiteral.getStatus() == WordLiteral.Status.IRREGULAR) {
+        if (wordLiteral.getStatus() == Literal.Status.IRREGULAR) {
 
             builder.setSpan(
                     new ForegroundColorSpan(ContextCompat.getColor(getContext(), R.color.light_text)),

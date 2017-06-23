@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 
 class KanjiEntryDecoder implements DictionaryEntryDecoder<Kanji> {
 
-    private static Pattern KANJI_FIELDS_SPLITTER = Pattern.compile("‡");
-    private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("⋮");
+    private static Pattern KANJI_FIELDS_SPLITTER = Pattern.compile("_");
+    private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("]");
 
     private Kanji.Builder mKanjiBuilder = new Kanji.Builder();
 

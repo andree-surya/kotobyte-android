@@ -2,12 +2,12 @@ package com.kotobyte.models;
 
 import android.support.annotation.Nullable;
 
-public class WordLiteral {
+public class Literal {
 
     private String mText;
     private Status mStatus;
 
-    public WordLiteral(String text, Status status) {
+    public Literal(String text, Status status) {
         mText = text;
         mStatus = status;
     }

@@ -30,6 +30,9 @@ CREATE_TABLES = <<-EOS
     grade INTEGER,
     strokes TEXT
   );
+
+  CREATE INDEX literals_word_id ON literals(word_id);
+  CREATE INDEX senses_word_id ON senses(word_id);
 EOS
 
 BUILD_INDEXES = <<-EOS

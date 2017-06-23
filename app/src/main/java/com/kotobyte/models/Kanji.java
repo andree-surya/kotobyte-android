@@ -16,7 +16,6 @@ public class Kanji implements Parcelable {
     private short mGrade;
     private String[] mReadings;
     private String[] mMeanings;
-    private String[] mExtras;
     private String[] mStrokes;
 
     public long getID() {
@@ -43,10 +42,6 @@ public class Kanji implements Parcelable {
         return mMeanings;
     }
 
-    public String[] getExtras() {
-        return mExtras;
-    }
-
     public String[] getStrokes() {
         return mStrokes;
     }
@@ -59,9 +54,10 @@ public class Kanji implements Parcelable {
 
         dest.writeLong(mID);
         dest.writeString(mLiteral);
+        dest.writeInt(mJLPT);
+        dest.writeInt(mGrade);
         dest.writeStringArray(mReadings);
         dest.writeStringArray(mMeanings);
-        dest.writeStringArray(mExtras);
         dest.writeStringArray(mStrokes);
     }
 
@@ -73,9 +69,10 @@ public class Kanji implements Parcelable {
 
             kanji.mID = in.readLong();
             kanji.mLiteral = in.readString();
+            kanji.mJLPT = (short) in.readInt();
+            kanji.mGrade = (short) in.readInt();
             kanji.mReadings = in.createStringArray();
             kanji.mMeanings = in.createStringArray();
-            kanji.mExtras = in.createStringArray();
             kanji.mStrokes = in.createStringArray();
 
             return kanji;
@@ -95,7 +92,6 @@ public class Kanji implements Parcelable {
         private short mGrade;
         private List<String> mReadings = new ArrayList<>();
         private List<String> mMeanings = new ArrayList<>();
-        private List<String> mExtras = new ArrayList<>();
         private List<String> mStrokes = new ArrayList<>();
 
         public void setID(long ID) {
@@ -122,10 +118,6 @@ public class Kanji implements Parcelable {
             Collections.addAll(mMeanings, meanings);
         }
 
-        public void addExtras(String[] extras) {
-            Collections.addAll(mExtras, extras);
-        }
-
         public void addStrokes(String[] strokes) {
             Collections.addAll(mStrokes, strokes);
         }
@@ -139,7 +131,6 @@ public class Kanji implements Parcelable {
             kanji.mGrade = mGrade;
             kanji.mReadings = mReadings.toArray(new String[mReadings.size()]);
             kanji.mMeanings = mMeanings.toArray(new String[mMeanings.size()]);
-            kanji.mExtras = mExtras.toArray(new String[mExtras.size()]);
             kanji.mStrokes = mStrokes.toArray(new String[mStrokes.size()]);
 
             mID = 0;
@@ -148,7 +139,6 @@ public class Kanji implements Parcelable {
             mGrade = 0;
             mReadings.clear();
             mMeanings.clear();
-            mExtras.clear();
             mReadings.clear();
 
             return kanji;

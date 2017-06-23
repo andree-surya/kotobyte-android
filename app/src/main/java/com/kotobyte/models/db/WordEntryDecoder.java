@@ -1,22 +1,24 @@
 package com.kotobyte.models.db;
 
-import com.kotobyte.models.WordLiteral;
-import com.kotobyte.models.WordOrigin;
-import com.kotobyte.models.WordSense;
+import com.kotobyte.models.Literal;
+import com.kotobyte.models.Origin;
+import com.kotobyte.models.Sense;
 import com.kotobyte.models.Word;
+import com.moji4j.MojiDetector;
 
 import java.util.regex.Pattern;
 
 class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
 
-    private static Pattern WORD_FIELDS_SPLITTER = Pattern.compile("‡");
-    private static Pattern SENSE_ITEMS_SPLITTER = Pattern.compile("†");
-    private static Pattern SENSE_FIELDS_SPLITTER = Pattern.compile("¦");
-    private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("⋮");
+    private static Pattern WORD_FIELDS_SPLITTER = Pattern.compile("_");
+    private static Pattern SENSE_ITEMS_SPLITTER = Pattern.compile(">");
+    private static Pattern SENSE_FIELDS_SPLITTER = Pattern.compile("\\}");
+    private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("\\]");
     private static Pattern ORIGIN_FIELDS_SPLITTER = Pattern.compile(":");
 
     private Word.Builder mWordBuilder = new Word.Builder();
-    private WordSense.Builder mSenseBuilder = new WordSense.Builder();
+    private Sense.Builder mSenseBuilder = new Sense.Builder();
+    private MojiDetector mMojiDetector = new MojiDetector();
 
     @Override
     public Word decode(String encodedObject) {
@@ -25,8 +27,7 @@ class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
         mWordBuilder.setID(Long.decode(wordFieldTokens[0]));
 
         parseLiterals(wordFieldTokens[1]);
-        parseReadings(wordFieldTokens[2]);
-        parseSenses(wordFieldTokens[3]);
+        parseSenses(wordFieldTokens[2]);
 
         return mWordBuilder.buildAndReset();
     }
@@ -38,18 +39,28 @@ class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
         }
 
         for (String literalToken : STRING_ITEMS_SPLITTER.split(literalsField)) {
-            mWordBuilder.addLiteral(decodeLiteral(literalToken));
-        }
-    }
 
-    private void parseReadings(String readingsField) {
+            String text = literalToken.substring(1, literalToken.length());
 
-        if (readingsField.isEmpty()) {
-            return;
-        }
+            Literal.Status status = null;
+            char priorityCode = literalToken.charAt(0);
 
-        for (String readingToken : STRING_ITEMS_SPLITTER.split(readingsField)) {
-            mWordBuilder.addReading(decodeLiteral(readingToken));
+            if (priorityCode == '3') {
+                status = Literal.Status.COMMON;
+            }
+
+            if (priorityCode == '1') {
+                status = Literal.Status.IRREGULAR;
+            }
+
+            Literal literal = new Literal(text, status);
+
+            if (mMojiDetector.hasKanji(text)) {
+                mWordBuilder.addLiteral(literal);
+
+            } else {
+                mWordBuilder.addReading(literal);
+            }
         }
     }
 
@@ -127,29 +138,12 @@ class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
         mSenseBuilder.addNotes(STRING_ITEMS_SPLITTER.split(senseNotesField));
     }
 
-    private static WordLiteral decodeLiteral(String encodedLiteral) {
-        String text = encodedLiteral.substring(1, encodedLiteral.length());
-
-        WordLiteral.Status status = null;
-        char statusCode = encodedLiteral.charAt(0);
-
-        if (statusCode == '+') {
-            status = WordLiteral.Status.COMMON;
-        }
-
-        if (statusCode == '-') {
-            status = WordLiteral.Status.IRREGULAR;
-        }
-
-        return new WordLiteral(text, status);
-    }
-
-    private static WordOrigin decodeOrigin(String encodedOrigin) {
+    private static Origin decodeOrigin(String encodedOrigin) {
         String[] originFields = ORIGIN_FIELDS_SPLITTER.split(encodedOrigin);
 
         String languageCode = originFields[0];
         String text = originFields.length > 1 ? originFields[1] : null;
 
-        return new WordOrigin(languageCode, text);
+        return new Origin(languageCode, text);
     }
 }

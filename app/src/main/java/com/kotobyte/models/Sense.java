@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class WordSense {
+public class Sense {
 
     private String[] mTexts;
     private String[] mCategories;
     private String[] mLabels;
     private String[] mNotes;
-    private WordOrigin[] mOrigins;
+    private Origin[] mOrigins;
 
     public String[] getTexts() {
         return mTexts;
@@ -28,7 +28,7 @@ public class WordSense {
         return mNotes;
     }
 
-    public WordOrigin[] getOrigins() {
+    public Origin[] getOrigins() {
         return mOrigins;
     }
 
@@ -38,7 +38,7 @@ public class WordSense {
         private List<String> mCategories = new ArrayList<>();
         private List<String> mLabels = new ArrayList<>();
         private List<String> mNotes = new ArrayList<>();
-        private List<WordOrigin> mOrigins = new ArrayList<>();
+        private List<Origin> mOrigins = new ArrayList<>();
 
         public void addTexts(String[] texts) {
             Collections.addAll(mTexts, texts);
@@ -56,18 +56,18 @@ public class WordSense {
             Collections.addAll(mNotes, notes);
         }
 
-        public void addOrigin(WordOrigin origin) {
+        public void addOrigin(Origin origin) {
             mOrigins.add(origin);
         }
 
-        public WordSense buildAndReset() {
-            WordSense wordSense = new WordSense();
+        public Sense buildAndReset() {
+            Sense sense = new Sense();
 
-            wordSense.mTexts = mTexts.toArray(new String[mTexts.size()]);
-            wordSense.mCategories = mCategories.toArray(new String[mCategories.size()]);
-            wordSense.mLabels = mLabels.toArray(new String[mLabels.size()]);
-            wordSense.mNotes = mNotes.toArray(new String[mNotes.size()]);
-            wordSense.mOrigins = mOrigins.toArray(new WordOrigin[mOrigins.size()]);
+            sense.mTexts = mTexts.toArray(new String[mTexts.size()]);
+            sense.mCategories = mCategories.toArray(new String[mCategories.size()]);
+            sense.mLabels = mLabels.toArray(new String[mLabels.size()]);
+            sense.mNotes = mNotes.toArray(new String[mNotes.size()]);
+            sense.mOrigins = mOrigins.toArray(new Origin[mOrigins.size()]);
 
             mTexts.clear();
             mCategories.clear();
@@ -75,7 +75,7 @@ public class WordSense {
             mNotes.clear();
             mOrigins.clear();;
 
-            return wordSense;
+            return sense;
         }
     }
 }

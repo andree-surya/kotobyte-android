@@ -7,22 +7,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings({"unused", "MismatchedReadAndWriteOfArray"})
 public class DictionaryDatabase implements AutoCloseable {
 
     static {
         System.loadLibrary("dictionary");
     }
 
+    // Constant variables to be used from native code.
     private static final short SEARCH_RESULTS_LIMIT = 50;
 
-    @SuppressWarnings("unused")
-    /* native */ private long mDatabaseRef;
-
-    @SuppressWarnings("unused")
-    /* native */ private short mSearchResultsCount;
-
-    @SuppressWarnings("MismatchedReadAndWriteOfArray")
-    /* native */ private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
+    // Instance variables to be used from native code.
+    private long mDatabaseReference;
+    private long mSearchLiteralsStatement;
+    private long mSearchSensesStatement;
+    private long mSearchKanjiStatement;
+    private short mSearchResultsCount;
+    private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
 
     public DictionaryDatabase(String dictionaryFilePath) {
         this(dictionaryFilePath, true);
@@ -43,14 +44,14 @@ public class DictionaryDatabase implements AutoCloseable {
 
     public List<Word> searchWord(String query) {
 
-        nativeSearchWordsByJapanese(query);
+        nativeSearchWordsByLiterals(query);
 
         return decodeSearchResultsWith(new WordEntryDecoder());
     }
 
     public List<Kanji> searchKanji(String query) {
 
-        nativeSearchKanjiByJapanese(query);
+        nativeSearchKanji(query);
 
         return decodeSearchResultsWith(new KanjiEntryDecoder());
     }
@@ -69,7 +70,7 @@ public class DictionaryDatabase implements AutoCloseable {
     private native void nativeOpenConnection(String filePath, boolean readOnly);
     private native void nativeCloseConnection();
     private native void nativeBuildIndexes();
-    private native void nativeSearchWordsByEnglish(String query);
-    private native void nativeSearchWordsByJapanese(String query);
-    private native void nativeSearchKanjiByJapanese(String query);
+    private native void nativeSearchWordsByLiterals(String query);
+    private native void nativeSearchWordsBySenses(String query);
+    private native void nativeSearchKanji(String query);
 }

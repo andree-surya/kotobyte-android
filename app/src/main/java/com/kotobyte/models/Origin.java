@@ -2,12 +2,12 @@ package com.kotobyte.models;
 
 import android.support.annotation.Nullable;
 
-public class WordOrigin {
+public class Origin {
 
     private String mLanguageCode;
     private String mText;
 
-    public WordOrigin(String languageCode, String text) {
+    public Origin(String languageCode, String text) {
         mLanguageCode = languageCode;
         mText = text;
     }
