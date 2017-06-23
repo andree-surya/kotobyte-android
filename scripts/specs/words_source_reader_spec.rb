@@ -26,13 +26,12 @@ describe WordsSourceReader do
     expect(word.id).to eq(id)
   end
 
-  it 'should parse literal elements' do
+  it 'should parse literal texts and assign priority' do
 
     xml = <<-EOS
       <!DOCTYPE JMdict [
         <!ENTITY iK "Irregular Kanji">
-        <!ENTITY io "Irregular Okurigana">
-        <!ENTITY oK "Outdated Kanji">
+        <!ENTITY ok "Outdated Kana usage">
       ]>
 
       <JMdict>
@@ -40,36 +39,30 @@ describe WordsSourceReader do
           <k_ele><keb>冗談</keb></k_ele>
           <k_ele><keb>言葉</keb><ke_pri>news2</ke_pri></k_ele>
           <k_ele><keb>匂い</keb><ke_inf>&iK;</ke_inf></k_ele>
-          <k_ele><keb>お茶</keb><ke_inf>&io;</ke_inf></k_ele>
-          <k_ele><keb>電車</keb><ke_inf>&oK;</ke_inf></k_ele>
+          <r_ele><reb>ノート</reb></r_ele>
+          <r_ele><reb>バグ</reb><re_pri>gai1</re_pri></r_ele>
+          <r_ele><reb>みず</reb><re_inf>&ok;</re_inf></r_ele>
         </entry>
       </JMdict>
     EOS
 
     literals = WordsSourceReader.new(source_xml: xml).read_one.literals
-    expect(literals).to eq(['=冗談', '+言葉', '-匂い', '-お茶', '-電車'])
-  end
 
-  it 'should parse reading elements' do
+    expect(literals.count).to eq(6)
 
-    xml = <<-EOS
-      <!DOCTYPE JMdict [
-        <!ENTITY ik "Irregular Kana">
-        <!ENTITY ok "Outdated Kana">
-      ]>
+    expect(literals[0].text).to eq('冗談')
+    expect(literals[1].text).to eq('言葉')
+    expect(literals[2].text).to eq('匂い')
+    expect(literals[3].text).to eq('ノート')
+    expect(literals[4].text).to eq('バグ')
+    expect(literals[5].text).to eq('みず')
 
-      <JMdict>
-        <entry>
-          <r_ele><reb>ことば</reb></r_ele>
-          <r_ele><reb>じょうだん</reb><re_pri>ichi1</re_pri></r_ele>
-          <r_ele><reb>におい</reb><re_inf>&ik;</re_inf></r_ele>
-          <r_ele><reb>おちゃ</reb><re_inf>&ok;</re_inf></r_ele>
-        </entry>
-      </JMdict>
-    EOS
-
-    readings = WordsSourceReader.new(source_xml: xml).read_one.readings
-    expect(readings).to eq(['=ことば', '+じょうだん', '-におい', '-おちゃ'])
+    expect(literals[0].priority).to eq(2)
+    expect(literals[1].priority).to eq(3)
+    expect(literals[2].priority).to eq(1)
+    expect(literals[3].priority).to eq(2)
+    expect(literals[4].priority).to eq(3)
+    expect(literals[5].priority).to eq(1)
   end
 
   it 'should parse sense and translation texts' do
@@ -114,9 +107,9 @@ describe WordsSourceReader do
             <pos>&adj-i;</pos>
           </sense>
           <sense>
-            <pos>&v5u;</pos>
           </sense>
           <sense>
+            <pos>&v5u;</pos>
           </sense>
         </entry>
       </JMdict>
@@ -126,11 +119,11 @@ describe WordsSourceReader do
 
     expect(senses.size).to eq(3)
     expect(senses[0].categories).to eq(['n', 'adj-i'])
-    expect(senses[1].categories).to eq(['v5u'])
-    expect(senses[2].categories).to eq(nil)
+    expect(senses[1].categories).to eq(nil)
+    expect(senses[2].categories).to eq(['v5u'])
   end
 
-  it 'should parse sense sources' do
+  it 'should parse sense origins' do
 
     xml = <<-EOS
       <entry>
@@ -147,8 +140,8 @@ describe WordsSourceReader do
     senses = WordsSourceReader.new(source_xml: xml).read_one.senses
 
     expect(senses.size).to eq(2)
-    expect(senses[0].sources).to eq(['ger:Abend', 'kor'])
-    expect(senses[1].sources).to eq(['eng:Ice'])
+    expect(senses[0].origins).to eq(['ger:Abend', 'kor'])
+    expect(senses[1].origins).to eq(['eng:Ice'])
   end
 
   it 'should parse sense labels' do
@@ -251,37 +244,5 @@ describe WordsSourceReader do
     expect(senses[0].labels).to eq(['surname', 'place'])
     expect(senses[1].labels).to eq(nil)
     expect(senses[2].labels).to eq(nil)
-  end
-
-  it 'should calculate word priority' do
-
-    xml = <<-EOS
-      <JMdict>
-        <entry>
-          <k_ele>
-            <ke_pri>ichi2</ke_pri>
-            <ke_pri>news1</ke_pri>
-            <ke_pri>nf12</ke_pri>
-          </k_ele>
-        </entry>
-        <entry>
-          <r_ele>
-            <re_pri>gai2</re_pri>
-            <re_pri>news2</re_pri>
-            <re_pri>nf45</re_pri>
-          </r_ele>
-        </entry>
-        <entry>
-          <k_ele></k_ele>
-          <r_ele></r_ele>
-        </entry>
-      </JMdict>
-    EOS
-
-    words = WordsSourceReader.new(source_xml: xml).read_all
-
-    expect(words[0].priority).to eq(2)
-    expect(words[1].priority).to eq(1.5)
-    expect(words[2].priority).to eq(1)
   end
 end

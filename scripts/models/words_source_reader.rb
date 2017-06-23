@@ -1,12 +1,13 @@
 
 require_relative 'word'
+require_relative 'sense'
+require_relative 'literal'
 require 'nokogiri'
 
 class WordsSourceReader
-  PRIORITY_PREFIXES = ['ichi', 'news', 'spec', 'gai']
+  PRIORITY_CODES = ['ichi', 'news', 'spec', 'gai']
   IRREGULAR_CODES = ['iK', 'ik', 'oK', 'ok', 'io']
-
-  PRIORITY = { default: 1, mid: 1.5, high: 2 }
+  PRIORITY = { low: 1, default: 2, high: 3 }
 
   def initialize(source_xml: '<JMdict />')
     @xml = source_xml
@@ -48,41 +49,30 @@ class WordsSourceReader
       case node.name
       when 'entry'
         @current_word = Word.new
-        @current_word.priority = PRIORITY[:default]
 
       when 'ent_seq'
         @current_word.id = node.inner_xml.to_i
 
-      when 'k_ele'
+      when 'k_ele', 'r_ele'
         @current_word.literals ||= []
-        @current_word.literals << '='
+        @current_word.literals << Literal.new
+        @current_word.literals.last.priority = PRIORITY[:default]
 
-      when 'r_ele'
-        @current_word.readings ||= []
-        @current_word.readings << '='
+      when 'keb', 'reb'
+        @current_word.literals.last.text = node.inner_xml
 
-      when 'keb'
-        @current_word.literals.last[1..-1] = node.inner_xml
+      when 'ke_pri', 're_pri'
+        code = clean_xml_entity(node.inner_xml).gsub(/\d/, '')
 
-      when 'reb'
-        @current_word.readings.last[1..-1] = node.inner_xml
-
-      when 'ke_pri'
-        @current_word.literals.last[0] = '+'
-        process_priority(node.inner_xml)
-
-      when 're_pri'
-        @current_word.readings.last[0] = '+'
-        process_priority(node.inner_xml)
-
-      when 'ke_inf'
-        if IRREGULAR_CODES.include? clean_xml_entity(node.inner_xml)
-          @current_word.literals.last[0] = '-'
+        if PRIORITY_CODES.include? code
+          @current_word.literals.last.priority = PRIORITY[:high]
         end
 
-      when 're_inf'
-        if IRREGULAR_CODES.include? clean_xml_entity(node.inner_xml)
-          @current_word.readings.last[0] = '-'
+      when 'ke_inf', 're_inf'
+        info = clean_xml_entity(node.inner_xml)
+
+        if IRREGULAR_CODES.include? info
+          @current_word.literals.last.priority = PRIORITY[:low]
         end
 
       when 'sense'
@@ -95,8 +85,10 @@ class WordsSourceReader
         @current_word.senses.last.categories = ['n']
 
       when 'pos'
+        category = clean_xml_entity(node.inner_xml)
+
         @current_word.senses.last.categories ||= []
-        @current_word.senses.last.categories << clean_xml_entity(node.inner_xml)
+        @current_word.senses.last.categories << category
 
       when 'field', 'dial', 'misc', 'name_type'
         entity = clean_xml_entity(node.inner_xml)
@@ -111,11 +103,11 @@ class WordsSourceReader
         @current_word.senses.last.notes << node.inner_xml
 
       when 'lsource'
-        source = node.attributes['lang'] || 'eng'
-        source += ":#{node.inner_xml}" unless node.inner_xml.empty?
+        origin = node.attributes['lang'] || 'eng'
+        origin += ":#{node.inner_xml}" unless node.inner_xml.empty?
 
-        @current_word.senses.last.sources ||= []
-        @current_word.senses.last.sources << source
+        @current_word.senses.last.origins ||= []
+        @current_word.senses.last.origins << origin
 
       when 'gloss', 'trans_det'
         @current_word.senses.last.texts ||= []
@@ -134,7 +126,7 @@ class WordsSourceReader
         current_sense = @current_word.senses[-1]
         preceeding_sense = @current_word.senses[-2]
 
-        if current_sense.categories&.empty? && preceeding_sense != nil?
+        if current_sense.categories&.empty?
           current_sense.categories = preceeding_sense.categories
         end
       end
@@ -142,24 +134,5 @@ class WordsSourceReader
 
     def clean_xml_entity(text)
       text.tr('\&\;', '')
-    end
-
-    def process_priority(code)
-      PRIORITY_PREFIXES.each do |prefix|
-
-       if code.start_with? prefix
-         priority_class = code.sub(prefix, '').to_i
-
-         if priority_class == 1
-           priority = PRIORITY[:high]
-         else
-           priority = PRIORITY[:mid]
-         end
-
-         if @current_word.priority < priority
-           @current_word.priority = priority
-         end
-       end
-     end
     end
 end

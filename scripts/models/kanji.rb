@@ -1,7 +1,7 @@
 
 class Kanji
   attr_accessor :id
-  attr_accessor :literal
+  attr_accessor :character
   attr_accessor :readings
   attr_accessor :meanings
   attr_accessor :jlpt

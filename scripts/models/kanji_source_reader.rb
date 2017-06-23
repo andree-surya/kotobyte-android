@@ -67,7 +67,7 @@ class KanjiSourceReader
         end
 
       when 'literal'
-        @current_kanji.literal = node.inner_xml
+        @current_kanji.character = node.inner_xml
 
       when 'grade'
         @current_kanji.grade = node.inner_xml.to_i

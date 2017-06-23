@@ -42,8 +42,6 @@ describe DictionaryDatabase do
       database.transaction do |db|
         words_source_reader.read_each { |word| db.insert_word(word) }
       end
-
-      database.optimize_space
     end
   end
 
@@ -60,8 +58,6 @@ describe DictionaryDatabase do
       database.transaction do |db|
         kanji_source_reader.read_all.map { |kanji| db.insert_kanji(kanji) }
       end
-
-      database.optimize_space
     end
   end
 end

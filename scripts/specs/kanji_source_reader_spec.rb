@@ -35,11 +35,11 @@ describe KanjiSourceReader do
     expect(reader.read_one.id).to eq(ID.to_i(16))
   end
 
-  it 'should parse literal' do
+  it 'should parse character' do
     xml = '<character><literal>豚</literal></character>'
 
     reader = KanjiSourceReader.new(source_xml: xml)
-    expect(reader.read_one.literal).to eq('豚')
+    expect(reader.read_one.character).to eq('豚')
   end
 
   it 'should parse grade' do
