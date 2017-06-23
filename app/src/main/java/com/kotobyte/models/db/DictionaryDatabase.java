@@ -7,23 +7,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@SuppressWarnings({"unused", "MismatchedReadAndWriteOfArray"})
 public class DictionaryDatabase implements AutoCloseable {
 
     static {
         System.loadLibrary("dictionary");
     }
 
-    // Constant variables to be used from native code.
     private static final short SEARCH_RESULTS_LIMIT = 50;
 
-    // Instance variables to be used from native code.
-    private long mDatabaseReference;
-    private long mSearchLiteralsStatement;
-    private long mSearchSensesStatement;
-    private long mSearchKanjiStatement;
-    private short mSearchResultsCount;
-    private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
+    @SuppressWarnings("unused")
+    /* native */ private long mDictionaryContext;
+
+    @SuppressWarnings("unused")
+    /* native */ private short mSearchResultsCount;
+
+    @SuppressWarnings("MismatchedReadAndWriteOfArray")
+    /* native */ private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
 
     public DictionaryDatabase(String dictionaryFilePath) {
         this(dictionaryFilePath, true);

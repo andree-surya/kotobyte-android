@@ -5,6 +5,7 @@
 #include "tokenizers.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <jni.h>
 
@@ -43,13 +44,18 @@ static const char *SEARCH_KANJI_SQL = \
         "LIMIT ?";
 
 
-static jclass thisClass;
-static jfieldID thisDatabaseReference;
-static jfieldID thisSearchLiteralsStatement;
-static jfieldID thisSearchSensesStatement;
-static jfieldID thisSearchKanjiStatement;
-static jfieldID thisSearchResultsCount;
-static jfieldID thisSearchResultsBuffer;
+typedef struct {
+    sqlite3 *database;
+
+    sqlite3_stmt *searchLiteralsStatement;
+    sqlite3_stmt *searchSensesStatement;
+    sqlite3_stmt *searchKanjiStatement;
+
+} DictionaryContext;
+
+static jfieldID dictionaryContextID;
+static jfieldID searchResultsCountID;
+static jfieldID searchResultsBufferID;
 static short searchResultsLimit;
 
 
@@ -58,48 +64,35 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env;
     (*vm)->GetEnv(vm, (void **) &env, JNI_VERSION_1_6);
 
-    thisClass = (*env)->FindClass(env, "com/kotobyte/models/db/DictionaryDatabase");
-
-    thisDatabaseReference = (*env)->GetFieldID(env, thisClass, "mDatabaseReference", "J");
-    thisSearchLiteralsStatement = (*env)->GetFieldID(env, thisClass, "mSearchLiteralsStatement", "J");
-    thisSearchSensesStatement = (*env)->GetFieldID(env, thisClass, "mSearchSensesStatement", "J");
-    thisSearchKanjiStatement = (*env)->GetFieldID(env, thisClass, "mSearchKanjiStatement", "J");
-
-    thisSearchResultsCount = (*env)->GetFieldID(env, thisClass, "mSearchResultsCount", "S");
-    thisSearchResultsBuffer = (*env)->GetFieldID(env, thisClass, "mSearchResultsBuffer", "[Ljava/lang/String;");
-
+    jclass thisClass = (*env)->FindClass(env, "com/kotobyte/models/db/DictionaryDatabase");
     jfieldID searchResultsLimitID = (*env)->GetStaticFieldID(env, thisClass, "SEARCH_RESULTS_LIMIT", "S");
+
+    dictionaryContextID = (*env)->GetFieldID(env, thisClass, "mDictionaryContext", "J");
+    searchResultsCountID = (*env)->GetFieldID(env, thisClass, "mSearchResultsCount", "S");
+    searchResultsBufferID = (*env)->GetFieldID(env, thisClass, "mSearchResultsBuffer", "[Ljava/lang/String;");
     searchResultsLimit = (*env)->GetStaticShortField(env, thisClass, searchResultsLimitID);
 
     return JNI_VERSION_1_6;
 }
 
-static void throwError(JNIEnv *env, jobject instance, const char *message) {
+static void throwError(JNIEnv *env, const char *message) {
     (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), message);
 }
 
-static sqlite3 *getDatabase(JNIEnv *env, jobject instance) {
-    return (sqlite3 *) (*env)->GetLongField(env, instance, thisDatabaseReference);
+static DictionaryContext *getContext(JNIEnv *env, jobject instance) {
+    return (DictionaryContext *) (*env)->GetLongField(env, instance, dictionaryContextID);
 }
 
-static void setDatabase(JNIEnv *env, jobject instance, sqlite3 *database) {
-    (*env)->SetLongField(env, instance, thisDatabaseReference, (long) database);
-}
-
-static sqlite3_stmt *getStatement(JNIEnv *env, jobject instance, jfieldID statementField) {
-    return (sqlite3_stmt *) (*env)->GetLongField(env, instance, statementField);
-}
-
-static void setStatement(JNIEnv *env, jobject instance, jfieldID statementField, sqlite3_stmt *statement) {
-    (*env)->SetLongField(env, instance, statementField, (long) statement);
+static void setContext(JNIEnv *env, jobject instance, DictionaryContext *context) {
+    (*env)->SetLongField(env, instance, dictionaryContextID, (long) context);
 }
 
 static void setSearchResultsCount(JNIEnv *env, jobject instance, short search_results_count) {
-    (*env)->SetShortField(env, instance, thisSearchResultsCount, search_results_count);
+    (*env)->SetShortField(env, instance, searchResultsCountID, search_results_count);
 }
 
 static jobjectArray getSearchResultsBuffer(JNIEnv *env, jobject instance) {
-    return (*env)->GetObjectField(env, instance, thisSearchResultsBuffer);
+    return (*env)->GetObjectField(env, instance, searchResultsBufferID);
 }
 
 static void openDatabaseConnection(JNIEnv *env, jobject instance, jstring databasePath, jboolean readOnly) {
@@ -129,12 +122,15 @@ static void openDatabaseConnection(JNIEnv *env, jobject instance, jstring databa
         goto throwDatabaseError;
     }
 
-    setDatabase(env, instance, database);
+    DictionaryContext *context = calloc(1, sizeof(DictionaryContext));
+    context->database = database;
+
+    setContext(env, instance, context);
 
     goto cleanUp;
 
     throwDatabaseError:
-    throwError(env, instance, sqlite3_errmsg(database));
+    throwError(env, sqlite3_errmsg(database));
     sqlite3_close_v2(database);
 
     cleanUp:
@@ -144,82 +140,70 @@ static void openDatabaseConnection(JNIEnv *env, jobject instance, jstring databa
 
 static void closeDatabaseConnection(JNIEnv *env, jobject instance) {
 
-    sqlite3 *database = getDatabase(env, instance);
+    DictionaryContext *context = getContext(env, instance);
 
-    sqlite3_stmt *searchLiteralsStatement = getStatement(env, instance, thisSearchLiteralsStatement);
-    sqlite3_stmt *searchSensesStatement = getStatement(env, instance, thisSearchSensesStatement);
-    sqlite3_stmt *searchKanjiStatement = getStatement(env, instance, thisSearchKanjiStatement);
-
-    if (SQLITE_OK != sqlite3_close_v2(database)) {
+    if (SQLITE_OK != sqlite3_close_v2(context->database)) {
         goto throwDatabaseError;
     }
 
-    if (SQLITE_OK != sqlite3_finalize(searchLiteralsStatement)) {
+    if (SQLITE_OK != sqlite3_finalize(context->searchLiteralsStatement)) {
         goto throwDatabaseError;
     }
 
-    if (SQLITE_OK != sqlite3_finalize(searchSensesStatement)) {
+    if (SQLITE_OK != sqlite3_finalize(context->searchSensesStatement)) {
         goto throwDatabaseError;
     }
 
-    if (SQLITE_OK != sqlite3_finalize(searchKanjiStatement)) {
+    if (SQLITE_OK != sqlite3_finalize(context->searchKanjiStatement)) {
         goto throwDatabaseError;
     }
 
     goto cleanUp;
 
     throwDatabaseError:
-    throwError(env, instance, sqlite3_errmsg(database));
+    throwError(env, sqlite3_errmsg(context->database));
 
     cleanUp:
-    setDatabase(env, instance, NULL);
-    setStatement(env, instance, thisSearchLiteralsStatement, NULL);
-    setStatement(env, instance, thisSearchSensesStatement, NULL);
-    setStatement(env, instance, thisSearchKanjiStatement, NULL);
+    free(context);
+
+    setContext(env, instance, NULL);
 }
 
 static void buildDatabaseIndexes(JNIEnv *env, jobject instance) {
 
-    sqlite3 *database = getDatabase(env, instance);
+    DictionaryContext *context = getContext(env, instance);
     char *errorMessage = NULL;
 
-    if (SQLITE_OK != sqlite3_exec(database, BUILD_INDEXES_SQL, NULL, NULL, &errorMessage)) {
-        throwError(env, instance, errorMessage);
+    if (SQLITE_OK != sqlite3_exec(context->database, BUILD_INDEXES_SQL, NULL, NULL, &errorMessage)) {
+        throwError(env, errorMessage);
 
         sqlite3_free(errorMessage);
     }
 }
 
-static void executeSearch(JNIEnv *env, jobject instance, jfieldID statementID, const char *statementSQL, jstring query) {
+static int executeSearch(JNIEnv *env, jobject instance, sqlite3_stmt *statement, jstring query) {
 
+    int returnCode;
     const char *queryUTF = (*env)->GetStringUTFChars(env, query, NULL);
 
-    sqlite3 *database = getDatabase(env, instance);
-    sqlite3_stmt *statement = getStatement(env, instance, thisSearchLiteralsStatement);
+    returnCode = sqlite3_bind_text(statement, 1, queryUTF, -1, NULL);
 
-    if (statement == NULL) {
-
-        if (SQLITE_OK != sqlite3_prepare_v2(database, statementSQL, -1, &statement, NULL)) {
-            goto throwDatabaseError;
-        }
-
-        setStatement(env, instance, statementID, statement);
+    if (SQLITE_OK != returnCode) {
+        goto cleanUp;
     }
 
-    if (SQLITE_OK != sqlite3_bind_text(statement, 1, queryUTF, -1, NULL)) {
-        goto throwDatabaseError;
+    returnCode = sqlite3_bind_int(statement, 2, searchResultsLimit);
+
+    if (SQLITE_OK != returnCode) {
+        goto cleanUp;
     }
 
-    if (SQLITE_OK != sqlite3_bind_int(statement, 2, searchResultsLimit)) {
-        goto throwDatabaseError;
-    }
-
-    int stepStatus = sqlite3_step(statement);
+    returnCode = sqlite3_step(statement);
     short searchResultsCount = 0;
 
     jobjectArray searchResultsBuffer = getSearchResultsBuffer(env, instance);
 
-    while (stepStatus == SQLITE_ROW) {
+    while (SQLITE_ROW == returnCode) {
 
         const unsigned char *encodedObjectUTF = sqlite3_column_text(statement, 0);
         jstring encodedObject = (*env)->NewStringUTF(env, (char *) encodedObjectUTF);
@@ -227,20 +211,72 @@ static void executeSearch(JNIEnv *env, jobject instance, jfieldID statementID, c
         (*env)->SetObjectArrayElement(env, searchResultsBuffer, searchResultsCount, encodedObject);
 
         searchResultsCount += 1;
-        stepStatus = sqlite3_step(statement);
+        returnCode = sqlite3_step(statement);
     }
 
     setSearchResultsCount(env, instance, searchResultsCount);
 
-    if (stepStatus == SQLITE_DONE) {
-        goto cleanUp;
+    cleanUp:
+    sqlite3_reset(statement);
+    sqlite3_clear_bindings(statement);
+
+    (*env)->ReleaseStringUTFChars(env, query, queryUTF);
+    return SQLITE_DONE == returnCode ? SQLITE_OK : returnCode;
+}
+
+
+static void searchWordsByLiterals(JNIEnv *env, jobject instance, jstring query) {
+
+    DictionaryContext *context = getContext(env, instance);
+    int returnCode = SQLITE_OK;
+
+    if (! context->searchLiteralsStatement) {
+        returnCode = sqlite3_prepare_v2(context->database, SEARCH_LITERALS_SQL, -1, &context->searchLiteralsStatement, NULL);
     }
 
-    throwDatabaseError:
-    throwError(env, instance, sqlite3_errmsg(database));
+    if (SQLITE_OK == returnCode) {
+        returnCode = executeSearch(env, instance, context->searchLiteralsStatement, query);
+    }
 
-    cleanUp:
-    (*env)->ReleaseStringUTFChars(env, query, queryUTF);
+    if (SQLITE_OK != returnCode) {
+        throwError(env, sqlite3_errmsg(context->database));
+    }
+}
+
+static void searchWordsBySenses(JNIEnv *env, jobject instance, jstring query) {
+
+    DictionaryContext *context = getContext(env, instance);
+    int returnCode = SQLITE_OK;
+
+    if (! context->searchSensesStatement) {
+        returnCode = sqlite3_prepare_v2(context->database, SEARCH_SENSES_SQL, -1, &context->searchSensesStatement, NULL);
+    }
+
+    if (SQLITE_OK == returnCode) {
+        returnCode = executeSearch(env, instance, context->searchSensesStatement, query);
+    }
+
+    if (SQLITE_OK != returnCode) {
+        throwError(env, sqlite3_errmsg(context->database));
+    }
+}
+
+static void searchKanji(JNIEnv *env, jobject instance, jstring query) {
+
+    DictionaryContext *context = getContext(env, instance);
+    int returnCode = SQLITE_OK;
+
+    if (! context->searchKanjiStatement) {
+        returnCode = sqlite3_prepare_v2(context->database, SEARCH_KANJI_SQL, -1, &context->searchKanjiStatement, NULL);
+    }
+
+    if (SQLITE_OK == returnCode) {
+        returnCode = executeSearch(env, instance, context->searchKanjiStatement, query);
+    }
+
+    if (SQLITE_OK != returnCode) {
+        throwError(env, sqlite3_errmsg(context->database));
+    }
 }
 
 JNIEXPORT void JNICALL
@@ -260,15 +296,15 @@ Java_com_kotobyte_models_db_DictionaryDatabase_nativeBuildIndexes(JNIEnv *env, j
 
 JNIEXPORT void JNICALL
 Java_com_kotobyte_models_db_DictionaryDatabase_nativeSearchWordsByLiterals(JNIEnv *env, jobject instance, jstring query) {
-    executeSearch(env, instance, thisSearchLiteralsStatement, SEARCH_LITERALS_SQL, query);
+    searchWordsByLiterals(env, instance, query);
 }
 
 JNIEXPORT void JNICALL
 Java_com_kotobyte_models_db_DictionaryDatabase_nativeSearchWordsBySenses(JNIEnv *env, jobject instance, jstring query) {
-    executeSearch(env, instance, thisSearchSensesStatement, SEARCH_SENSES_SQL, query);
+    searchWordsBySenses(env, instance, query);
 }
 
 JNIEXPORT void JNICALL
 Java_com_kotobyte_models_db_DictionaryDatabase_nativeSearchKanji(JNIEnv *env, jobject instance, jstring query) {
-    executeSearch(env, instance, thisSearchKanjiStatement, SEARCH_KANJI_SQL, query);
+    searchKanji(env, instance, query);
 }
