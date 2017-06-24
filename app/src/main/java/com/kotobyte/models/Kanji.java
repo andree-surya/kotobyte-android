@@ -140,6 +140,7 @@ public class Kanji implements Parcelable {
             mReadings.clear();
             mMeanings.clear();
             mReadings.clear();
+            mStrokes.clear();
 
             return kanji;
         }

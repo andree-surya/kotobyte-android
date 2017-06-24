@@ -9,6 +9,7 @@
 #ifndef TOKENIZERS_H
 #define TOKENIZERS_H
 
-fts5_tokenizer JapaneseWordTokenizer;
+fts5_tokenizer LiteralTokenizer;
+fts5_tokenizer KanjiTokenizer;
 
 #endif

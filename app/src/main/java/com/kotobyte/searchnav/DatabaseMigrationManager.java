@@ -31,15 +31,13 @@ class DatabaseMigrationManager implements SearchNavigationContracts.DatabaseMigr
     @Override
     public boolean isMigrationNeeded() {
 
-        /* TODO: Uncomment
         boolean dictionaryFileNotFound = ! mConfiguration.getDictionaryFilePath().exists();
 
         int latestDictionaryVersion = mConfiguration.getLatestDictionaryVersion();
         int currentDictionaryVersion = mConfiguration.getCurrentDictionaryVersion();
 
-        return dictionaryFileNotFound || latestDictionaryVersion > currentDictionaryVersion;*/
-
-        return true;
+        return dictionaryFileNotFound || latestDictionaryVersion > currentDictionaryVersion;
+        //return true;
     }
 
     @Override

@@ -3,142 +3,94 @@
 //
 
 #include "sqlite3.h"
-#include "tokenizers.h"
-
-#include <string.h>
 #include <android/log.h>
 
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "tokenizers", __VA_ARGS__)
-
-const char *WORD_FIELDS_DELIMITER = "‡";
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, __FILE__, __VA_ARGS__)
 
 typedef struct {
-    fts5_tokenizer unicodeTokenizer;
-    Fts5Tokenizer *unicodeTokenizerData;
+    void *context;
 
-} TokenizerData;
-
-typedef struct {
-    void *originalContext;
-    int (*originalCallback)(void *, int, const char *, int, int, int);
-
-    int textOffset;
-
-} JapaneseWordTokenizer_Context;
+} Tokenizer;
 
 
-static int JapaneseWordTokenizer_tokenizeDocumentCallback(
-        void *context, int tflags, const char *token, int length, int start, int end) {
+static int nextUTF8CharOffset(const unsigned char *text, int offset) {
 
-    JapaneseWordTokenizer_Context *tokenizerContext = (JapaneseWordTokenizer_Context *) context;
-    LOGD("Token: %.*s (%d, %d)", length, token, start, end);
+    if (*(text + offset) > 0) {
+        offset++;
 
-    start = start + tokenizerContext->textOffset;
-    end = end + tokenizerContext->textOffset;
+        // Skip bytes that are not the first byte of a UTF-8 character.
+        while ((*(text + offset) & 0xc0) == 0x80) {
+            offset++;
+        }
 
-    return tokenizerContext->originalCallback(tokenizerContext->originalContext, tflags, token, length, start, end);
-}
-
-static int JapaneseWordTokenizer_tokenizeDocument(
-        Fts5Tokenizer *FTS5Tokenizer, void *context, int flags, const char *text, int length,
-        int (*tokenCallback)(void *, int, const char *, int, int, int)) {
-
-    TokenizerData *tokenizerData = (TokenizerData *) FTS5Tokenizer;
-    JapaneseWordTokenizer_Context tokenizerContext = { context, tokenCallback };
-
-    int returnCode;
-    const size_t delimiterLength = strlen(WORD_FIELDS_DELIMITER);
-
-    fts5_tokenizer unicodeTokenizer = tokenizerData->unicodeTokenizer;
-    Fts5Tokenizer *unicodeTokenizerData = tokenizerData->unicodeTokenizerData;
-
-    const char *literalsField = strstr(text, WORD_FIELDS_DELIMITER) + delimiterLength;
-    int literalsFieldLength = (int) (strstr(literalsField, WORD_FIELDS_DELIMITER) - literalsField);
-
-    tokenizerContext.textOffset = (int) (literalsField - text);
-
-    LOGD("Tokenizing: %.*s", literalsFieldLength, literalsField);
-    returnCode = unicodeTokenizer.xTokenize(
-            unicodeTokenizerData, &tokenizerContext, flags, literalsField, literalsFieldLength,
-            &JapaneseWordTokenizer_tokenizeDocumentCallback);
-
-    if (returnCode != SQLITE_OK) {
-        return returnCode;
+        return offset;
     }
 
-    const char *readingsField = literalsField + literalsFieldLength + delimiterLength;
-    int readingsFieldLength = (int) (strstr(readingsField, WORD_FIELDS_DELIMITER) - readingsField);
+    return -1;
+}
 
-    tokenizerContext.textOffset = (int) (readingsField - text);
+static int LiteralTokenizer_tokenize(
+        Fts5Tokenizer *tokenizer, void *context, int flags, const char *text, int length,
+        int (*tokenCallback)(void *, int, const char *, int, int, int)) {
 
-    LOGD("Tokenizing: %.*s", readingsFieldLength, readingsField);
-    returnCode = unicodeTokenizer.xTokenize(
-            unicodeTokenizerData, &tokenizerContext, flags, readingsField, readingsFieldLength,
-            &JapaneseWordTokenizer_tokenizeDocumentCallback);
+    int returnCode = SQLITE_OK;
+
+    int nextOffset = nextUTF8CharOffset((const unsigned char *) text, 0);
+
+    while (nextOffset > 0 && nextOffset <= length) {
+        returnCode = tokenCallback(context, flags, text, nextOffset, 0, nextOffset);
+
+        if (returnCode != SQLITE_OK) {
+            break;
+        }
+
+        nextOffset = nextUTF8CharOffset((const unsigned char *) text, nextOffset);
+    }
 
     return returnCode;
 }
 
-static int JapaneseWordTokenizer_tokenizeQuery(
-        Fts5Tokenizer *FTS5Tokenizer, void *context, int flags, const char *text, int length,
+static int KanjiTokenizer_tokenize(
+        Fts5Tokenizer *tokenizer, void *context, int flags, const char *text, int length,
         int (*tokenCallback)(void *, int, const char *, int, int, int)) {
 
-    TokenizerData *tokenizerData = (TokenizerData *) FTS5Tokenizer;
+    int returnCode = SQLITE_OK;
 
-    return tokenizerData->unicodeTokenizer.xTokenize(
-            tokenizerData->unicodeTokenizerData, context, flags, text, length, tokenCallback);
-}
+    int currentOffset = 0;
+    int nextOffset = nextUTF8CharOffset((const unsigned char *) text, currentOffset);
 
-static int JapaneseWordTokenizer_tokenize(
-        Fts5Tokenizer *FTS5Tokenizer, void *context, int flags, const char *text, int length,
-        int (*tokenCallback)(void *, int, const char *, int, int, int)) {
+    while (nextOffset > 0 && nextOffset <= length) {
 
-    if ((flags & FTS5_TOKENIZE_DOCUMENT) != 0) {
-        return JapaneseWordTokenizer_tokenizeDocument(FTS5Tokenizer, context, flags, text, length, tokenCallback);
+        int tokenLength = nextOffset - currentOffset;
+        const char *token = text + currentOffset;
 
-    } else {
-        return JapaneseWordTokenizer_tokenizeQuery(FTS5Tokenizer, context, flags, text, length, tokenCallback);
+        LOGD("Token: %.*s", tokenLength, token);
+            returnCode = tokenCallback(context, flags, token, tokenLength, currentOffset, nextOffset);
+
+        if (returnCode != SQLITE_OK) {
+            break;
+        }
+
+        currentOffset = nextOffset;
+        nextOffset = nextUTF8CharOffset((const unsigned char *) text, currentOffset);
     }
+
+    return returnCode;
 }
 
 static int Tokenizer_create(void *context, const char **argv, int argc, Fts5Tokenizer **FTS5Tokenizer) {
 
-    int returnCode = 0;
-    fts5_api *FTS5API = (fts5_api *) context;
+    Tokenizer *tokenizer = sqlite3_malloc(sizeof(Tokenizer));
+    tokenizer->context = context;
 
-    fts5_tokenizer unicodeTokenizer;
-    Fts5Tokenizer *unicodeTokenizerData = NULL;
+    *FTS5Tokenizer = (void *) tokenizer;
 
-    returnCode = FTS5API->xFindTokenizer(FTS5API, "unicode61", &context, &unicodeTokenizer);
-
-    if (SQLITE_OK != returnCode) {
-        return returnCode;
-    }
-
-    returnCode = unicodeTokenizer.xCreate(context, argv, argc, &unicodeTokenizerData);
-
-    if (SQLITE_OK != returnCode) {
-        return returnCode;
-    }
-
-    TokenizerData *tokenizer = sqlite3_malloc(sizeof(TokenizerData));
-
-    tokenizer->unicodeTokenizerData = unicodeTokenizerData;
-    tokenizer->unicodeTokenizer = unicodeTokenizer;
-
-    *FTS5Tokenizer = (Fts5Tokenizer *) tokenizer;
-
-    return returnCode;
+    return SQLITE_OK;
 }
 
-static void Tokenizer_delete(Fts5Tokenizer *FTS5Tokenizer) {
-
-    TokenizerData *tokenizer = (TokenizerData *) FTS5Tokenizer;
-
-    tokenizer->unicodeTokenizer.xDelete(tokenizer->unicodeTokenizerData);
-    tokenizer->unicodeTokenizerData = NULL;
-
+static void Tokenizer_delete(Fts5Tokenizer *tokenizer) {
     sqlite3_free(tokenizer);
 }
 
-fts5_tokenizer JapaneseWordTokenizer = { Tokenizer_create, Tokenizer_delete, JapaneseWordTokenizer_tokenize };
+fts5_tokenizer LiteralTokenizer = { Tokenizer_create, Tokenizer_delete, LiteralTokenizer_tokenize };
+fts5_tokenizer KanjiTokenizer = { Tokenizer_create, Tokenizer_delete, KanjiTokenizer_tokenize };

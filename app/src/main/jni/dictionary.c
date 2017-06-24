@@ -10,9 +10,9 @@
 #include <jni.h>
 
 static const char *BUILD_INDEXES_SQL = \
-        "CREATE VIRTUAL TABLE literals_fts USING fts5(text, content='literals', tokenize='unicode61');"
+        "CREATE VIRTUAL TABLE literals_fts USING fts5(text, content='literals', tokenize='literal');"
         "CREATE VIRTUAL TABLE senses_fts USING fts5(text, content='senses', tokenize='porter unicode61');"
-        "CREATE VIRTUAL TABLE kanji_fts USING fts5(character, content='kanji', tokenize='unicode61');"
+        "CREATE VIRTUAL TABLE kanji_fts USING fts5(character, content='kanji', tokenize='kanji');"
 
         "INSERT INTO literals_fts (literals_fts) VALUES ('rebuild');"
         "INSERT INTO senses_fts (senses_fts) VALUES ('rebuild');"
@@ -56,7 +56,6 @@ typedef struct {
 static jfieldID dictionaryContextID;
 static jfieldID searchResultsCountID;
 static jfieldID searchResultsBufferID;
-static short searchResultsLimit;
 
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -65,12 +64,10 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     (*vm)->GetEnv(vm, (void **) &env, JNI_VERSION_1_6);
 
     jclass thisClass = (*env)->FindClass(env, "com/kotobyte/models/db/DictionaryDatabase");
-    jfieldID searchResultsLimitID = (*env)->GetStaticFieldID(env, thisClass, "SEARCH_RESULTS_LIMIT", "S");
 
     dictionaryContextID = (*env)->GetFieldID(env, thisClass, "mDictionaryContext", "J");
-    searchResultsCountID = (*env)->GetFieldID(env, thisClass, "mSearchResultsCount", "S");
+    searchResultsCountID = (*env)->GetFieldID(env, thisClass, "mSearchResultsCount", "I");
     searchResultsBufferID = (*env)->GetFieldID(env, thisClass, "mSearchResultsBuffer", "[Ljava/lang/String;");
-    searchResultsLimit = (*env)->GetStaticShortField(env, thisClass, searchResultsLimitID);
 
     return JNI_VERSION_1_6;
 }
@@ -87,19 +84,55 @@ static void setContext(JNIEnv *env, jobject instance, DictionaryContext *context
     (*env)->SetLongField(env, instance, dictionaryContextID, (long) context);
 }
 
-static void setSearchResultsCount(JNIEnv *env, jobject instance, short search_results_count) {
-    (*env)->SetShortField(env, instance, searchResultsCountID, search_results_count);
+static void setSearchResultsCount(JNIEnv *env, jobject instance, int search_results_count) {
+    (*env)->SetIntField(env, instance, searchResultsCountID, search_results_count);
 }
 
 static jobjectArray getSearchResultsBuffer(JNIEnv *env, jobject instance) {
     return (*env)->GetObjectField(env, instance, searchResultsBufferID);
 }
 
+static int enableCustomTokenizers(sqlite3 *database) {
+
+    sqlite3_stmt *statement = NULL;
+    fts5_api *FTS5API = NULL;
+    int returnCode;
+
+    returnCode = sqlite3_prepare_v2(database, "SELECT fts5()", -1, &statement, 0);
+
+    if (SQLITE_OK != returnCode) {
+        goto cleanUp;
+    }
+
+    returnCode = sqlite3_step(statement);
+
+    if (SQLITE_ROW != returnCode) {
+        goto cleanUp;
+    }
+
+    memcpy(&FTS5API, sqlite3_column_blob(statement, 0), sizeof(FTS5API));
+
+    returnCode = FTS5API->xCreateTokenizer(FTS5API, "literal", (void *) FTS5API, &LiteralTokenizer, NULL);
+
+    if (SQLITE_OK != returnCode) {
+        goto cleanUp;
+    }
+
+    returnCode = FTS5API->xCreateTokenizer(FTS5API, "kanji", (void *) FTS5API, &KanjiTokenizer, NULL);
+
+    if (SQLITE_OK != returnCode) {
+        goto cleanUp;
+    }
+
+    cleanUp:
+    sqlite3_finalize(statement);
+
+    return returnCode;
+}
+
 static void openDatabaseConnection(JNIEnv *env, jobject instance, jstring databasePath, jboolean readOnly) {
 
     sqlite3 *database = NULL;
-    fts5_api *FTS5API = NULL;
-    sqlite3_stmt *FTS5QueryStatement = NULL;
 
     const char *databasePathUTF = (*env)->GetStringUTFChars(env, databasePath, NULL);
     int flags = readOnly == JNI_TRUE ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE;
@@ -108,17 +141,7 @@ static void openDatabaseConnection(JNIEnv *env, jobject instance, jstring databa
         goto throwDatabaseError;
     }
 
-    if (SQLITE_OK != sqlite3_prepare_v2(database, "SELECT fts5()", -1, &FTS5QueryStatement, 0)) {
-        goto throwDatabaseError;
-    }
-
-    if (SQLITE_ROW != sqlite3_step(FTS5QueryStatement)) {
-        goto throwDatabaseError;
-    }
-
-    memcpy(&FTS5API, sqlite3_column_blob(FTS5QueryStatement, 0), sizeof(FTS5API));
-
-    if (SQLITE_OK != FTS5API->xCreateTokenizer(FTS5API, "japanese_literal", (void *) FTS5API, &JapaneseWordTokenizer, NULL)) {
+    if (SQLITE_OK != enableCustomTokenizers(database)) {
         goto throwDatabaseError;
     }
 
@@ -134,7 +157,6 @@ static void openDatabaseConnection(JNIEnv *env, jobject instance, jstring databa
     sqlite3_close_v2(database);
 
     cleanUp:
-    sqlite3_finalize(FTS5QueryStatement);
     (*env)->ReleaseStringUTFChars(env, databasePath, databasePathUTF);
 }
 
@@ -183,10 +205,12 @@ static void buildDatabaseIndexes(JNIEnv *env, jobject instance) {
 
 static int executeSearch(JNIEnv *env, jobject instance, sqlite3_stmt *statement, jstring query) {
 
-    int returnCode;
     const char *queryUTF = (*env)->GetStringUTFChars(env, query, NULL);
 
-    returnCode = sqlite3_bind_text(statement, 1, queryUTF, -1, NULL);
+    jobjectArray searchResultsBuffer = getSearchResultsBuffer(env, instance);
+    int searchResultsLimit = (*env)->GetArrayLength(env, searchResultsBuffer);
+
+    int returnCode = sqlite3_bind_text(statement, 1, queryUTF, -1, NULL);
 
     if (SQLITE_OK != returnCode) {
         goto cleanUp;
@@ -199,11 +223,9 @@ static int executeSearch(JNIEnv *env, jobject instance, sqlite3_stmt *statement,
     }
 
     returnCode = sqlite3_step(statement);
-    short searchResultsCount = 0;
+    int searchResultsCount = 0;
 
-    jobjectArray searchResultsBuffer = getSearchResultsBuffer(env, instance);
-
-    while (SQLITE_ROW == returnCode) {
+    while (SQLITE_ROW == returnCode && searchResultsCount < searchResultsLimit) {
 
         const unsigned char *encodedObjectUTF = sqlite3_column_text(statement, 0);
         jstring encodedObject = (*env)->NewStringUTF(env, (char *) encodedObjectUTF);

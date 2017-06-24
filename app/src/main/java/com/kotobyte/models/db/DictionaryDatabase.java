@@ -13,13 +13,13 @@ public class DictionaryDatabase implements AutoCloseable {
         System.loadLibrary("dictionary");
     }
 
-    private static final short SEARCH_RESULTS_LIMIT = 50;
+    private static final int SEARCH_RESULTS_LIMIT = 50;
 
     @SuppressWarnings("unused")
     /* native */ private long mDictionaryContext;
 
     @SuppressWarnings("unused")
-    /* native */ private short mSearchResultsCount;
+    /* native */ private int mSearchResultsCount;
 
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
     /* native */ private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
