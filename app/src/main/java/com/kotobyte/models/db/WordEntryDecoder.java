@@ -12,13 +12,13 @@ class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
 
     private static Pattern WORD_FIELDS_SPLITTER = Pattern.compile("_");
     private static Pattern SENSE_ITEMS_SPLITTER = Pattern.compile(">");
-    private static Pattern SENSE_FIELDS_SPLITTER = Pattern.compile("\\}");
+    private static Pattern SENSE_FIELDS_SPLITTER = Pattern.compile("<");
     private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("\\]");
     private static Pattern ORIGIN_FIELDS_SPLITTER = Pattern.compile(":");
+    private static MojiDetector MOJI_DETECTOR = new MojiDetector();
 
     private Word.Builder mWordBuilder = new Word.Builder();
     private Sense.Builder mSenseBuilder = new Sense.Builder();
-    private MojiDetector mMojiDetector = new MojiDetector();
 
     @Override
     public Word decode(String encodedObject) {
@@ -55,7 +55,7 @@ class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
 
             Literal literal = new Literal(text, status);
 
-            if (mMojiDetector.hasKanji(text)) {
+            if (MOJI_DETECTOR.hasKanji(text)) {
                 mWordBuilder.addLiteral(literal);
 
             } else {

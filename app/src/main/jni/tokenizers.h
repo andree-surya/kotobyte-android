@@ -4,8 +4,6 @@
 
 #include "sqlite3.h"
 
-#include <stdint.h>
-
 #ifndef TOKENIZERS_H
 #define TOKENIZERS_H
 

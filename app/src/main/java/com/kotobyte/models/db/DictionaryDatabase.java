@@ -2,6 +2,7 @@ package com.kotobyte.models.db;
 
 import com.kotobyte.models.Kanji;
 import com.kotobyte.models.Word;
+import com.moji4j.MojiDetector;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +15,10 @@ public class DictionaryDatabase implements AutoCloseable {
     }
 
     private static final int SEARCH_RESULTS_LIMIT = 50;
+    private static final MojiDetector MOJI_DETECTOR = new MojiDetector();
+
+    private final WordEntryDecoder mWordEntryDecoder = new WordEntryDecoder();
+    private final KanjiEntryDecoder mKanjiEntryDecoder = new KanjiEntryDecoder();
 
     @SuppressWarnings("unused")
     /* native */ private long mDictionaryContext;
@@ -22,13 +27,14 @@ public class DictionaryDatabase implements AutoCloseable {
     /* native */ private int mSearchResultsCount;
 
     @SuppressWarnings("MismatchedReadAndWriteOfArray")
-    /* native */ private String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
+    /* native */ private final String[] mSearchResultsBuffer = new String[SEARCH_RESULTS_LIMIT];
 
     public DictionaryDatabase(String dictionaryFilePath) {
         this(dictionaryFilePath, true);
     }
 
     public DictionaryDatabase(String dictionaryFilePath, boolean readOnly) {
+
         nativeOpenConnection(dictionaryFilePath, readOnly);
     }
 
@@ -41,18 +47,42 @@ public class DictionaryDatabase implements AutoCloseable {
         nativeBuildIndexes();
     }
 
-    public List<Word> searchWord(String query) {
+    public List<Word> searchWord(String userQuery) {
 
-        nativeSearchWordsByLiterals(query);
+        if (MOJI_DETECTOR.hasKanji(userQuery) || MOJI_DETECTOR.hasKana(userQuery)) {
+            return searchWordByLiterals(userQuery);
 
-        return decodeSearchResultsWith(new WordEntryDecoder());
+        } else if (MOJI_DETECTOR.hasRomaji(userQuery)) {
+            return searchWordBySenses(userQuery);
+
+        } else {
+            return Collections.emptyList();
+        }
     }
 
-    public List<Kanji> searchKanji(String query) {
+    public List<Kanji> searchKanji(String userQuery) {
 
-        nativeSearchKanji(query);
+        if (MOJI_DETECTOR.hasKanji(userQuery)) {
+            nativeSearchKanji(userQuery);
 
-        return decodeSearchResultsWith(new KanjiEntryDecoder());
+            return decodeSearchResultsWith(mKanjiEntryDecoder);
+        }
+
+        return Collections.emptyList();
+    }
+
+    private List<Word> searchWordByLiterals(String userQuery) {
+
+        nativeSearchWordsByLiterals(userQuery);
+
+        return decodeSearchResultsWith(mWordEntryDecoder);
+    }
+
+    private List<Word> searchWordBySenses(String userQuery) {
+
+        nativeSearchWordsBySenses(userQuery);
+
+        return decodeSearchResultsWith(mWordEntryDecoder);
     }
 
     private <T> List<T> decodeSearchResultsWith(DictionaryEntryDecoder<T> entryDecoder) {

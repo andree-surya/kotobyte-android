@@ -2,10 +2,7 @@
 // Created by Andree Surya on 2017/06/21.
 //
 
-#include "sqlite3.h"
-#include <android/log.h>
-
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, __FILE__, __VA_ARGS__)
+#include "tokenizers.h"
 
 typedef struct {
     void *context;
@@ -34,11 +31,16 @@ static int LiteralTokenizer_tokenize(
         int (*tokenCallback)(void *, int, const char *, int, int, int)) {
 
     int returnCode = SQLITE_OK;
+    int tokenFlags = 0;
+
+    if ((flags & FTS5_TOKENIZE_QUERY) == FTS5_TOKENIZE_QUERY) {
+        tokenFlags = tokenFlags | FTS5_TOKEN_COLOCATED;
+    }
 
     int nextOffset = nextUTF8CharOffset((const unsigned char *) text, 0);
 
     while (nextOffset > 0 && nextOffset <= length) {
-        returnCode = tokenCallback(context, flags, text, nextOffset, 0, nextOffset);
+        returnCode = tokenCallback(context, tokenFlags, text, nextOffset, 0, nextOffset);
 
         if (returnCode != SQLITE_OK) {
             break;
@@ -55,24 +57,28 @@ static int KanjiTokenizer_tokenize(
         int (*tokenCallback)(void *, int, const char *, int, int, int)) {
 
     int returnCode = SQLITE_OK;
+    int tokenFlags = 0;
 
-    int currentOffset = 0;
-    int nextOffset = nextUTF8CharOffset((const unsigned char *) text, currentOffset);
+    if ((flags & FTS5_TOKENIZE_QUERY) == FTS5_TOKENIZE_QUERY) {
+        tokenFlags = tokenFlags | FTS5_TOKEN_COLOCATED;
+    }
+
+    int prevOffset = 0;
+    int nextOffset = nextUTF8CharOffset((const unsigned char *) text, prevOffset);
 
     while (nextOffset > 0 && nextOffset <= length) {
 
-        int tokenLength = nextOffset - currentOffset;
-        const char *token = text + currentOffset;
+        int tokenLength = nextOffset - prevOffset;
+        const char *token = text + prevOffset;
 
-        LOGD("Token: %.*s", tokenLength, token);
-            returnCode = tokenCallback(context, flags, token, tokenLength, currentOffset, nextOffset);
+        returnCode = tokenCallback(context, tokenFlags, token, tokenLength, prevOffset, nextOffset);
 
         if (returnCode != SQLITE_OK) {
             break;
         }
 
-        currentOffset = nextOffset;
-        nextOffset = nextUTF8CharOffset((const unsigned char *) text, currentOffset);
+        prevOffset = nextOffset;
+        nextOffset = nextUTF8CharOffset((const unsigned char *) text, prevOffset);
     }
 
     return returnCode;

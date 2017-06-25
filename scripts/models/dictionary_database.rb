@@ -4,6 +4,8 @@ require_relative 'kanji'
 require 'mojinizer'
 require 'sqlite3'
 
+SEARCH_RESULTS_LIMIT = 50
+
 CREATE_TABLES = <<-EOS
 
   CREATE TABLE literals (
@@ -36,11 +38,8 @@ CREATE_TABLES = <<-EOS
 EOS
 
 BUILD_INDEXES = <<-EOS
-  CREATE INDEX literals_word_id ON literals(word_id);
-  CREATE INDEX senses_word_id ON senses(word_id);
-
   CREATE VIRTUAL TABLE literals_fts USING fts5(text, content='literals');
-  CREATE VIRTUAL TABLE senses_fts USING fts5(text, content='senses', tokenize='porter unicode61');
+  CREATE VIRTUAL TABLE senses_fts USING fts5(text, content='senses', tokenize='porter');
   CREATE VIRTUAL TABLE kanji_fts USING fts5(character, content='kanji');
 
   INSERT INTO literals_fts (literals_fts) VALUES ('rebuild');
@@ -48,32 +47,46 @@ BUILD_INDEXES = <<-EOS
   INSERT INTO kanji_fts (kanji_fts) VALUES ('rebuild');
 EOS
 
-SEARCH_LITERALS = <<-EOS
-  SELECT word_id FROM literals_fts(:query) INNER JOIN literals ON (literals_fts.rowid = literals.rowid) GROUP BY word_id ORDER BY MIN(rank * priority) LIMIT :limit
+RESET_SEARCH_RESULTS = <<-EOS
+  CREATE TEMP TABLE IF NOT EXISTS search_results (
+    id INTEGER PRIMARY KEY, score REAL);
+
+  DELETE FROM search_results;
 EOS
 
-SEARCH_SENSES = <<-EOS
-  SELECT word_id FROM senses_fts(:query) INNER JOIN senses ON (senses_fts.rowid = senses.rowid) GROUP BY word_id ORDER BY MIN(rank) LIMIT :limit
+SEARCH_WORDS_BY_LITERALS = <<-EOS
+  INSERT INTO search_results
+    SELECT word_id, MIN(rank * priority) score
+    FROM literals l JOIN literals_fts(?) lf ON (l.rowid = lf.rowid)
+    GROUP BY word_id ORDER BY score LIMIT ?;
 EOS
 
-SEARCH_AND_ENCODE_WORD = <<-EOS
+SEARCH_WORDS_BY_SENSES = <<-EOS
+  INSERT INTO search_results
+    SELECT word_id, MIN(rank) rank
+    FROM senses s JOIN senses_fts(?) sf ON (s.rowid = sf.rowid)
+    GROUP BY word_id ORDER BY rank LIMIT ?;
+EOS
+
+ENCODE_WORD_SEARCH_RESULTS = <<-EOS
   WITH
-    search_results AS (%s),
-    word_literals AS (SELECT word_id, GROUP_CONCAT(priority || text, ']') text FROM literals WHERE word_id IN search_results GROUP BY word_id),
-    word_senses AS (SELECT word_id, GROUP_CONCAT(text || '}' || IFNULL(categories, '') || '}' || IFNULL(origins, '') || '}' || IFNULL(labels, '') || '}' || IFNULL(notes, ''), '>') text FROM senses WHERE word_id IN search_results GROUP BY word_id )
+    word_literals AS (
+      SELECT id, GROUP_CONCAT(priority || text, ']') text
+      FROM literals l JOIN search_results sr ON (l.word_id = sr.id) GROUP BY id),
 
-  SELECT (search_results.word_id || '_' || word_literals.text || '_' || word_senses.text) text
-  FROM search_results
-  INNER JOIN word_literals ON (search_results.word_id = word_literals.word_id)
-  INNER JOIN word_senses ON (search_results.word_id = word_senses.word_id)
+    word_senses AS (
+      SELECT id, GROUP_CONCAT(text || '<' || IFNULL(categories, '') || '<' || IFNULL(origins, '') || '<' || IFNULL(labels, '') || '<' || IFNULL(notes, ''), '>') text
+      FROM senses s JOIN search_results sr ON (s.word_id = sr.id) GROUP BY id)
+
+  SELECT (sr.id || '_' || wl.text || '_' || ws.text) text
+    FROM search_results sr JOIN word_literals wl ON (sr.id = wl.id) JOIN word_senses ws ON (sr.id = ws.id)
+    ORDER BY score;
 EOS
 
 SEARCH_AND_ENCODE_KANJI = <<-EOS
   SELECT kanji.id || '_' || kanji.character || '_' || IFNULL(readings, '') || '_' || IFNULL(meanings, '') || '_' || IFNULL(jlpt, '') || '_' || IFNULL(grade, '') || '_' || IFNULL(strokes, '') text
-  FROM kanji_fts(:query)
-  INNER JOIN kanji ON (kanji_fts.rowid = kanji.rowid)
-  ORDER BY rank
-  LIMIT :limit
+    FROM kanji_fts(?) JOIN kanji ON (kanji_fts.rowid = kanji.rowid)
+    ORDER BY rank LIMIT ?;
 EOS
 
 class DictionaryDatabase
@@ -142,13 +155,18 @@ class DictionaryDatabase
   def search_words(query)
     results = []
 
+    @database.execute_batch RESET_SEARCH_RESULTS
+
     if query.contains_japanese?
-      statement = @search_literals ||= @database.prepare(SEARCH_AND_ENCODE_WORD % SEARCH_LITERALS)
+      @search_literals ||= @database.prepare(SEARCH_WORDS_BY_LITERALS)
+      @search_literals.execute(query, SEARCH_RESULTS_LIMIT)
     else
-      statement = @search_senses ||= @database.prepare(SEARCH_AND_ENCODE_WORD % SEARCH_SENSES)
+      @search_senses ||= @database.prepare(SEARCH_WORDS_BY_SENSES)
+      @search_senses.execute(query, SEARCH_RESULTS_LIMIT)
     end
 
-    statement.execute(query: query, limit: 50).each_hash { |r| results << r['text'] }
+    @encode_words ||= @database.prepare(ENCODE_WORD_SEARCH_RESULTS)
+    @encode_words.execute(SEARCH_RESULTS_LIMIT).each_hash { |r| results << r['text'] }
 
     results
   end
@@ -157,8 +175,12 @@ class DictionaryDatabase
     results = []
 
     @search_kanji ||= @database.prepare(SEARCH_AND_ENCODE_KANJI)
-    @search_kanji.execute(query: query, limit: 50).each_hash { |r| results << r['text'] }
+    @search_kanji.execute(query, SEARCH_RESULTS_LIMIT).each_hash { |r| results << r['text'] }
 
     results
+  end
+
+  def execute(sql)
+    @database.execute(sql)
   end
 end

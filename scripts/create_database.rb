@@ -3,19 +3,15 @@
 require_relative 'models/dictionary_database'
 require_relative 'models/kanji_source_reader'
 require_relative 'models/words_source_reader'
-require 'optparse'
 
 WORDS_SOURCE_FILE = File.expand_path('data/jmdict_e.xml', __dir__)
 KANJI_SOURCE_FILE = File.expand_path('data/kanjidic2.xml', __dir__)
 KANJI_STROKES_FILE = File.expand_path('data/kanjivg.xml', __dir__)
 
-should_build_indexes = false
-database_file_name = nil
+abort 'Please provide dictionary file name.' if ARGV[0].nil?
 
-OptionParser.new('Usage: ./create_database [options]') do |options|
-  options.on('-f FILE', 'Database file name') { |f| database_file_name = f }
-  options.on('-i', 'Build FTS indexes') { |i| should_build_indexes = i }
-end.parse!
+database_file_name = ARGV[0]
+should_build_indexes = 'index' == ARGV[1]
 
 database = DictionaryDatabase.new(database_file_name, reset: true)
 
