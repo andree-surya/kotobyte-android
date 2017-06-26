@@ -7,7 +7,8 @@ require 'nokogiri'
 class WordsSourceReader
   PRIORITY_CODES = ['ichi', 'news', 'spec', 'gai']
   IRREGULAR_CODES = ['iK', 'ik', 'oK', 'ok', 'io']
-  PRIORITY = { low: 1, default: 2, high: 3 }
+
+  PRIORITY = { low: 0, default: 1, high: 2 }
 
   def initialize(source_xml: '<JMdict />')
     @xml = source_xml
@@ -53,27 +54,33 @@ class WordsSourceReader
       when 'ent_seq'
         @current_word.id = node.inner_xml.to_i
 
-      when 'k_ele', 'r_ele'
+      when 'k_ele'
         @current_word.literals ||= []
         @current_word.literals << Literal.new
         @current_word.literals.last.priority = PRIORITY[:default]
 
-      when 'keb', 'reb'
+      when 'r_ele'
+        @current_word.readings ||= []
+        @current_word.readings << Literal.new
+        @current_word.readings.last.priority = PRIORITY[:default]
+
+      when 'keb'
         @current_word.literals.last.text = node.inner_xml
 
-      when 'ke_pri', 're_pri'
-        code = clean_xml_entity(node.inner_xml).gsub(/\d/, '')
+      when 'reb'
+        @current_word.readings.last.text = node.inner_xml
 
-        if PRIORITY_CODES.include? code
-          @current_word.literals.last.priority = PRIORITY[:high]
-        end
+      when 'ke_pri'
+        handle_literal_priority(@current_word.literals.last, node)
 
-      when 'ke_inf', 're_inf'
-        info = clean_xml_entity(node.inner_xml)
+      when 're_pri'
+        handle_literal_priority(@current_word.readings.last, node)
 
-        if IRREGULAR_CODES.include? info
-          @current_word.literals.last.priority = PRIORITY[:low]
-        end
+      when 'ke_inf'
+        handle_literal_irregularity(@current_word.literals.last, node)
+
+      when 're_inf'
+        handle_literal_irregularity(@current_word.readings.last, node)
 
       when 'sense'
         @current_word.senses ||= []
@@ -129,6 +136,22 @@ class WordsSourceReader
         if current_sense.categories&.empty?
           current_sense.categories = preceeding_sense.categories
         end
+      end
+    end
+
+    def handle_literal_priority(literal, node)
+      priority_code = clean_xml_entity(node.inner_xml).gsub(/\d/, '')
+
+      if PRIORITY_CODES.include? priority_code
+        literal.priority = PRIORITY[:high]
+      end
+    end
+
+    def handle_literal_irregularity(literal, node)
+      irregular_code = clean_xml_entity(node.inner_xml)
+
+      if IRREGULAR_CODES.include? irregular_code
+        literal.priority = PRIORITY[:low]
       end
     end
 

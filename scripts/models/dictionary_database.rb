@@ -1,92 +1,52 @@
 
 require_relative 'word'
 require_relative 'kanji'
+require 'json'
 require 'mojinizer'
 require 'sqlite3'
 
-SEARCH_RESULTS_LIMIT = 50
-
 CREATE_TABLES = <<-EOS
 
-  CREATE TABLE literals (
-    word_id INTEGER NOT NULL,
-    priority INTEGER NOR NULL,
-    text TEXT NOT NULL
+  create table words (
+    id integer primary key,
+    json text not null
   );
 
-  CREATE TABLE senses (
-    word_id INTEGER NOT NULL,
-    text TEXT NOT NULL,
-    categories TEXT,
-    origins TEXT,
-    labels TEXT,
-    notes TEXT
+  create table kanji (
+    id integer primary key,
+    json text not null
   );
-
-  CREATE TABLE kanji (
-    id INTEGER PRIMARY KEY,
-    character TEXT NOT NULL,
-    readings TEXT,
-    meanings TEXT,
-    jlpt INTEGER,
-    grade INTEGER,
-    strokes TEXT
-  );
-
-  CREATE INDEX literals_word_id ON literals(word_id);
-  CREATE INDEX senses_word_id ON senses(word_id);
 EOS
 
 BUILD_INDEXES = <<-EOS
-  CREATE VIRTUAL TABLE literals_fts USING fts5(text, content='literals');
-  CREATE VIRTUAL TABLE senses_fts USING fts5(text, content='senses', tokenize='porter');
-  CREATE VIRTUAL TABLE kanji_fts USING fts5(character, content='kanji');
+  create virtual table literals_fts using fts5(text, word_id unindexed, priority unindexed, prefix='1 2 3 4 5');
+  create virtual table senses_fts using fts5(text, word_id unindexed, tokenize='porter');
+  create virtual table kanji_fts using fts5(text, kanji_id unindexed);
 
-  INSERT INTO literals_fts (literals_fts) VALUES ('rebuild');
-  INSERT INTO senses_fts (senses_fts) VALUES ('rebuild');
-  INSERT INTO kanji_fts (kanji_fts) VALUES ('rebuild');
+  insert into literals_fts select substr(value, 2), words.id, substr(value, 1, 1) from words, json_each(words.json, '$[0]') where type = 'text';
+  insert into literals_fts select substr(value, 2), words.id, substr(value, 1, 1) from words, json_each(words.json, '$[1]') where type = 'text';
+  insert into senses_fts select json_extract(value, '$[0]'), words.id from words, json_each(words.json, '$[2]');
+  insert into kanji_fts select json_extract(json, '$[0]'), kanji.id from kanji;
 EOS
 
-RESET_SEARCH_RESULTS = <<-EOS
-  CREATE TEMP TABLE IF NOT EXISTS search_results (
-    id INTEGER PRIMARY KEY, score REAL);
-
-  DELETE FROM search_results;
+SEARCH_LITERALS = <<-EOS
+  select word_id, highlight(literals_fts, 0, '{', '}') highlight, rank * priority score
+    from literals_fts(?) order by score limit ?
 EOS
 
-SEARCH_WORDS_BY_LITERALS = <<-EOS
-  INSERT INTO search_results
-    SELECT word_id, MIN(rank * priority) score
-    FROM literals l JOIN literals_fts(?) lf ON (l.rowid = lf.rowid)
-    GROUP BY word_id ORDER BY score LIMIT ?;
+SEARCH_SENSES = <<-EOS
+  select word_id, highlight(senses_fts, 0, '{', '}') highlight, rank score
+    from senses_fts(?) order by score limit ?
 EOS
 
-SEARCH_WORDS_BY_SENSES = <<-EOS
-  INSERT INTO search_results
-    SELECT word_id, MIN(rank) rank
-    FROM senses s JOIN senses_fts(?) sf ON (s.rowid = sf.rowid)
-    GROUP BY word_id ORDER BY rank LIMIT ?;
+SEARCH_WORDS = <<-EOS
+  with search_results as (%s)
+    select id, json, group_concat(highlight, ';') highlights, min(score) score
+    from words join search_results on (id = word_id) group by id order by score;
 EOS
 
-ENCODE_WORD_SEARCH_RESULTS = <<-EOS
-  WITH
-    word_literals AS (
-      SELECT id, GROUP_CONCAT(priority || text, ']') text
-      FROM literals l JOIN search_results sr ON (l.word_id = sr.id) GROUP BY id),
-
-    word_senses AS (
-      SELECT id, GROUP_CONCAT(text || '<' || IFNULL(categories, '') || '<' || IFNULL(origins, '') || '<' || IFNULL(labels, '') || '<' || IFNULL(notes, ''), '>') text
-      FROM senses s JOIN search_results sr ON (s.word_id = sr.id) GROUP BY id)
-
-  SELECT (sr.id || '_' || wl.text || '_' || ws.text) text
-    FROM search_results sr JOIN word_literals wl ON (sr.id = wl.id) JOIN word_senses ws ON (sr.id = ws.id)
-    ORDER BY score;
-EOS
-
-SEARCH_AND_ENCODE_KANJI = <<-EOS
-  SELECT kanji.id || '_' || kanji.character || '_' || IFNULL(readings, '') || '_' || IFNULL(meanings, '') || '_' || IFNULL(jlpt, '') || '_' || IFNULL(grade, '') || '_' || IFNULL(strokes, '') text
-    FROM kanji_fts(?) JOIN kanji ON (kanji_fts.rowid = kanji.rowid)
-    ORDER BY rank LIMIT ?;
+SEARCH_KANJI = <<-EOS
+  select id, json from kanji join kanji_fts(?) on (id = kanji_id) limit ?;
 EOS
 
 class DictionaryDatabase
@@ -103,6 +63,8 @@ class DictionaryDatabase
     end
 
     @database = SQLite3::Database.new(database_path)
+    @database.results_as_hash = true
+
     @database.execute_batch CREATE_TABLES if should_reset_structures
   end
 
@@ -114,73 +76,106 @@ class DictionaryDatabase
     @database.execute_batch BUILD_INDEXES
   end
 
+  def optimize
+    @database.execute 'VACUUM'
+  end
+
   def insert_word(word)
-    @insert_literal ||= @database.prepare('INSERT INTO literals VALUES (?, ?, ?)')
-    @insert_sense ||= @database.prepare('INSERT INTO senses VALUES (?, ?, ?, ?, ?, ?)')
-
-    word.literals.each do |literal|
-      @insert_literal.execute([
-        word.id,
-        literal.priority,
-        literal.text,
-      ])
-    end
-
-    word.senses.each do |sense|
-      @insert_sense.execute([
-        word.id,
-        sense.texts.join(']'),
-        sense.categories&.join(']'),
-        sense.origins&.join(']'),
-        sense.labels&.join(']'),
-        sense.notes&.join(']')
-      ])
-    end
+    @insert_word ||= @database.prepare('insert into words values (?, ?)')
+    @insert_word.execute(word.id, json_from_word(word))
   end
 
   def insert_kanji(kanji)
-    @insert_kanji ||= @database.prepare('INSERT INTO kanji VALUES (?, ?, ?, ?, ?, ?, ?)')
-
-    @insert_kanji.execute([
-      kanji.id,
-      kanji.character,
-      kanji.readings&.join(']'),
-      kanji.meanings&.join(']'),
-      kanji.jlpt,
-      kanji.grade,
-      kanji.strokes&.join(']')
-    ])
+    @insert_kanji ||= @database.prepare('insert into kanji values (?, ?)')
+    @insert_kanji.execute(kanji.id, json_from_kanji(kanji))
   end
 
   def search_words(query)
-    results = []
-
-    @database.execute_batch RESET_SEARCH_RESULTS
 
     if query.contains_japanese?
-      @search_literals ||= @database.prepare(SEARCH_WORDS_BY_LITERALS)
-      @search_literals.execute(query, SEARCH_RESULTS_LIMIT)
+      results = search_words_by_literals(query, 50)
+
     else
-      @search_senses ||= @database.prepare(SEARCH_WORDS_BY_SENSES)
-      @search_senses.execute(query, SEARCH_RESULTS_LIMIT)
+      results = search_words_by_senses(query, 50)
+
+      if results.size <= 10
+        literal_results = []
+
+        literal_results += search_words_by_literals(query.hiragana, 20)
+        literal_results += search_words_by_literals(query.katakana, 20)
+        literal_results.sort! { |r1, r2| r1['score'] <=> r2['score'] }
+
+        results += literal_results
+      end
     end
 
-    @encode_words ||= @database.prepare(ENCODE_WORD_SEARCH_RESULTS)
-    @encode_words.execute(SEARCH_RESULTS_LIMIT).each_hash { |r| results << r['text'] }
-
+    results.each { |r| r['json'] = r['json'][0...32] }
     results
   end
 
-  def search_kanji(query)
+  def search_kanji(query, limit = 5)
     results = []
 
-    @search_kanji ||= @database.prepare(SEARCH_AND_ENCODE_KANJI)
-    @search_kanji.execute(query, SEARCH_RESULTS_LIMIT).each_hash { |r| results << r['text'] }
+    tokens = query.chars.select { |c| c.kanji? }
+
+    unless query.empty?
+      @search_kanji ||= @database.prepare(SEARCH_KANJI)
+      @search_kanji.execute(tokens.join(' OR '), 10).each { |h| results << h }
+    end
 
     results
   end
 
-  def execute(sql)
-    @database.execute(sql)
-  end
+  private
+
+    def search_words_by_literals(query, limit)
+      results = []
+
+      query = query.chars.select { |c| c.kanji? || c.kana? }.join
+      tokens = 1.upto(query.size).map { |l| query[0...l] << '*' } << query
+
+      @search_literals ||= @database.prepare(SEARCH_WORDS % SEARCH_LITERALS)
+      @search_literals.execute(tokens.join(' OR '), limit).each { |h| results << h }
+
+      results
+    end
+
+    def search_words_by_senses(query, limit)
+      results = []
+
+      @search_senses ||= @database.prepare(SEARCH_WORDS % SEARCH_SENSES)
+      @search_senses.execute(query, limit).each { |h| results << h }
+
+      results
+    end
+
+    def json_from_word(word)
+      [
+        word.literals&.map { |l| "#{l.priority}#{l.text}" } || 0,
+        word.readings.map { |r| "#{r.priority}#{r.text}" },
+
+        word.senses.map do |s|
+          [
+            s.texts.join(', '),
+            s.categories&.join(';') || 0,
+            s.origins&.join(';') || 0,
+            s.labels&.join(';') || 0,
+            s.notes&.join(';') || 0
+          ]
+        end
+
+      ].to_json
+    end
+
+    def json_from_kanji(kanji)
+      [
+        kanji.character,
+        kanji.readings&.join(';') || 0,
+        kanji.meanings&.join(';') || 0,
+        kanji.jlpt || 0,
+        kanji.grade || 0,
+        kanji.strokes&.join(';') || 0
+
+      ].to_json
+    end
 end

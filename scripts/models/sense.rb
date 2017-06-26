@@ -9,4 +9,15 @@ class Sense
   def initialize
     yield self if block_given?
   end
+
+  def as_hash
+    {
+      t: texts,
+      c: categories,
+      o: origins,
+      l: labels,
+      n: notes
+      
+    }.delete_if { |k, v| v.nil? }
+  end
 end

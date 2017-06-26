@@ -30,3 +30,5 @@ database.transaction do |db|
 
   database.build_indexes if should_build_indexes
 end
+
+database.optimize

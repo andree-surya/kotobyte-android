@@ -31,7 +31,6 @@ describe WordsSourceReader do
     xml = <<-EOS
       <!DOCTYPE JMdict [
         <!ENTITY iK "Irregular Kanji">
-        <!ENTITY ok "Outdated Kana usage">
       ]>
 
       <JMdict>
@@ -39,6 +38,30 @@ describe WordsSourceReader do
           <k_ele><keb>冗談</keb></k_ele>
           <k_ele><keb>言葉</keb><ke_pri>news2</ke_pri></k_ele>
           <k_ele><keb>匂い</keb><ke_inf>&iK;</ke_inf></k_ele>
+        </entry>
+      </JMdict>
+    EOS
+
+    literals = WordsSourceReader.new(source_xml: xml).read_one.literals
+
+    expect(literals.count).to eq(3)
+    expect(literals[0].text).to eq('冗談')
+    expect(literals[1].text).to eq('言葉')
+    expect(literals[2].text).to eq('匂い')
+    expect(literals[0].priority).to eq(1)
+    expect(literals[1].priority).to eq(2)
+    expect(literals[2].priority).to eq(0)
+  end
+
+  it 'should parse readings texts and assign priority' do
+
+    xml = <<-EOS
+      <!DOCTYPE JMdict [
+        <!ENTITY ok "Outdated Kana usage">
+      ]>
+
+      <JMdict>
+        <entry>
           <r_ele><reb>ノート</reb></r_ele>
           <r_ele><reb>バグ</reb><re_pri>gai1</re_pri></r_ele>
           <r_ele><reb>みず</reb><re_inf>&ok;</re_inf></r_ele>
@@ -46,23 +69,15 @@ describe WordsSourceReader do
       </JMdict>
     EOS
 
-    literals = WordsSourceReader.new(source_xml: xml).read_one.literals
+    readings = WordsSourceReader.new(source_xml: xml).read_one.readings
 
-    expect(literals.count).to eq(6)
-
-    expect(literals[0].text).to eq('冗談')
-    expect(literals[1].text).to eq('言葉')
-    expect(literals[2].text).to eq('匂い')
-    expect(literals[3].text).to eq('ノート')
-    expect(literals[4].text).to eq('バグ')
-    expect(literals[5].text).to eq('みず')
-
-    expect(literals[0].priority).to eq(2)
-    expect(literals[1].priority).to eq(3)
-    expect(literals[2].priority).to eq(1)
-    expect(literals[3].priority).to eq(2)
-    expect(literals[4].priority).to eq(3)
-    expect(literals[5].priority).to eq(1)
+    expect(readings.count).to eq(3)
+    expect(readings[0].text).to eq('ノート')
+    expect(readings[1].text).to eq('バグ')
+    expect(readings[2].text).to eq('みず')
+    expect(readings[0].priority).to eq(1)
+    expect(readings[1].priority).to eq(2)
+    expect(readings[2].priority).to eq(0)
   end
 
   it 'should parse sense and translation texts' do
