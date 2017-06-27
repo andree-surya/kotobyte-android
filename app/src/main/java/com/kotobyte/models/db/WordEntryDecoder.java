@@ -4,146 +4,204 @@ import com.kotobyte.models.Literal;
 import com.kotobyte.models.Origin;
 import com.kotobyte.models.Sense;
 import com.kotobyte.models.Word;
-import com.moji4j.MojiDetector;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
-class WordEntryDecoder implements DictionaryEntryDecoder<Word> {
+class WordEntryDecoder {
 
-    private static Pattern WORD_FIELDS_SPLITTER = Pattern.compile("_");
-    private static Pattern SENSE_ITEMS_SPLITTER = Pattern.compile(">");
-    private static Pattern SENSE_FIELDS_SPLITTER = Pattern.compile("<");
-    private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("\\]");
-    private static Pattern ORIGIN_FIELDS_SPLITTER = Pattern.compile(":");
-    private static MojiDetector MOJI_DETECTOR = new MojiDetector();
+    private Pattern mStringItemsDelimiter = Pattern.compile(";");
+    private Pattern mHighlightsMarker = Pattern.compile("[\\{\\}]");
 
     private Word.Builder mWordBuilder = new Word.Builder();
     private Sense.Builder mSenseBuilder = new Sense.Builder();
 
-    @Override
-    public Word decode(String encodedObject) {
-        String[] wordFieldTokens = WORD_FIELDS_SPLITTER.split(encodedObject, -1);
+    Word decode(long wordId, String jsonString, String highlights) {
 
-        mWordBuilder.setID(Long.decode(wordFieldTokens[0]));
+        Map<String, String> highlightsMap = createHighlightsMap(highlights);
 
-        parseLiterals(wordFieldTokens[1]);
-        parseSenses(wordFieldTokens[2]);
+        try {
+            JSONArray fields = new JSONArray(jsonString);
 
-        return mWordBuilder.buildAndReset();
-    }
+            mWordBuilder.setId(wordId);
 
-    private void parseLiterals(String literalsField) {
+            Literal[] literals = parseLiteralsField(fields.getString(0), highlightsMap);
+            Literal[] readings = parseLiteralsField(fields.getString(1), highlightsMap);
+            Sense[] senses = parseSensesField(fields.getString(2), highlightsMap);
 
-        if (literalsField.isEmpty()) {
-            return;
-        }
-
-        for (String literalToken : STRING_ITEMS_SPLITTER.split(literalsField)) {
-
-            String text = literalToken.substring(1, literalToken.length());
-
-            Literal.Status status = null;
-            char priorityCode = literalToken.charAt(0);
-
-            if (priorityCode == '3') {
-                status = Literal.Status.COMMON;
+            if (literals != null) {
+                mWordBuilder.addLiterals(literals);
             }
 
-            if (priorityCode == '1') {
-                status = Literal.Status.IRREGULAR;
+            if (readings != null) {
+                mWordBuilder.addReadings(readings);
             }
 
-            Literal literal = new Literal(text, status);
+            if (senses != null) {
+                mWordBuilder.addSenses(senses);
+            }
 
-            if (MOJI_DETECTOR.hasKanji(text)) {
-                mWordBuilder.addLiteral(literal);
+            return mWordBuilder.build();
 
-            } else {
-                mWordBuilder.addReading(literal);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+
+        } finally {
+            mWordBuilder.reset();
+        }
+    }
+
+    private Literal[] parseLiteralsField(String literalsField, Map<String, String> highlightsMap) throws JSONException {
+
+        if (! isEmptyField(literalsField)) {
+
+            JSONArray rawLiterals = new JSONArray(literalsField);
+            Literal[] literals = new Literal[rawLiterals.length()];
+
+            for (int i = 0; i < rawLiterals.length(); i++) {
+                String rawLiteral = rawLiterals.getString(i);
+
+                String text = rawLiteral.substring(1);
+                Literal.Priority priority = null;
+
+                switch (rawLiteral.charAt(0)) {
+                    case '0':
+                        priority = Literal.Priority.LOW;
+                        break;
+
+                    case '2':
+                        priority = Literal.Priority.HIGH;
+                        break;
+
+                    default:
+                        priority = Literal.Priority.NORMAL;
+                        break;
+                }
+
+                // Replace with highlighted text if needed.
+                if (highlightsMap.containsKey(text)) {
+                    text = highlightsMap.get(text);
+                }
+
+                literals[i] = new Literal(text, priority);
+            }
+
+            return literals;
+        }
+
+        return null;
+    }
+
+    private Sense[] parseSensesField(String sensesField, Map<String, String> highlightsMap) throws JSONException {
+
+        if (! isEmptyField(sensesField)) {
+
+            try {
+                JSONArray rawSenses = new JSONArray(sensesField);
+                Sense[] senses = new Sense[rawSenses.length()];
+
+                for (int i = 0; i < rawSenses.length(); i++) {
+                    JSONArray rawSense = rawSenses.getJSONArray(i);
+
+                    String text = rawSense.getString(0);
+                    String[] categories = parseRawStringsField(rawSense.getString(1));
+                    Origin[] origins = parseOriginsField(rawSense.getString(2));
+                    String[] labels = parseRawStringsField(rawSense.getString(3));
+                    String[] notes = parseRawStringsField(rawSense.getString(4));
+
+                    // Replace with highlighted text if needed.
+                    if (highlightsMap.containsKey(text)) {
+                        text = highlightsMap.get(text);
+                    }
+
+                    mSenseBuilder.setText(text);
+
+                    if (categories != null) {
+                        mSenseBuilder.addCategories(categories);
+                    }
+
+                    if (origins != null) {
+                        mSenseBuilder.addOrigins(origins);
+                    }
+
+                    if (labels != null) {
+                        mSenseBuilder.addLabels(labels);
+                    }
+
+                    if (notes != null) {
+                        mSenseBuilder.addNotes(notes);
+                    }
+
+                    senses[i] = mSenseBuilder.build();
+
+                    mSenseBuilder.reset();
+                }
+
+                return senses;
+
+            } finally {
+                mSenseBuilder.reset();
             }
         }
+
+        return null;
     }
 
-    private void parseSenses(String sensesField) {
+    private String[] parseRawStringsField(String field) {
 
-        if (sensesField.isEmpty()) {
-            return;
+        if (! isEmptyField(field)) {
+            return mStringItemsDelimiter.split(field);
         }
 
-        String[] mLastSenseCategories = null;
-
-        for (String senseToken : SENSE_ITEMS_SPLITTER.split(sensesField)) {
-            String[] senseFieldTokens = SENSE_FIELDS_SPLITTER.split(senseToken, -1);
-
-            parseSenseTexts(senseFieldTokens[0]);
-
-            mLastSenseCategories = parseSenseCategories(senseFieldTokens[1], mLastSenseCategories);
-
-            parseWordOrigins(senseFieldTokens[2]);
-            parseSenseLabels(senseFieldTokens[3]);
-            parseSenseNotes(senseFieldTokens[4]);
-
-            mWordBuilder.addSense(mSenseBuilder.buildAndReset());
-        }
+        return null;
     }
 
-    private void parseSenseTexts(String senseTextsField) {
+    private Origin[] parseOriginsField(String originsField) {
 
-        if (senseTextsField.isEmpty()) {
-            return;
+        if (! isEmptyField(originsField)) {
+            String[] rawOrigins = mStringItemsDelimiter.split(originsField);
+            Origin[] origins = new Origin[rawOrigins.length];
+
+            for (int i = 0; i < origins.length; i++) {
+
+                String rawOrigin = rawOrigins[i];
+                int separatorIndex = rawOrigin.indexOf(':');
+
+                if (separatorIndex < 0) {
+                    origins[i] = new Origin(rawOrigin, null);
+
+                } else {
+                    String languagecode = rawOrigin.substring(0, separatorIndex);
+                    String text = rawOrigin.substring(separatorIndex + 1);
+
+                    origins[i] = new Origin(languagecode, text);
+                }
+            }
+
+            return origins;
         }
 
-        mSenseBuilder.addTexts(STRING_ITEMS_SPLITTER.split(senseTextsField));
+        return null;
     }
 
-    private String[] parseSenseCategories(String senseCategoriesField, String[] lastSenseCategories) {
+    private Map<String, String> createHighlightsMap(String highlights) {
 
-        if (! senseCategoriesField.isEmpty()) {
-            lastSenseCategories = STRING_ITEMS_SPLITTER.split(senseCategoriesField);
+        Map<String, String> highlightsMap = new HashMap<>();
+
+        for (String highlightedText : mStringItemsDelimiter.split(highlights)) {
+            String plainText = mHighlightsMarker.matcher(highlightedText).replaceAll("");
+
+            highlightsMap.put(plainText, highlightedText);
         }
 
-        if (lastSenseCategories != null) {
-            mSenseBuilder.addCategories(lastSenseCategories);
-        }
-
-        return lastSenseCategories;
+        return highlightsMap;
     }
 
-    private void parseWordOrigins(String wordOriginsField) {
-
-        if (wordOriginsField.isEmpty()) {
-            return;
-        }
-
-        for (String originToken : STRING_ITEMS_SPLITTER.split(wordOriginsField)) {
-            mSenseBuilder.addOrigin(decodeOrigin(originToken));
-        }
-    }
-
-    private void parseSenseLabels(String senseLabelsField) {
-
-        if (senseLabelsField.isEmpty()) {
-            return;
-        }
-
-        mSenseBuilder.addLabels(STRING_ITEMS_SPLITTER.split(senseLabelsField));
-    }
-
-    private void parseSenseNotes(String senseNotesField) {
-
-        if (senseNotesField.isEmpty()) {
-            return;
-        }
-
-        mSenseBuilder.addNotes(STRING_ITEMS_SPLITTER.split(senseNotesField));
-    }
-
-    private static Origin decodeOrigin(String encodedOrigin) {
-        String[] originFields = ORIGIN_FIELDS_SPLITTER.split(encodedOrigin);
-
-        String languageCode = originFields[0];
-        String text = originFields.length > 1 ? originFields[1] : null;
-
-        return new Origin(languageCode, text);
+    private static boolean isEmptyField(String field) {
+        return field == null || field.isEmpty() || "0".equals(field);
     }
 }

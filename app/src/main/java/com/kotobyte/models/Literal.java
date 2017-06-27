@@ -1,27 +1,24 @@
 package com.kotobyte.models;
 
-import android.support.annotation.Nullable;
-
 public class Literal {
 
     private String mText;
-    private Status mStatus;
+    private Priority mPriority;
 
-    public Literal(String text, Status status) {
+    public Literal(String text, Priority priority) {
         mText = text;
-        mStatus = status;
+        mPriority = priority;
     }
 
     public String getText() {
         return mText;
     }
 
-    @Nullable
-    public Status getStatus() {
-        return mStatus;
+    public Priority getPriority() {
+        return mPriority;
     }
 
-    public enum Status {
-        COMMON, IRREGULAR
+    public enum Priority {
+        LOW, NORMAL, HIGH
     }
 }

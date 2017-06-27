@@ -4,6 +4,7 @@ public class ServiceLocator {
     private static ServiceLocator sInstance;
 
     Configuration mConfiguration;
+    DatabaseProvider mDatabaseProvider;
 
     public static ServiceLocator getInstance() {
 
@@ -16,5 +17,9 @@ public class ServiceLocator {
 
     public Configuration getConfiguration() {
         return mConfiguration;
+    }
+
+    public DatabaseProvider getDatabaseProvider() {
+        return mDatabaseProvider;
     }
 }

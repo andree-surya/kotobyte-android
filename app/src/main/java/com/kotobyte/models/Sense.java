@@ -6,14 +6,14 @@ import java.util.List;
 
 public class Sense {
 
-    private String[] mTexts;
+    private String mText;
     private String[] mCategories;
     private String[] mLabels;
     private String[] mNotes;
     private Origin[] mOrigins;
 
-    public String[] getTexts() {
-        return mTexts;
+    public String getText() {
+        return mText;
     }
 
     public String[] getCategories() {
@@ -34,14 +34,14 @@ public class Sense {
 
     public static class Builder {
 
-        private List<String> mTexts = new ArrayList<>();
+        private String mText;
         private List<String> mCategories = new ArrayList<>();
         private List<String> mLabels = new ArrayList<>();
         private List<String> mNotes = new ArrayList<>();
         private List<Origin> mOrigins = new ArrayList<>();
 
-        public void addTexts(String[] texts) {
-            Collections.addAll(mTexts, texts);
+        public void setText(String text) {
+            mText = text;
         }
 
         public void addCategories(String[] categories) {
@@ -56,26 +56,29 @@ public class Sense {
             Collections.addAll(mNotes, notes);
         }
 
-        public void addOrigin(Origin origin) {
-            mOrigins.add(origin);
+        public void addOrigins(Origin[] origins) {
+            Collections.addAll(mOrigins, origins);
         }
 
-        public Sense buildAndReset() {
+        public Sense build() {
             Sense sense = new Sense();
 
-            sense.mTexts = mTexts.toArray(new String[mTexts.size()]);
+            sense.mText = mText;
             sense.mCategories = mCategories.toArray(new String[mCategories.size()]);
             sense.mLabels = mLabels.toArray(new String[mLabels.size()]);
             sense.mNotes = mNotes.toArray(new String[mNotes.size()]);
             sense.mOrigins = mOrigins.toArray(new Origin[mOrigins.size()]);
 
-            mTexts.clear();
+            return sense;
+        }
+
+        public void reset() {
+
+            mText = null;
             mCategories.clear();
             mLabels.clear();
             mNotes.clear();
-            mOrigins.clear();;
-
-            return sense;
+            mOrigins.clear();
         }
     }
 }

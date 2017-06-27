@@ -1,18 +1,19 @@
 package com.kotobyte.models;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
 public class Word {
 
-    private long mID;
+    private long mId;
     private Literal[] mLiterals;
     private Literal[] mReadings;
     private Sense[] mSenses;
 
-    public long getID () {
-        return mID;
+    public long getId() {
+        return mId;
     }
 
     public Literal[] getLiterals() {
@@ -29,41 +30,44 @@ public class Word {
 
     public static class Builder {
 
-        private long mID;
+        private long mId;
         private List<Literal> mReadings = new ArrayList<>();
         private List<Literal> mLiterals = new ArrayList<>();
         private List<Sense> mSenses = new ArrayList<>();
 
-        public void setID(long ID) {
-            mID = ID;
+        public void setId(long id) {
+            mId = id;
         }
 
-        public void addReading(Literal reading) {
-            mReadings.add(reading);
+        public void addLiterals(Literal[] literals) {
+            Collections.addAll(mLiterals, literals);
         }
 
-        public void addLiteral(Literal wordLiteral) {
-            mLiterals.add(wordLiteral);
+        public void addReadings(Literal[] readings) {
+            Collections.addAll(mReadings, readings);
         }
 
-        public void addSense(Sense sense) {
-            mSenses.add(sense);
+        public void addSenses(Sense[] senses) {
+            Collections.addAll(mSenses, senses);
         }
 
-        public Word buildAndReset() {
+        public Word build() {
             Word word = new Word();
 
-            word.mID = mID;
+            word.mId = mId;
             word.mLiterals = mLiterals.toArray(new Literal[mLiterals.size()]);
             word.mReadings = mReadings.toArray(new Literal[mReadings.size()]);
             word.mSenses = mSenses.toArray(new Sense[mSenses.size()]);
 
-            mID = 0;
+            return word;
+        }
+
+        public void reset() {
+
+            mId = 0;
             mLiterals.clear();
             mReadings.clear();
             mSenses.clear();
-
-            return word;
         }
     }
 }

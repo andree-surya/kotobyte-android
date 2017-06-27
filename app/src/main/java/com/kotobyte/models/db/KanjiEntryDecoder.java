@@ -2,63 +2,49 @@ package com.kotobyte.models.db;
 
 import com.kotobyte.models.Kanji;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.regex.Pattern;
 
-class KanjiEntryDecoder implements DictionaryEntryDecoder<Kanji> {
+class KanjiEntryDecoder {
 
-    private static Pattern KANJI_FIELDS_SPLITTER = Pattern.compile("_");
-    private static Pattern STRING_ITEMS_SPLITTER = Pattern.compile("]");
-
+    private Pattern mStringItemsDelimiter = Pattern.compile(";");
     private Kanji.Builder mKanjiBuilder = new Kanji.Builder();
 
-    @Override
-    public Kanji decode(String encodedObject) {
-        String[] kanjiFieldTokens = KANJI_FIELDS_SPLITTER.split(encodedObject, -1);
+    Kanji decode(long kanjiId, String jsonString) {
 
-        mKanjiBuilder.setID(Long.decode(kanjiFieldTokens[0]));
-        mKanjiBuilder.setLiteral(kanjiFieldTokens[1]);
+        try {
+            JSONArray fields = new JSONArray(jsonString);
 
-        parseReadings(kanjiFieldTokens[2]);
-        parseMeanings(kanjiFieldTokens[3]);
-        parseJLPT(kanjiFieldTokens[4]);
-        parseGrade(kanjiFieldTokens[5]);
-        parseStrokes(kanjiFieldTokens[6]);
+            mKanjiBuilder.setId(kanjiId);
+            mKanjiBuilder.setCharacter(fields.getString(0));
+            mKanjiBuilder.setJlpt((short) fields.getInt(3));
+            mKanjiBuilder.setGrade((short) fields.getInt(4));
 
-        return mKanjiBuilder.buildAndReset();
-    }
+            String readingsField = fields.getString(1);
+            String meaningsField = fields.getString(2);
+            String strokesField = fields.getString(5);
 
-    private void parseReadings(String readingsField) {
+            if (! "0".equals(readingsField)) {
+                mKanjiBuilder.addReadings(mStringItemsDelimiter.split(readingsField));
+            }
 
-        if (! readingsField.isEmpty()) {
-            mKanjiBuilder.addReadings(STRING_ITEMS_SPLITTER.split(readingsField));
-        }
-    }
+            if (! "0".equals(meaningsField)) {
+                mKanjiBuilder.addMeanings(mStringItemsDelimiter.split(meaningsField));
+            }
 
-    private void parseMeanings(String meaningsField) {
+            if (! "0".equals(strokesField)) {
+                mKanjiBuilder.addStrokes(mStringItemsDelimiter.split(strokesField));
+            }
 
-        if (! meaningsField.isEmpty()) {
-            mKanjiBuilder.addMeanings(STRING_ITEMS_SPLITTER.split(meaningsField));
-        }
-    }
+            return mKanjiBuilder.build();
 
-    private void parseJLPT(String JLPTField) {
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
 
-        if (! JLPTField.isEmpty()) {
-            mKanjiBuilder.setJLPT(Short.decode(JLPTField));
-        }
-    }
-
-    private void parseGrade(String gradeField) {
-
-        if (! gradeField.isEmpty()) {
-            mKanjiBuilder.setGrade(Short.decode(gradeField));
-        }
-    }
-
-    private void parseStrokes(String strokesField) {
-
-        if (! strokesField.isEmpty()) {
-            mKanjiBuilder.addStrokes(STRING_ITEMS_SPLITTER.split(strokesField));
+        } finally {
+            mKanjiBuilder.reset();
         }
     }
 }

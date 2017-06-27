@@ -1,10 +1,9 @@
 <resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-
     <dimen name="normal_text">16sp</dimen>
     <dimen name="large_text">20sp</dimen>
-    <dimen name="gigantic_text">36sp</dimen>
+    <dimen name="gigantic_text">32sp</dimen>
 
+    <dimen name="kanji_detail_min_width">280dp</dimen>
     <dimen name="kanji_stroke_grid_size">72dp</dimen>
     <dimen name="kanji_stroke_grid_spacing">8dp</dimen>
     <dimen name="kanji_stroke_line_width">2dp</dimen>

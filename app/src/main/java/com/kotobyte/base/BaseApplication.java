@@ -2,6 +2,7 @@ package com.kotobyte.base;
 
 import android.app.Application;
 
+import com.kotobyte.models.db.DictionaryProvider;
 import com.kotobyte.utils.DefaultConfiguration;
 
 
@@ -11,7 +12,8 @@ public class BaseApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        ServiceLocator serviceLocator = ServiceLocator.getInstance();
-        serviceLocator.mConfiguration = new DefaultConfiguration(this);
+        ServiceLocator services = ServiceLocator.getInstance();
+        services.mConfiguration = new DefaultConfiguration(this);
+        services.mDatabaseProvider = new DictionaryProvider(services.mConfiguration, getAssets());
     }
 }

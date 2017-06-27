@@ -10,6 +10,5 @@ public interface Configuration {
     int getLatestDictionaryVersion();
     int getCurrentDictionaryVersion();
 
-    void clearCurrentDictionaryVersion();
-    void updateCurrentDictionaryVersionToLatest();
+    void setCurrentDictionaryVersion(int version);
 }

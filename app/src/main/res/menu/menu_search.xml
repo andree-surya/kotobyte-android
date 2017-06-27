@@ -1,18 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.kotobyte.searchnav.SearchNavigationActivity">
+    tools:context="com.kotobyte.main.MainPageActivity">
 
     <item
         android:id="@+id/action_paste"
-        android:title="@string/search.nav.paste"
+        android:title="@string/main.paste"
         android:icon="@drawable/ic_content_paste_white_24dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_about"
-        android:title="@string/search.nav.about"
+        android:title="@string/main.about"
         android:orderInCategory="200"
         app:showAsAction="never" />
 </menu>
