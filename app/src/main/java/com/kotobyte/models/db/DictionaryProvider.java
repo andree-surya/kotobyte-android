@@ -10,7 +10,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Random;
 
 public class DictionaryProvider implements DatabaseProvider {
 
@@ -20,6 +19,8 @@ public class DictionaryProvider implements DatabaseProvider {
 
     private Configuration mConfiguration;
     private AssetManager mAssetManager;
+
+    private boolean mIsMigrationInProgress;
 
     public DictionaryProvider(Configuration configuration, AssetManager assetManager) {
         mConfiguration = configuration;
@@ -47,14 +48,19 @@ public class DictionaryProvider implements DatabaseProvider {
     }
 
     @Override
+    public boolean isMigrationInProgress() {
+        return mIsMigrationInProgress;
+    }
+
+    @Override
     public synchronized DatabaseConnection getConnection() {
 
         if (mDictionaryConnection == null) {
 
             try {
-                boolean isInMigration = isMigrationNeeded();
+                mIsMigrationInProgress = isMigrationNeeded();
 
-                if (isInMigration) {
+                if (mIsMigrationInProgress) {
                     mConfiguration.setCurrentDictionaryVersion(0);
 
                     copyDatabaseFileFromAssets();
@@ -66,7 +72,7 @@ public class DictionaryProvider implements DatabaseProvider {
                 DictionaryConnection dictionaryConnection =
                         new DictionaryConnection(dictionaryFilePath, dictionaryVersion);
 
-                if (isInMigration) {
+                if (mIsMigrationInProgress) {
                     dictionaryConnection.buildIndexes();
 
                     int latestDictionaryVersion = mConfiguration.getLatestDictionaryVersion();
@@ -74,6 +80,7 @@ public class DictionaryProvider implements DatabaseProvider {
                 }
 
                 mDictionaryConnection = dictionaryConnection;
+                mIsMigrationInProgress = false;
 
             } catch (IOException e) {
                 throw new RuntimeException(e);

@@ -67,7 +67,7 @@ class MainPagePresenter implements MainPageContracts.Presenter {
     }
 
     @Override
-    public void onClickRetryMigrationButton() {
+    public void onClickRetryButton() {
         executeDatabaseMigrationIfNeeded();
     }
 
@@ -85,7 +85,7 @@ class MainPagePresenter implements MainPageContracts.Presenter {
         if (! searchRequestQuery.isEmpty()) {
             mMostRecentSearchRequestQuery = searchRequestQuery;
 
-            if (! mView.isMigrationProgressDialogShowing()) {
+            if (! mDatabaseProvider.isMigrationInProgress()) {
                 executeSearchForMostRecentQuery();
             }
         }
@@ -109,10 +109,6 @@ class MainPagePresenter implements MainPageContracts.Presenter {
         }
 
         if (mDatabaseMigrationSubscription != null) {
-            return;
-        }
-
-        if (mView.isMigrationProgressDialogShowing()) {
             return;
         }
 

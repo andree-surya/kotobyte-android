@@ -9,7 +9,6 @@ interface MainPageContracts {
 
         void showMigrationErrorDialog();
         void showMigrationProgressDialog(boolean show);
-        boolean isMigrationProgressDialogShowing();
 
         void showSearchResultsScreen(CharSequence query);
         void showAboutApplicationScreen();
@@ -28,7 +27,7 @@ interface MainPageContracts {
         void onClickClearButton();
         void onClickPasteMenuItem(CharSequence text);
         void onClickAboutMenuItem();
-        void onClickRetryMigrationButton();
+        void onClickRetryButton();
 
         void onChangeTextOnQueryEditor(CharSequence text);
         void onReceiveSearchRequest(CharSequence query);

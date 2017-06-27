@@ -57,7 +57,7 @@ class WordEntryDecoder {
 
     private Literal[] parseLiteralsField(String literalsField, Map<String, String> highlightsMap) throws JSONException {
 
-        if (! isEmptyField(literalsField)) {
+        if (isNotEmptyField(literalsField)) {
 
             JSONArray rawLiterals = new JSONArray(literalsField);
             Literal[] literals = new Literal[rawLiterals.length()];
@@ -66,7 +66,7 @@ class WordEntryDecoder {
                 String rawLiteral = rawLiterals.getString(i);
 
                 String text = rawLiteral.substring(1);
-                Literal.Priority priority = null;
+                Literal.Priority priority;
 
                 switch (rawLiteral.charAt(0)) {
                     case '0':
@@ -98,7 +98,7 @@ class WordEntryDecoder {
 
     private Sense[] parseSensesField(String sensesField, Map<String, String> highlightsMap) throws JSONException {
 
-        if (! isEmptyField(sensesField)) {
+        if (isNotEmptyField(sensesField)) {
 
             try {
                 JSONArray rawSenses = new JSONArray(sensesField);
@@ -153,7 +153,7 @@ class WordEntryDecoder {
 
     private String[] parseRawStringsField(String field) {
 
-        if (! isEmptyField(field)) {
+        if (isNotEmptyField(field)) {
             return mStringItemsDelimiter.split(field);
         }
 
@@ -162,7 +162,8 @@ class WordEntryDecoder {
 
     private Origin[] parseOriginsField(String originsField) {
 
-        if (! isEmptyField(originsField)) {
+        if (isNotEmptyField(originsField)) {
+
             String[] rawOrigins = mStringItemsDelimiter.split(originsField);
             Origin[] origins = new Origin[rawOrigins.length];
 
@@ -201,7 +202,7 @@ class WordEntryDecoder {
         return highlightsMap;
     }
 
-    private static boolean isEmptyField(String field) {
-        return field == null || field.isEmpty() || "0".equals(field);
+    private static boolean isNotEmptyField(String field) {
+        return field != null && !field.isEmpty() && !"0".equals(field);
     }
 }

@@ -4,6 +4,7 @@ public interface DatabaseProvider {
 
     boolean isMigrationNeeded();
     boolean isMigrationPossible();
+    boolean isMigrationInProgress();
 
     /**
      * Get the shared database connection.

@@ -8,15 +8,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.kotobyte.R;
-import com.kotobyte.base.Configuration;
 import com.kotobyte.base.DatabaseProvider;
 import com.kotobyte.base.ServiceLocator;
 import com.kotobyte.databinding.FragmentSearchPageBinding;
 import com.kotobyte.models.Kanji;
 import com.kotobyte.models.Word;
+import com.kotobyte.utils.ErrorDialogFragment;
 
 import java.util.List;
 
@@ -111,7 +110,7 @@ public class SearchPageFragment extends Fragment implements SearchPageContracts.
     public void showUnknownError(Throwable error) {
         Log.e(TAG, error.getLocalizedMessage(), error);
 
-        Toast.makeText(getContext(), R.string.common_unknown_error, Toast.LENGTH_SHORT).show();
+        ErrorDialogFragment.newInstance().show(getFragmentManager(), ErrorDialogFragment.TAG);
     }
 
     private SearchResultsAdapter.Listener mWordSearchResultsAdapterListener = new SearchResultsAdapter.Listener() {

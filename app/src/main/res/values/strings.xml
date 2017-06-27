@@ -9,11 +9,15 @@
     <string name="main.about">About</string>
     <string name="main.clear">Clear query</string>
     <string name="main.hint">Enter search query</string>
-    <string name="main.migration_progress">Preparing dictionary …</string>
-    <string name="main.migration_error">This application needs 80 MB of spaces in your device\'s internal memory to store dictionary files. Please provide the required amount of spaces and try again.</string>
+
+    <string name="main.migration_progress_title">Preparing dictionary …</string>
+    <string name="main.migration_progress_message">Please wait for a few seconds while we\'re indexing the dictionary.</string>
+    <string name="main.migration_error_title">Sorry, not enough space.</string>
+    <string name="main.migration_error_message">We need 80 MB of spaces to store dictionary files. Please provide the required amount of spaces and try again.</string>
 
     <string name="search.empty">Sorry, no matching search results.\nPlease try again with a different query.</string>
 
-    <string name="common.retry">Retry</string>
-    <string name="common.unknown_error">Sorry, an unknown error occurred.</string>
+    <string name="common.okay">Got It</string>
+    <string name="common.unknown_error_title">Sorry, we got an error.</string>
+    <string name="common.unknown_error_message">Please let us know if this problem keeps persisting.</string>
 </resources>

@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.Toolbar;
 
 import com.kotobyte.R;
@@ -32,7 +31,6 @@ import com.kotobyte.utils.ProgressDialogFragment;
 public class MainPageActivity extends FragmentActivity implements MainPageContracts.View {
 
     private static final String TAG = MainPageActivity.class.getSimpleName();
-    private static final String MIGRATION_PROGRESS_DIALOG_TAG = "migration_progress_dialog";
 
     private ActivityMainPageBinding mBinding;
     private MainPageContracts.Presenter mPresenter;
@@ -68,7 +66,10 @@ public class MainPageActivity extends FragmentActivity implements MainPageContra
         super.onAttachFragment(fragment);
 
         if (fragment instanceof ErrorDialogFragment) {
-            ((ErrorDialogFragment) fragment).setCallback(mErrorDialogFragmentCallback);
+            ErrorDialogFragment errorDialogFragment = (ErrorDialogFragment) fragment;
+
+            errorDialogFragment.setCancelable(false);
+            errorDialogFragment.setCallback(mErrorDialogFragmentCallback);
         }
     }
 
@@ -109,44 +110,42 @@ public class MainPageActivity extends FragmentActivity implements MainPageContra
     public void showError(Throwable error) {
         Log.e(TAG, error.getLocalizedMessage(), error);
 
-        showErrorDialogWithMessage(R.string.common_unknown_error);
+        ErrorDialogFragment.newInstance().show(getSupportFragmentManager(), ErrorDialogFragment.TAG);
     }
 
     @Override
     public void showMigrationErrorDialog() {
 
-        showErrorDialogWithMessage(R.string.main_migration_error);
+        ErrorDialogFragment errorDialogFragment = ErrorDialogFragment.newInstance(
+                getString(R.string.main_migration_error_title),
+                getString(R.string.main_migration_error_message));
+
+        errorDialogFragment.show(getSupportFragmentManager(), ErrorDialogFragment.TAG);
     }
 
     @Override
     public void showMigrationProgressDialog(boolean show) {
 
         ProgressDialogFragment dialogFragment = (ProgressDialogFragment)
-                getSupportFragmentManager().findFragmentByTag(MIGRATION_PROGRESS_DIALOG_TAG);
+                getSupportFragmentManager().findFragmentByTag(ProgressDialogFragment.TAG);
 
         if (show) {
 
             if (dialogFragment == null) {
-                dialogFragment = ProgressDialogFragment.newInstance(getString(R.string.main_migration_progress));
+
+                dialogFragment = ProgressDialogFragment.newInstance(
+                        getString(R.string.main_migration_progress_title),
+                        getString(R.string.main_migration_progress_message));
             }
 
-            if (! dialogFragment.isVisible()) {
-                dialogFragment.show(getSupportFragmentManager(), MIGRATION_PROGRESS_DIALOG_TAG);
+            if (! dialogFragment.isAdded()) {
+                dialogFragment.show(getSupportFragmentManager(), ProgressDialogFragment.TAG);
             }
 
         } else if (dialogFragment != null) {
 
             dialogFragment.dismiss();
         }
-    }
-
-    @Override
-    public boolean isMigrationProgressDialogShowing() {
-
-        ProgressDialogFragment dialogFragment = (ProgressDialogFragment)
-                getSupportFragmentManager().findFragmentByTag(MIGRATION_PROGRESS_DIALOG_TAG);
-
-        return dialogFragment != null && dialogFragment.isVisible();
     }
 
     @Override
@@ -189,17 +188,11 @@ public class MainPageActivity extends FragmentActivity implements MainPageContra
         return null;
     }
 
-    private void showErrorDialogWithMessage(int messageRes) {
-
-        ErrorDialogFragment.newInstance(getString(messageRes))
-                .show(getSupportFragmentManager(), ErrorDialogFragment.TAG);
-    }
-
     private ErrorDialogFragment.Callback mErrorDialogFragmentCallback = new ErrorDialogFragment.Callback() {
 
         @Override
-        public void onClickRetryButton() {
-            mPresenter.onClickRetryMigrationButton();
+        public void onClickPositiveButton() {
+            mPresenter.onClickRetryButton();
         }
     };
 
