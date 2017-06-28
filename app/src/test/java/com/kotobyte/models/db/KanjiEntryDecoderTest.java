@@ -2,7 +2,6 @@ package com.kotobyte.models.db;
 
 import com.kotobyte.models.Kanji;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -16,11 +15,6 @@ import static org.junit.Assert.assertEquals;
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class KanjiEntryDecoderTest {
-
-    @Before
-    public void prepareDecoder() {
-
-    }
 
     @Test
     public void decode_shouldDecodeJsonToKanji() throws Exception {
