@@ -12,7 +12,9 @@ import org.sqlite.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class DictionaryConnection implements DatabaseConnection, AutoCloseable {
 
@@ -29,6 +31,11 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
     private MojiConverter mMojiConverter = new MojiConverter();
     private MojiDetector mMojiDetector = new MojiDetector();
 
+    private Map<String, String> mLabelsMap;
+    private Map<String, String> mLanguagesMap;
+    private Map<String, String> mJlptMap;
+    private Map<String, String> mGradesMap;
+
     DictionaryConnection(String name, int version) {
 
         mDatabase = SQLiteDatabase.openDatabase(name, null, SQLiteDatabase.OPEN_READWRITE);
@@ -44,6 +51,14 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
     public List<Word> searchWords(String query) {
 
         List<WordMatch> wordMatches = new ArrayList<>();
+
+        if (mLabelsMap == null) {
+            mLabelsMap = readStringMapFromCursor(mDatabase.rawQuery(SELECT_LABELS_SQL, null));
+        }
+
+        if (mLanguagesMap == null) {
+            mLanguagesMap = readStringMapFromCursor(mDatabase.rawQuery(SELECT_LANGUAGES_SQL, null));
+        }
 
         if (mMojiDetector.hasKanji(query) || mMojiDetector.hasKana(query)) {
             wordMatches.addAll(searchWordsByLiterals(query, WORD_SEARCH_LIMIT));
@@ -80,6 +95,14 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
         }
 
         if (queryBuilder.length() > 0) {
+
+            if (mJlptMap == null) {
+                mJlptMap = readStringMapFromCursor(mDatabase.rawQuery(SELECT_JLPT_SQL, null));
+            }
+
+            if (mGradesMap == null) {
+                mGradesMap = readStringMapFromCursor(mDatabase.rawQuery(SELECT_GRADES_SQL, null));
+            }
 
             Cursor cursor = mDatabase.rawQuery(SEARCH_KANJI_SQL,
                     new String[] { queryBuilder.toString(), String.valueOf(KANJI_SEARCH_LIMIT) });
@@ -160,10 +183,10 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
         return wordMatches;
     }
 
-    private static List<Kanji> readKanjiListFromCursor(Cursor cursor) {
+    private List<Kanji> readKanjiListFromCursor(Cursor cursor) {
 
         List<Kanji> kanjiList = new ArrayList<>(cursor.getCount());
-        KanjiEntryDecoder kanjiEntryDecoder = new KanjiEntryDecoder();
+        KanjiEntryDecoder kanjiEntryDecoder = new KanjiEntryDecoder(mJlptMap, mGradesMap);
 
         while (cursor.moveToNext()) {
 
@@ -177,6 +200,24 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
         cursor.close();
 
         return kanjiList;
+    }
+
+    private List<Word> convertWordMatchesToWords(List<WordMatch> wordMatches) {
+
+        List<Word> words = new ArrayList<>(wordMatches.size());
+        WordEntryDecoder wordEntryDecoder = new WordEntryDecoder(mLabelsMap, mLanguagesMap);
+
+        for (WordMatch wordMatch : wordMatches) {
+
+            Word word = wordEntryDecoder.decode(
+                    wordMatch.getId(),
+                    wordMatch.getJson(),
+                    wordMatch.getHighlights());
+
+            words.add(word);
+        }
+
+        return words;
     }
 
     private static List<WordMatch> readWordMatchesFromCursor(Cursor cursor) {
@@ -199,22 +240,17 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
         return wordMatches;
     }
 
-    private static List<Word> convertWordMatchesToWords(List<WordMatch> wordMatches) {
+    private static Map<String, String> readStringMapFromCursor(Cursor cursor) {
 
-        List<Word> words = new ArrayList<>(wordMatches.size());
-        WordEntryDecoder wordEntryDecoder = new WordEntryDecoder();
+        Map<String, String> map = new HashMap<>();
 
-        for (WordMatch wordMatch : wordMatches) {
-
-            Word word = wordEntryDecoder.decode(
-                    wordMatch.getId(),
-                    wordMatch.getJson(),
-                    wordMatch.getHighlights());
-
-            words.add(word);
+        while (cursor.moveToNext()) {
+            map.put(cursor.getString(0), cursor.getString(1));
         }
 
-        return words;
+        cursor.close();
+
+        return map;
     }
 
     private static final String BUILD_INDEXES_SQL = "" +
@@ -239,4 +275,9 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
 
     private static final String SEARCH_KANJI_SQL =
             "select id, json from kanji join kanji_fts(?) on (id = kanji_id) order by rank limit ?;";
+
+    private static final String SELECT_LABELS_SQL = "select code, text from labels;";
+    private static final String SELECT_LANGUAGES_SQL = "select code, text from languages;";
+    private static final String SELECT_JLPT_SQL = "select number, text from jlpt;";
+    private static final String SELECT_GRADES_SQL = "select number, text from grades;";
 }

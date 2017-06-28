@@ -85,7 +85,6 @@ class SearchPagePresenter implements SearchPageContracts.Presenter {
                             mView.showWordSearchResults(words);
                             mView.showWordSearchResultsView(true);
                         }
-
                     }
 
                 }, new Consumer<Throwable>() {

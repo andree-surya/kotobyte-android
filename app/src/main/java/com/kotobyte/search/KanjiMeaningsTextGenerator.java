@@ -2,12 +2,15 @@ package com.kotobyte.search;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 
-import com.kotobyte.utils.SpannableTextGenerator;
+import com.kotobyte.R;
 import com.kotobyte.models.Kanji;
+import com.kotobyte.utils.SpannableTextGenerator;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,7 +37,7 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
     protected void createSpannableWithBuilder(SpannableStringBuilder builder, int position) {
 
         String[] meanings = mKanjiList.get(position).getMeanings();
-        //String[] extras = mKanjiList.get(position).getExtras();
+        String[] extras = mKanjiList.get(position).getExtras();
 
         for (int i = 0; i < meanings.length; i++) {
 
@@ -53,7 +56,6 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
             }
         }
 
-        /*
         if (mShouldShowExtras) {
             int extrasStartIndex = builder.length();
 
@@ -66,7 +68,7 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
                 builder.append(extras[i]);
 
                 if (i < extras.length - 1) {
-                    builder.append("; ");
+                    builder.append(", ");
 
                 } else {
                     builder.setSpan(
@@ -76,6 +78,6 @@ class KanjiMeaningsTextGenerator extends SpannableTextGenerator {
                             Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
             }
-        }*/
+        }
     }
 }

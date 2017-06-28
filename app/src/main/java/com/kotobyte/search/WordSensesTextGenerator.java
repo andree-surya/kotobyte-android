@@ -6,6 +6,7 @@ import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
 
 import com.kotobyte.R;
+import com.kotobyte.models.Origin;
 import com.kotobyte.models.Sense;
 import com.kotobyte.utils.SpannableTextGenerator;
 import com.kotobyte.models.Word;
@@ -33,7 +34,7 @@ class WordSensesTextGenerator extends SpannableTextGenerator {
             builder.append("▸  ");
 
             appendBuilderWithHighlightableText(builder, sense.getText());
-            appendBuilderWithExtras(builder, sense.getNotes());
+            appendBuilderWithExtras(builder, sense.getExtras(), sense.getOrigins());
 
             if (i < senses.length - 1) {
                 builder.append('\n');
@@ -41,20 +42,42 @@ class WordSensesTextGenerator extends SpannableTextGenerator {
         }
     }
 
-    private void appendBuilderWithExtras(SpannableStringBuilder builder, String[] extras) {
+    private void appendBuilderWithExtras(
+            SpannableStringBuilder builder, String[] extras, Origin[] origins) {
+
+        String beginMarker = " ー";
+        String separator = ", ";
 
         int extrasStartIndex = builder.length();
 
-        for (int i = 0; i < extras.length; i++) {
+        for (String extra : extras) {
 
-            if (i == 0) {
-                builder.append(" ー");
+            if (builder.length() == extrasStartIndex) {
+                builder.append(beginMarker);
+
+            } else {
+                builder.append(separator);
             }
 
-            builder.append(extras[i]);
+            builder.append(extra);
+        }
 
-            if (i < extras.length - 1) {
-                builder.append(", ");
+        for (Origin origin : origins) {
+
+            if (builder.length() == extrasStartIndex) {
+                builder.append(beginMarker);
+
+            } else {
+                builder.append(separator);
+            }
+
+            if (origin.getText() == null) {
+                builder.append(getContext().getString(
+                        R.string.search_origin, origin.getLanguage()));
+
+            } else {
+                builder.append(getContext().getString(
+                        R.string.search_origin_with_text, origin.getLanguage(), origin.getText()));
             }
         }
 

@@ -20,6 +20,19 @@ class WordEntryDecoder {
     private Word.Builder mWordBuilder = new Word.Builder();
     private Sense.Builder mSenseBuilder = new Sense.Builder();
 
+    private Map<String, String> mLabelsMap;
+    private Map<String, String> mLanguagesMap;
+
+    WordEntryDecoder() {
+        this(new HashMap<String, String>(0), new HashMap<String, String>(0));
+    }
+
+    WordEntryDecoder(Map<String, String> labelsMap, Map<String, String> languagesMap) {
+
+        mLabelsMap = labelsMap;
+        mLanguagesMap = languagesMap;
+    }
+
     Word decode(long wordId, String jsonString, String highlights) {
 
         Map<String, String> highlightsMap = createHighlightsMap(highlights);
@@ -108,9 +121,9 @@ class WordEntryDecoder {
                     JSONArray rawSense = rawSenses.getJSONArray(i);
 
                     String text = rawSense.getString(0);
-                    String[] categories = parseRawStringsField(rawSense.getString(1));
+                    String[] categories = parseLabelsField(rawSense.getString(1));
                     Origin[] origins = parseOriginsField(rawSense.getString(2));
-                    String[] labels = parseRawStringsField(rawSense.getString(3));
+                    String[] labels = parseLabelsField(rawSense.getString(3));
                     String[] notes = parseRawStringsField(rawSense.getString(4));
 
                     // Replace with highlighted text if needed.
@@ -129,11 +142,11 @@ class WordEntryDecoder {
                     }
 
                     if (labels != null) {
-                        mSenseBuilder.addLabels(labels);
+                        mSenseBuilder.addExtras(labels);
                     }
 
                     if (notes != null) {
-                        mSenseBuilder.addNotes(notes);
+                        mSenseBuilder.addExtras(notes);
                     }
 
                     senses[i] = mSenseBuilder.build();
@@ -146,6 +159,24 @@ class WordEntryDecoder {
             } finally {
                 mSenseBuilder.reset();
             }
+        }
+
+        return null;
+    }
+
+    private String[] parseLabelsField(String field) {
+
+        if (isNotEmptyField(field)) {
+            String[] labels = mStringItemsDelimiter.split(field);
+
+            for (int i = 0; i < labels.length; i++) {
+
+                if (mLabelsMap.containsKey(labels[i])) {
+                    labels[i] = mLabelsMap.get(labels[i]);
+                }
+            }
+
+            return labels;
         }
 
         return null;
@@ -170,17 +201,21 @@ class WordEntryDecoder {
             for (int i = 0; i < origins.length; i++) {
 
                 String rawOrigin = rawOrigins[i];
+                String language = rawOrigin;
+                String text = null;
+
                 int separatorIndex = rawOrigin.indexOf(':');
 
-                if (separatorIndex < 0) {
-                    origins[i] = new Origin(rawOrigin, null);
-
-                } else {
-                    String languagecode = rawOrigin.substring(0, separatorIndex);
-                    String text = rawOrigin.substring(separatorIndex + 1);
-
-                    origins[i] = new Origin(languagecode, text);
+                if (separatorIndex > 0) {
+                    language = rawOrigin.substring(0, separatorIndex);
+                    text = rawOrigin.substring(separatorIndex + 1);
                 }
+
+                if (mLanguagesMap.containsKey(language)) {
+                    language = mLanguagesMap.get(language);
+                }
+
+                origins[i] = new Origin(language, text);
             }
 
             return origins;

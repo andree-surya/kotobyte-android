@@ -4,16 +4,16 @@ import android.support.annotation.Nullable;
 
 public class Origin {
 
-    private String mLanguageCode;
+    private String mLanguage;
     private String mText;
 
-    public Origin(String languageCode, String text) {
-        mLanguageCode = languageCode;
+    public Origin(String language, String text) {
+        mLanguage = language;
         mText = text;
     }
 
-    public String getLanguageCode() {
-        return mLanguageCode;
+    public String getLanguage() {
+        return mLanguage;
     }
 
     @Nullable

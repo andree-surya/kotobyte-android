@@ -16,6 +16,26 @@ CREATE_TABLES = <<-EOS
     id integer primary key,
     json text not null
   );
+
+  create table labels (
+    code text not null,
+    text text not null
+  );
+
+  create table languages (
+    code text not null,
+    text text not null
+  );
+
+  create table jlpt (
+    number integer not null,
+    text text not null
+  );
+
+  create table grades (
+    number integer not null,
+    text text not null
+  );
 EOS
 
 BUILD_INDEXES = <<-EOS
@@ -88,6 +108,26 @@ class DictionaryDatabase
   def insert_kanji(kanji)
     @insert_kanji ||= @database.prepare('insert into kanji values (?, ?)')
     @insert_kanji.execute(kanji.id, json_from_kanji(kanji))
+  end
+
+  def insert_label(code, text)
+    @insert_label ||= @database.prepare('insert into labels values (?, ?)')
+    @insert_label.execute(code, text)
+  end
+
+  def insert_language(code, text)
+    @insert_language ||= @database.prepare('insert into languages values (?, ?)')
+    @insert_language.execute(code, text)
+  end
+
+  def insert_jlpt(number, text)
+    @insert_jlpt ||= @database.prepare('insert into jlpt values (?, ?)')
+    @insert_jlpt.execute(number, text)
+  end
+
+  def insert_grade(number, text)
+    @insert_grade ||= @database.prepare('insert into grades values (?, ?)')
+    @insert_grade.execute(number, text)
   end
 
   def search_words(query)

@@ -12,11 +12,10 @@ public class Kanji implements Parcelable {
 
     private long mId;
     private String mCharacter;
-    private short mJlpt;
-    private short mGrade;
     private String[] mReadings;
     private String[] mMeanings;
     private String[] mStrokes;
+    private String[] mExtras;
 
     public long getId() {
         return mId;
@@ -24,14 +23,6 @@ public class Kanji implements Parcelable {
 
     public String getCharacter() {
         return mCharacter;
-    }
-
-    public short getJlpt() {
-        return mJlpt;
-    }
-
-    public short getGrade() {
-        return mGrade;
     }
 
     public String[] getReadings() {
@@ -46,6 +37,10 @@ public class Kanji implements Parcelable {
         return mStrokes;
     }
 
+    public String[] getExtras() {
+        return mExtras;
+    }
+
     public int describeContents() {
         return 0;
     }
@@ -54,11 +49,10 @@ public class Kanji implements Parcelable {
 
         dest.writeLong(mId);
         dest.writeString(mCharacter);
-        dest.writeInt(mJlpt);
-        dest.writeInt(mGrade);
         dest.writeStringArray(mReadings);
         dest.writeStringArray(mMeanings);
         dest.writeStringArray(mStrokes);
+        dest.writeStringArray(mExtras);
     }
 
     public static final Creator<Kanji> CREATOR = new Creator<Kanji>() {
@@ -69,11 +63,10 @@ public class Kanji implements Parcelable {
 
             kanji.mId = in.readLong();
             kanji.mCharacter = in.readString();
-            kanji.mJlpt = (short) in.readInt();
-            kanji.mGrade = (short) in.readInt();
             kanji.mReadings = in.createStringArray();
             kanji.mMeanings = in.createStringArray();
             kanji.mStrokes = in.createStringArray();
+            kanji.mExtras = in.createStringArray();
 
             return kanji;
         }
@@ -88,11 +81,10 @@ public class Kanji implements Parcelable {
 
         private long mId;
         private String mCharacter;
-        private short mJlpt;
-        private short mGrade;
         private List<String> mReadings = new ArrayList<>();
         private List<String> mMeanings = new ArrayList<>();
         private List<String> mStrokes = new ArrayList<>();
+        private List<String> mExtras = new ArrayList<>();
 
         public void setId(long id) {
             mId = id;
@@ -100,14 +92,6 @@ public class Kanji implements Parcelable {
 
         public void setCharacter(String character) {
             mCharacter = character;
-        }
-
-        public void setJlpt(short jlpt) {
-            mJlpt = jlpt;
-        }
-
-        public void setGrade(short grade) {
-            mGrade = grade;
         }
 
         public void addReadings(String[] readings) {
@@ -122,16 +106,19 @@ public class Kanji implements Parcelable {
             Collections.addAll(mStrokes, strokes);
         }
 
+        public void addExtra(String extra) {
+            mExtras.add(extra);
+        }
+
         public Kanji build() {
             Kanji kanji = new Kanji();
 
             kanji.mId = mId;
             kanji.mCharacter = mCharacter;
-            kanji.mJlpt = mJlpt;
-            kanji.mGrade = mGrade;
             kanji.mReadings = mReadings.toArray(new String[mReadings.size()]);
             kanji.mMeanings = mMeanings.toArray(new String[mMeanings.size()]);
             kanji.mStrokes = mStrokes.toArray(new String[mStrokes.size()]);
+            kanji.mExtras = mExtras.toArray(new String[mExtras.size()]);
 
             return kanji;
         }
@@ -140,12 +127,11 @@ public class Kanji implements Parcelable {
 
             mId = 0;
             mCharacter = null;
-            mJlpt = 0;
-            mGrade = 0;
             mReadings.clear();
             mMeanings.clear();
             mReadings.clear();
             mStrokes.clear();
+            mExtras.clear();
         }
     }
 }

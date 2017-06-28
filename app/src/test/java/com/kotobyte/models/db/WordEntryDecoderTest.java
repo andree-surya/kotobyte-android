@@ -10,6 +10,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -21,7 +24,18 @@ public class WordEntryDecoderTest {
 
     @Before
     public void prepareDecoder() {
-        mDecoder = new WordEntryDecoder();
+
+        Map<String, String> labelsMap = new HashMap<>();
+        labelsMap.put("adj-na", "Adjective な");
+        labelsMap.put("vs", "Transitive verb");
+        labelsMap.put("n", "Common noun");
+        labelsMap.put("uk", "Outdated");
+
+        Map<String, String> languagesMap = new HashMap<>();
+        languagesMap.put("ger", "German");
+        languagesMap.put("chi", "Chinese");
+
+        mDecoder = new WordEntryDecoder(labelsMap, languagesMap);
     }
 
     @Test
@@ -68,27 +82,25 @@ public class WordEntryDecoderTest {
 
         assertEquals("side job", sense1.getText());
         assertEquals(2, sense1.getCategories().length);
-        assertEquals("n", sense1.getCategories()[0]);
-        assertEquals("vs", sense1.getCategories()[1]);
+        assertEquals("Common noun", sense1.getCategories()[0]);
+        assertEquals("Transitive verb", sense1.getCategories()[1]);
         assertEquals(1, sense1.getOrigins().length);
-        assertEquals("ger", sense1.getOrigins()[0].getLanguageCode());
+        assertEquals("German", sense1.getOrigins()[0].getLanguage());
         assertEquals("Arbeit", sense1.getOrigins()[0].getText());
-        assertEquals(2, sense1.getLabels().length);
-        assertEquals("uk", sense1.getLabels()[0]);
-        assertEquals("rare", sense1.getLabels()[1]);
-        assertEquals(0, sense1.getNotes().length);
+        assertEquals(2, sense1.getExtras().length);
+        assertEquals("Outdated", sense1.getExtras()[0]);
+        assertEquals("rare", sense1.getExtras()[1]);
 
         assertEquals("albite", sense2.getText());
         assertEquals(0, sense2.getCategories().length);
         assertEquals(2, sense2.getOrigins().length);
-        assertEquals("ger", sense2.getOrigins()[0].getLanguageCode());
+        assertEquals("German", sense2.getOrigins()[0].getLanguage());
         assertNull(sense2.getOrigins()[0].getText());
-        assertEquals("fin", sense2.getOrigins()[1].getLanguageCode());
+        assertEquals("fin", sense2.getOrigins()[1].getLanguage());
         assertNull(sense2.getOrigins()[1].getText());
-        assertEquals(0, sense2.getLabels().length);
-        assertEquals(2, sense2.getNotes().length);
-        assertEquals("note 1", sense2.getNotes()[0]);
-        assertEquals("note 2", sense2.getNotes()[1]);
+        assertEquals(2, sense2.getExtras().length);
+        assertEquals("note 1", sense2.getExtras()[0]);
+        assertEquals("note 2", sense2.getExtras()[1]);
     }
 
     @Test
