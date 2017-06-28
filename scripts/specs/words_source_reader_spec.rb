@@ -133,7 +133,7 @@ describe WordsSourceReader do
     senses = WordsSourceReader.new(source_xml: xml).read_one.senses
 
     expect(senses.size).to eq(3)
-    expect(senses[0].categories).to eq(['n', 'adj-i'])
+    expect(senses[0].categories).to eq(['n', 'adji'])
     expect(senses[1].categories).to eq(nil)
     expect(senses[2].categories).to eq(['v5u'])
   end
@@ -188,7 +188,7 @@ describe WordsSourceReader do
     senses = WordsSourceReader.new(source_xml: xml).read_one.senses
 
     expect(senses.size).to eq(2)
-    expect(senses[0].labels).to eq(['comp', 'col', 'on-mim'])
+    expect(senses[0].labels).to eq(['comp', 'col', 'onmim'])
     expect(senses[1].labels).to eq(['ksb', 'uK'])
   end
 

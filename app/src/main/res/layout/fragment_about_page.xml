@@ -21,7 +21,7 @@
 
             <TextView
                 style="@style/Text"
-                android:text="@string/main.copyright"
+                android:text="@string/copyright"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -30,7 +30,7 @@
             <TextView
                 style="@style/Text"
                 android:autoLink="web"
-                android:text="@string/main.attributions"
+                android:text="@string/attributions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"

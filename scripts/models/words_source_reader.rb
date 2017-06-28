@@ -156,6 +156,6 @@ class WordsSourceReader
     end
 
     def clean_xml_entity(text)
-      text.tr('\&\;', '')
+      text.tr('\&\;-', '')
     end
 end

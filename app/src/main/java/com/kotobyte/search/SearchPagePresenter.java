@@ -108,7 +108,7 @@ class SearchPagePresenter implements SearchPageContracts.Presenter {
         mKanjiSearchOperationSubscription = mDataSource.searchKanji(getKanjiSearchQueryForWord(word))
                 .subscribeOn(mBackgroundScheduler)
                 .observeOn(mMainThreadScheduler)
-                .delaySubscription(100, TimeUnit.MILLISECONDS)
+                .delaySubscription(200, TimeUnit.MILLISECONDS)
                 .subscribe(new Consumer<List<Kanji>>() {
 
                     @Override
