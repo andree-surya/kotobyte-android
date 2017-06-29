@@ -58,29 +58,13 @@ public class DictionaryProvider implements DatabaseProvider {
         if (mDictionaryConnection == null) {
 
             try {
-                mIsMigrationInProgress = isMigrationNeeded();
-
-                if (mIsMigrationInProgress) {
-                    mConfiguration.setCurrentDictionaryVersion(0);
-
+                if (isMigrationNeeded()) {
                     copyDatabaseFileFromAssets();
                 }
 
-                String dictionaryFilePath = mConfiguration.getDictionaryFilePath().getAbsolutePath();
-                int dictionaryVersion = mConfiguration.getLatestDictionaryVersion();
-
-                DictionaryConnection dictionaryConnection =
-                        new DictionaryConnection(dictionaryFilePath, dictionaryVersion);
-
-                if (mIsMigrationInProgress) {
-                    dictionaryConnection.buildIndexes();
-
-                    int latestDictionaryVersion = mConfiguration.getLatestDictionaryVersion();
-                    mConfiguration.setCurrentDictionaryVersion(latestDictionaryVersion);
-                }
-
-                mDictionaryConnection = dictionaryConnection;
-                mIsMigrationInProgress = false;
+                mDictionaryConnection = new DictionaryConnection(
+                        mConfiguration.getDictionaryFilePath().getAbsolutePath(),
+                        mConfiguration.getCurrentDictionaryVersion());
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -91,6 +75,9 @@ public class DictionaryProvider implements DatabaseProvider {
     }
 
     private void copyDatabaseFileFromAssets() throws IOException {
+
+        mIsMigrationInProgress = true;
+        mConfiguration.setCurrentDictionaryVersion(0);
 
         InputStream inputStream = null;
         OutputStream outputStream = null;
@@ -105,6 +92,9 @@ public class DictionaryProvider implements DatabaseProvider {
             while ((numberOfBytesRead = inputStream.read(bytesBuffer)) > 0) {
                 outputStream.write(bytesBuffer, 0, numberOfBytesRead);
             }
+
+            mConfiguration.setCurrentDictionaryVersion(mConfiguration.getLatestDictionaryVersion());
+            mIsMigrationInProgress = false;
 
         } finally {
 

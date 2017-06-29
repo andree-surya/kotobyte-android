@@ -113,25 +113,6 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
         return Collections.emptyList();
     }
 
-    void buildIndexes() {
-
-        try {
-            mDatabase.beginTransaction();
-
-            for (String statementSQL : BUILD_INDEXES_SQL.split(";")) {
-
-                if (! statementSQL.isEmpty()) {
-                    mDatabase.execSQL(statementSQL);
-                }
-            }
-
-            mDatabase.setTransactionSuccessful();
-
-        } finally {
-            mDatabase.endTransaction();
-        }
-    }
-
     private List<WordMatch> searchWordsByLiterals(String query, int limit) {
         query = query.replaceAll("\\p{Blank}", "");
 
@@ -252,15 +233,6 @@ class DictionaryConnection implements DatabaseConnection, AutoCloseable {
 
         return map;
     }
-
-    private static final String BUILD_INDEXES_SQL = "" +
-            "create virtual table literals_fts using fts5(text, word_id unindexed, priority unindexed, prefix='1 2 3 4 5');\n" +
-            "create virtual table senses_fts using fts5(text, word_id unindexed, tokenize='porter');\n" +
-            "create virtual table kanji_fts using fts5(text, kanji_id unindexed);\n" +
-            "insert into literals_fts select substr(value, 2), words.id, substr(value, 1, 1) from words, json_each(words.json, '$[0]') where type = 'text';\n" +
-            "insert into literals_fts select substr(value, 2), words.id, substr(value, 1, 1) from words, json_each(words.json, '$[1]') where type = 'text';\n" +
-            "insert into senses_fts select json_extract(value, '$[0]'), words.id from words, json_each(words.json, '$[2]');\n" +
-            "insert into kanji_fts select json_extract(json, '$[0]'), kanji.id from kanji;";
 
     private static final String SEARCH_WORDS_SQL = "" +
             "with search_results as (%s)\n" +

@@ -10,7 +10,7 @@
     <string name="main.hint">Enter search query</string>
 
     <string name="main.migration_progress_title">Preparing dictionary …</string>
-    <string name="main.migration_progress_message">Please wait for a few seconds while we\'re indexing the dictionary.</string>
+    <string name="main.migration_progress_message">Please wait for a few seconds …</string>
     <string name="main.migration_error_title">Sorry, not enough space.</string>
     <string name="main.migration_error_message">We need 80 MB of spaces to store dictionary files. Please provide the required amount of spaces and try again.</string>
 
