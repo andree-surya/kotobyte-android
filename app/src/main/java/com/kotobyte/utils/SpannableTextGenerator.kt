@@ -6,33 +6,23 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
-import android.util.SparseArray
 
 import com.kotobyte.R
 
-abstract class SpannableTextGenerator protected constructor(protected val context: Context, initialCapacity: Int) {
+abstract class SpannableTextGenerator<T> protected constructor(protected val context: Context) {
 
-    private val spannableStrings = SparseArray<SpannableString>(initialCapacity)
     private val spannableStringBuilder = SpannableStringBuilder()
 
-    val spannableString: SpannableString
-        get() = getSpannableString(0)
+    fun createFrom(item: T): SpannableString {
 
-    fun getSpannableString(position: Int): SpannableString {
+        createWithBuilder(spannableStringBuilder, item)
 
-        var spannableString = spannableStrings.get(position)
+        val spannableText = SpannableString.valueOf(spannableStringBuilder)
 
-        if (spannableString == null) {
-            createSpannableWithBuilder(spannableStringBuilder, position)
-            spannableString = SpannableString.valueOf(spannableStringBuilder)
+        spannableStringBuilder.clearSpans()
+        spannableStringBuilder.clear()
 
-            spannableStringBuilder.clearSpans()
-            spannableStringBuilder.clear()
-
-            spannableStrings.put(position, spannableString)
-        }
-
-        return spannableString
+        return spannableText
     }
 
     protected fun appendBuilderWithHighlightableText(builder: SpannableStringBuilder, text: CharSequence) {
@@ -62,7 +52,7 @@ abstract class SpannableTextGenerator protected constructor(protected val contex
         }
     }
 
-    protected abstract fun createSpannableWithBuilder(builder: SpannableStringBuilder, position: Int)
+    protected abstract fun createWithBuilder(builder: SpannableStringBuilder, item: T)
 
     companion object {
         private val HIGHLIGHT_START = '{'

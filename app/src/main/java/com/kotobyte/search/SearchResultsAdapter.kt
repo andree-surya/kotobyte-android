@@ -3,6 +3,7 @@ package com.kotobyte.search
 import android.content.Context
 import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
+import android.text.SpannableString
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
@@ -18,15 +19,18 @@ import com.kotobyte.models.Word
 internal class SearchResultsAdapter(
         private val context: Context,
         private val listener: Listener,
-        private val wordSearchResults: List<Word>
+        private val words: List<Word>
 
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var expandedItemPosition = NONE
     private val kanjiSearchResultsAdapter = SparseArray<KanjiSearchResultsAdapter>()
 
-    private val mLiteralsTextGenerator = WordLiteralsTextGenerator(context, wordSearchResults)
-    private val mSensesTextGenerator = WordSensesTextGenerator(context, wordSearchResults)
+    private val literalsTextGenerator = WordLiteralsTextGenerator(context)
+    private val sensesTextGenerator = WordSensesTextGenerator(context)
+
+    private val literalsTexts = SparseArray<SpannableString>(words.size)
+    private val sensesTexts = SparseArray<SpannableString>(words.size)
 
     private val kanjiAdapterListener = object : KanjiSearchResultsAdapter.Listener {
 
@@ -46,9 +50,9 @@ internal class SearchResultsAdapter(
         notifyItemChanged(position)
     }
 
-    override fun getItemCount(): Int = wordSearchResults.size
+    override fun getItemCount(): Int = words.size
 
-    override fun getItemId(position: Int): Long = wordSearchResults[position].ID
+    override fun getItemId(position: Int): Long = words[position].ID
 
     override fun getItemViewType(position: Int): Int =
             if (expandedItemPosition == position) EXPANDED_ITEM else COLLAPSED_ITEM
@@ -76,11 +80,17 @@ internal class SearchResultsAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
+        val literalsText = literalsTexts.get(position) ?:
+                literalsTextGenerator.createFrom(words[position]).also { literalsTexts.put(position, it) }
+
+        val sensesText = sensesTexts.get(position) ?:
+                sensesTextGenerator.createFrom(words[position]).also { sensesTexts.put(position, it) }
+
         if (getItemViewType(position) == EXPANDED_ITEM) {
             val viewHolder = holder as ExpandedViewHolder
 
-            viewHolder.binding.wordItem.literalsTextView.text = mLiteralsTextGenerator.getSpannableString(position)
-            viewHolder.binding.wordItem.sensesTextView.text = mSensesTextGenerator.getSpannableString(position)
+            viewHolder.binding.wordItem.literalsTextView.text = literalsText
+            viewHolder.binding.wordItem.sensesTextView.text = sensesText
 
             viewHolder.binding.progressBar.visibility = View.GONE
             viewHolder.binding.kanjiListView.visibility = View.GONE
@@ -98,8 +108,8 @@ internal class SearchResultsAdapter(
         } else {
             val viewHolder = holder as CollapsedViewHolder
 
-            viewHolder.binding.wordItem.literalsTextView.text = mLiteralsTextGenerator.getSpannableString(position)
-            viewHolder.binding.wordItem.sensesTextView.text = mSensesTextGenerator.getSpannableString(position)
+            viewHolder.binding.wordItem.literalsTextView.text = literalsText
+            viewHolder.binding.wordItem.sensesTextView.text = sensesText
         }
     }
 
@@ -133,7 +143,7 @@ internal class SearchResultsAdapter(
                 notifyItemChanged(expandedItemPosition)
 
                 if (kanjiSearchResultsAdapter.get(position) == null) {
-                    listener.onRequestKanjiListForWord(position, wordSearchResults[position])
+                    listener.onRequestKanjiListForWord(position, words[position])
                 }
             }
         }

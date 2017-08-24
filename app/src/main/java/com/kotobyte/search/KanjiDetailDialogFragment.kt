@@ -16,8 +16,11 @@ import com.kotobyte.utils.vector.VectorPathParser
 
 class KanjiDetailDialogFragment : DialogFragment() {
 
+    private val isBottomSheetEnabled: Boolean
+        get() = resources.getBoolean(R.bool.bottom_sheet_enabled)
+
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            if (isBottomSheetEnabled) createContentView() else super.onCreateView(inflater, container, savedInstanceState)
+            if (isBottomSheetEnabled) super.onCreateView(inflater, container, savedInstanceState) else createContentView()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
@@ -63,16 +66,13 @@ class KanjiDetailDialogFragment : DialogFragment() {
 
         if (kanji != null) {
             binding.literalTextView.text = kanji.character.toString()
-            binding.readingsTextView.text = KanjiReadingsTextGenerator(context, kanji).spannableString
-            binding.meaningsTextView.text = KanjiMeaningsTextGenerator(context, kanji).spannableString
+            binding.readingsTextView.text = KanjiReadingsTextGenerator(context).createFrom(kanji)
+            binding.meaningsTextView.text = KanjiMeaningsTextGenerator(context).createFrom(kanji)
             binding.kanjiStrokesTextureView.setVectorPaths(VectorPathParser().parse(kanji.strokes))
         }
 
         return binding.root
     }
-
-    private val isBottomSheetEnabled: Boolean
-        get() = resources.getBoolean(R.bool.bottom_sheet_enabled)
 
     companion object {
         private val KANJI_KEY = "kanji"

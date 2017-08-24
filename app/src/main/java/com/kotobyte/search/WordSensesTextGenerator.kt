@@ -11,11 +11,11 @@ import com.kotobyte.utils.SpannableTextGenerator
 import com.kotobyte.models.Word
 
 
-internal class WordSensesTextGenerator(context: Context, private val words: List<Word>) : SpannableTextGenerator(context, words.size) {
+internal class WordSensesTextGenerator(context: Context) : SpannableTextGenerator<Word>(context) {
 
-    override fun createSpannableWithBuilder(builder: SpannableStringBuilder, position: Int) {
+    override fun createWithBuilder(builder: SpannableStringBuilder, item: Word) {
 
-        val senses = words[position].senses
+        val senses = item.senses
 
         for (i in senses.indices) {
             val (text, _, extras, origins) = senses[i]

@@ -12,17 +12,17 @@ import com.kotobyte.models.Literal
 import com.kotobyte.models.Word
 
 
-internal class WordLiteralsTextGenerator(context: Context, private val words: List<Word>) : SpannableTextGenerator(context, words.size) {
+internal class WordLiteralsTextGenerator(context: Context) : SpannableTextGenerator<Word>(context) {
 
-    override fun createSpannableWithBuilder(builder: SpannableStringBuilder, position: Int) {
+    override fun createWithBuilder(builder: SpannableStringBuilder, item: Word) {
 
-        val readings = words[position].readings
-        val literals = words[position].literals
+        val readings = item.readings
+        val literals = item.literals
 
         for (i in readings.indices) {
             val reading = readings[i]
 
-            appendBuilderWithLiteral(builder, reading)
+            appendLiteralToBuilder(builder, reading)
 
             if (i < readings.size - 1) {
                 builder.append('、')
@@ -36,12 +36,12 @@ internal class WordLiteralsTextGenerator(context: Context, private val words: Li
                 builder.append('【')
             }
 
-            appendBuilderWithLiteral(builder, wordLiteral)
+            appendLiteralToBuilder(builder, wordLiteral)
             builder.append(if (i < literals.size - 1) '、' else '】')
         }
     }
 
-    private fun appendBuilderWithLiteral(builder: SpannableStringBuilder, wordLiteral: Literal) {
+    private fun appendLiteralToBuilder(builder: SpannableStringBuilder, wordLiteral: Literal) {
 
         val literalStartIndex = builder.length
 

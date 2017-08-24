@@ -7,13 +7,11 @@ import com.kotobyte.utils.SpannableTextGenerator
 import com.kotobyte.models.Kanji
 
 
-internal class KanjiReadingsTextGenerator(context: Context, private val kanjiList: List<Kanji>) : SpannableTextGenerator(context, kanjiList.size) {
+internal class KanjiReadingsTextGenerator(context: Context) : SpannableTextGenerator<Kanji>(context) {
 
-    constructor(context: Context, kanji: Kanji) : this(context, listOf<Kanji>(kanji))
+    override fun createWithBuilder(builder: SpannableStringBuilder, item: Kanji) {
 
-    override fun createSpannableWithBuilder(builder: SpannableStringBuilder, position: Int) {
-
-        val readings = kanjiList[position].readings
+        val readings = item.readings
 
         for (i in readings.indices) {
 

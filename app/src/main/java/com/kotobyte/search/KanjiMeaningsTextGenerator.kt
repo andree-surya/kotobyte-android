@@ -13,18 +13,12 @@ import com.kotobyte.models.Kanji
 import com.kotobyte.utils.SpannableTextGenerator
 
 
-internal class KanjiMeaningsTextGenerator(context: Context, private val kanjiList: List<Kanji>) : SpannableTextGenerator(context, kanjiList.size) {
+internal class KanjiMeaningsTextGenerator(context: Context, private val shouldShowExtras: Boolean = false) : SpannableTextGenerator<Kanji>(context) {
 
-    private var shouldShowExtras: Boolean = false
+    override fun createWithBuilder(builder: SpannableStringBuilder, item: Kanji) {
 
-    constructor(context: Context, kanji: Kanji) : this(context, listOf<Kanji>(kanji)) {
-        shouldShowExtras = true
-    }
-
-    override fun createSpannableWithBuilder(builder: SpannableStringBuilder, position: Int) {
-
-        val meanings = kanjiList[position].meanings
-        val extras = kanjiList[position].extras
+        val meanings = item.meanings
+        val extras = item.extras
 
         for (i in meanings.indices) {
 
