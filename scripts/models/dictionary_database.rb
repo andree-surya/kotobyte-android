@@ -36,17 +36,26 @@ CREATE_TABLES = <<-EOS
     number integer not null,
     text text not null
   );
+
+  create table sentences (
+    id integer primary key,
+    original text not null,
+    tokenized text not null,
+    translated text not null
+  );
 EOS
 
 BUILD_INDEXES = <<-EOS
   create virtual table literals_fts using fts5(text, word_id unindexed, priority unindexed, prefix='1 2 3 4 5');
   create virtual table senses_fts using fts5(text, word_id unindexed, tokenize='porter');
   create virtual table kanji_fts using fts5(text, kanji_id unindexed);
+  create virtual table sentences_fts using fts5(text, sentence_id unindexed);
 
   insert into literals_fts select substr(value, 2), words.id, substr(value, 1, 1) from words, json_each(words.json, '$[0]') where type = 'text';
   insert into literals_fts select substr(value, 2), words.id, substr(value, 1, 1) from words, json_each(words.json, '$[1]') where type = 'text';
   insert into senses_fts select json_extract(value, '$[0]'), words.id from words, json_each(words.json, '$[2]');
   insert into kanji_fts select json_extract(json, '$[0]'), kanji.id from kanji;
+  insert into sentences_fts select tokenized, sentences.id from sentences;
 EOS
 
 SEARCH_LITERALS = <<-EOS
@@ -67,6 +76,10 @@ EOS
 
 SEARCH_KANJI = <<-EOS
   select id, json from kanji join kanji_fts(?) on (id = kanji_id) limit ?;
+EOS
+
+SEARCH_SENTENCES = <<-EOS
+  select id, original, tokenized, translated from sentences join sentences_fts(?) on (id = sentence_id) limit ?;
 EOS
 
 class DictionaryDatabase
@@ -130,6 +143,11 @@ class DictionaryDatabase
     @insert_grade.execute(number, text)
   end
 
+  def insert_sentence(sentence)
+    @insert_sentence ||= @database.prepare('insert into sentences values (?, ?, ?, ?)')
+    @insert_sentence.execute(sentence.id, sentence.original, sentence.tokenized, sentence.translated)
+  end
+
   def search_words(query)
 
     if query.contains_japanese?
@@ -153,16 +171,25 @@ class DictionaryDatabase
     results
   end
 
-  def search_kanji(query, limit = 5)
+  def search_kanji(query, limit = 10)
     results = []
 
     tokens = query.chars.select { |c| c.kanji? }
 
     unless query.empty?
       @search_kanji ||= @database.prepare(SEARCH_KANJI)
-      @search_kanji.execute(tokens.join(' OR '), 10).each { |h| results << h }
+      @search_kanji.execute(tokens.join(' OR '), limit).each { |h| results << h }
     end
 
+    results
+  end
+
+  def search_sentences(query, limit = 100) 
+    results = []
+
+    @search_sentences ||= @database.prepare(SEARCH_SENTENCES)
+    @search_sentences.execute(query, limit).each { |h| results << h }
+  
     results
   end
 

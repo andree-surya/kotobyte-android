@@ -60,4 +60,20 @@ describe DictionaryDatabase do
       end
     end
   end
+
+  describe '#insert_sentence' do
+    let(:database) { DictionaryDatabase.new(database_file) }
+
+    it 'should insert all sentences in the test source file without error' do
+
+      sentence_source_reader = SentencesSourceReader.new(
+          source_csv: IO.read(SENTENCES_SOURCE_FILE),
+          indices_csv: IO.read(SENTENCES_INDICES_FILE)
+      )
+
+      database.transaction do |db|
+        sentence_source_reader.read_all.map { |sentence| db.insert_sentence(sentence) }
+      end
+    end
+  end
 end
