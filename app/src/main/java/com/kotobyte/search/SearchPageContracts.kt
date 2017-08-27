@@ -3,8 +3,6 @@ package com.kotobyte.search
 import com.kotobyte.models.Kanji
 import com.kotobyte.models.Word
 
-import io.reactivex.Single
-
 internal object SearchPageContracts {
 
     interface View {
@@ -28,7 +26,7 @@ internal object SearchPageContracts {
     }
 
     interface DataSource {
-        fun searchWords(query: String): Single<List<Word>>
-        fun searchKanji(query: String): Single<List<Kanji>>
+        fun searchWords(query: String): List<Word>
+        fun searchKanji(query: String): List<Kanji>
     }
 }

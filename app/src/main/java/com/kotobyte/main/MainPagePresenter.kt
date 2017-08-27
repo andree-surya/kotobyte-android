@@ -1,16 +1,13 @@
 package com.kotobyte.main
 
+import com.kotobyte.base.DatabaseConnection
 import com.kotobyte.base.DatabaseProvider
-
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import com.kotobyte.utils.AsynchronousTask
 
 internal class MainPagePresenter(private val view: MainPageContracts.View, private val databaseProvider: DatabaseProvider) : MainPageContracts.Presenter {
 
     private var mostRecentSearchRequestQuery: String? = null
-    private var databaseMigrationSubscription: Disposable? = null
+    private var databaseMigrationTask: AsynchronousTask<*>? = null
 
     override fun onCreate() {
 
@@ -21,7 +18,7 @@ internal class MainPagePresenter(private val view: MainPageContracts.View, priva
     }
 
     override fun onDestroy() {
-        databaseMigrationSubscription?.dispose()
+        databaseMigrationTask?.cancel(true)
     }
 
     override fun onClickClearButton() {
@@ -77,7 +74,7 @@ internal class MainPagePresenter(private val view: MainPageContracts.View, priva
             return
         }
 
-        if (databaseMigrationSubscription != null) {
+        if (databaseMigrationTask != null) {
             return
         }
 
@@ -87,23 +84,28 @@ internal class MainPagePresenter(private val view: MainPageContracts.View, priva
             return
         }
 
-        databaseMigrationSubscription = Single.fromCallable({ databaseProvider.obtainDatabaseConnection() })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
+        databaseMigrationTask = MigrateDatabaseTask().apply { execute() }
+    }
 
-                    databaseMigrationSubscription = null
+    private inner class MigrateDatabaseTask : AsynchronousTask<DatabaseConnection>() {
 
-                    view.showMigrationProgressDialog(false)
+        override fun doInBackground() = databaseProvider.obtainDatabaseConnection()
 
-                    executeSearchForMostRecentQuery()
+        override fun onPreExecute() {
+            view.showMigrationProgressDialog(true)
+        }
 
-                }) { throwable ->
+        override fun onPostExecute(data: DatabaseConnection?, error: Throwable?) {
+            view.showMigrationProgressDialog(false)
 
-                    databaseMigrationSubscription = null
+            if (error == null) {
+                executeSearchForMostRecentQuery()
 
-                    view.showMigrationProgressDialog(false)
-                    view.showError(throwable)
-                }
+            } else {
+                view.showError(error)
+            }
+
+            databaseMigrationTask = null
+        }
     }
 }
