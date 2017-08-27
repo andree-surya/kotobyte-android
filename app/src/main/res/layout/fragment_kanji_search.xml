@@ -28,7 +28,7 @@
             android:drawableTop="@drawable/ic_warning_gray_72dp"
             android:drawablePadding="16dp"
             android:visibility="gone"
-            android:text="@string/search.empty" />
+            android:text="@string/word.empty" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/search_results_view"

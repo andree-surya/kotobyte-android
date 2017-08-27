@@ -1,4 +1,4 @@
-package com.kotobyte.search
+package com.kotobyte.kanji
 
 import android.app.Dialog
 import android.databinding.DataBindingUtil
@@ -9,12 +9,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.kotobyte.R
-import com.kotobyte.databinding.FragmentKanjiDetailBinding
+import com.kotobyte.databinding.FragmentKanjiDetailsBinding
 import com.kotobyte.models.Kanji
 import com.kotobyte.utils.vector.VectorPathParser
 
 
-class KanjiDetailDialogFragment : DialogFragment() {
+class KanjiDetailsDialogFragment : DialogFragment() {
 
     private val isBottomSheetEnabled: Boolean
         get() = resources.getBoolean(R.bool.bottom_sheet_enabled)
@@ -57,9 +57,9 @@ class KanjiDetailDialogFragment : DialogFragment() {
 
     private fun createContentView(): View {
 
-        val binding = DataBindingUtil.inflate<FragmentKanjiDetailBinding>(
+        val binding = DataBindingUtil.inflate<FragmentKanjiDetailsBinding>(
                 LayoutInflater.from(context),
-                R.layout.fragment_kanji_detail, null,
+                R.layout.fragment_kanji_details, null,
                 false)
 
         val kanji = arguments.getParcelable<Kanji>(KANJI_KEY)
@@ -77,7 +77,7 @@ class KanjiDetailDialogFragment : DialogFragment() {
     companion object {
         private val KANJI_KEY = "kanji"
 
-        internal fun create(kanji: Kanji) = KanjiDetailDialogFragment().apply {
+        internal fun create(kanji: Kanji) = KanjiDetailsDialogFragment().apply {
 
             arguments = Bundle().apply {
                 putParcelable(KANJI_KEY, kanji)

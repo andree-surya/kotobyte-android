@@ -1,23 +1,20 @@
-package com.kotobyte.search
+package com.kotobyte.kanji
 
 import android.content.Context
 import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
 import android.text.SpannableString
-import android.util.SparseArray
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-
 import com.kotobyte.R
 import com.kotobyte.databinding.ViewKanjiItemBinding
 import com.kotobyte.models.Kanji
 
 
-internal class KanjiSearchResultsAdapter(
+class KanjiSearchResultsAdapter(
         private val context: Context,
-        private val listener: Listener,
-        private val kanjiList: List<Kanji>
+        private val kanjiList: List<Kanji>,
+        private val listener: Listener
 
 ) : RecyclerView.Adapter<KanjiSearchResultsAdapter.ViewHolder>() {
 
@@ -37,7 +34,7 @@ internal class KanjiSearchResultsAdapter(
         val binding = DataBindingUtil.inflate<ViewKanjiItemBinding>(LayoutInflater.from(context), R.layout.view_kanji_item, parent, false)
 
         return ViewHolder(binding).apply {
-            binding.kanjiContainer.setOnClickListener(OnKanjiClickListener(this))
+            binding.kanjiContainer.setOnClickListener({ listener.onClickKanji(kanjiList[adapterPosition]) })
         }
     }
 
@@ -50,18 +47,9 @@ internal class KanjiSearchResultsAdapter(
 
     override fun getItemCount(): Int = kanjiList.size
 
-    internal interface Listener {
-        fun onClickKanji(position: Int, kanji: Kanji)
+    interface Listener {
+        fun onClickKanji(kanji: Kanji)
     }
 
-    internal class ViewHolder(val binding: ViewKanjiItemBinding) : RecyclerView.ViewHolder(binding.root)
-
-    private inner class OnKanjiClickListener(private val viewHolder: ViewHolder) : View.OnClickListener {
-
-        override fun onClick(v: View) {
-            val position = viewHolder.adapterPosition
-
-            listener.onClickKanji(position, kanjiList[position])
-        }
-    }
+    class ViewHolder(val binding: ViewKanjiItemBinding) : RecyclerView.ViewHolder(binding.root)
 }

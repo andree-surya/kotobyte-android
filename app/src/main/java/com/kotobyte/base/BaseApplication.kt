@@ -12,6 +12,6 @@ class BaseApplication : Application() {
         super.onCreate()
 
         ServiceLocator.configuration = DefaultConfiguration(this)
-        ServiceLocator.databaseProvider = DictionaryProvider(ServiceLocator.configuration!!, assets)
+        ServiceLocator.databaseProvider = DictionaryProvider(ServiceLocator.configuration, assets)
     }
 }

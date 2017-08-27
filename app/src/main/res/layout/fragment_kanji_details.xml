@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
 
-            <com.kotobyte.search.KanjiStrokesTextureView
+            <com.kotobyte.kanji.KanjiStrokesTextureView
                 android:id="@+id/kanji_strokes_texture_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

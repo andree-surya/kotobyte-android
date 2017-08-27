@@ -38,21 +38,22 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':sqlite')
 
-    compile 'com.andree-surya:moji4j:1.2.0'
-    compile 'com.android.support:design:25.3.1'
-
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 
-    kapt "com.android.databinding:compiler:$gradle_version"
+    compile 'com.andree-surya:moji4j:1.2.0'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.json:json:20170516'
+    kapt "com.android.databinding:compiler:$gradle_version"
 
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.json:json:20170516'
 }
 
-if (! file('app/src/main/assets/' + dictionaryFileName)) {
+if (!file('app/src/main/assets/' + dictionaryFileName)) {
     throw new GradleException('Cannot find asset file: ' + dictionaryFileName)
 }

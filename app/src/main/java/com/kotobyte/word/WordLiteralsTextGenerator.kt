@@ -1,4 +1,4 @@
-package com.kotobyte.search
+package com.kotobyte.word
 
 import android.content.Context
 import android.support.v4.content.ContextCompat

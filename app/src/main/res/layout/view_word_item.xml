@@ -1,31 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
-    <RelativeLayout
-        android:id="@+id/word_container"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
         android:focusable="true"
-        android:background="@color/background"
-        android:foreground="?android:attr/selectableItemBackground">
+        android:orientation="vertical"
+        android:background="@color/background">
 
-        <TextView
-            style="@style/Text.Large"
-            android:id="@+id/literals_text_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            style="@style/Text"
-            android:id="@+id/senses_text_view"
+        <RelativeLayout
+            android:id="@+id/word_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/literals_text_view"
-            android:layout_marginTop="12dp" />
-    </RelativeLayout>
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:focusable="true"
+            android:background="@color/background"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <TextView
+                style="@style/Text.Large"
+                android:id="@+id/literals_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                style="@style/Text"
+                android:id="@+id/senses_text_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/literals_text_view"
+                android:layout_marginTop="12dp" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider" />
+    </LinearLayout>
 </layout>
-
-

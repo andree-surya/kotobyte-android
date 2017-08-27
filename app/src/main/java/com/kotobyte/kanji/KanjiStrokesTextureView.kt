@@ -1,4 +1,4 @@
-package com.kotobyte.search
+package com.kotobyte.kanji
 
 import android.content.Context
 import android.graphics.Paint

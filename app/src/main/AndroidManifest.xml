@@ -6,39 +6,46 @@
 
     <application
         android:name=".base.BaseApplication"
-        android:label="@string/app_name"
         android:allowBackup="false"
+        android:extractNativeLibs="false"
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
-        android:extractNativeLibs="false"
         tools:replace="android:supportsRtl,android:allowBackup">
 
         <activity
-            android:name=".main.MainPageActivity"
+            android:name=".main.MainScreenActivity"
             android:theme="@style/AppTheme.NoActionBar">
 
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
 
-                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/plain"/>
             </intent-filter>
 
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+                <action android:name="android.intent.action.VIEW"/>
 
-                <data android:host="kotobyte.com" android:scheme="http" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data android:host="kotobyte.com" android:scheme="http"/>
             </intent-filter>
         </activity>
-    </application>
 
+        <activity
+            android:name=".word.WordDetailsActivity"
+            android:label="@string/word.details"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".main.MainScreenActivity" />
+
+    </application>
 </manifest>

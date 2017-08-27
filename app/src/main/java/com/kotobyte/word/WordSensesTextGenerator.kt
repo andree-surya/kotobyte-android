@@ -1,4 +1,4 @@
-package com.kotobyte.search
+package com.kotobyte.word
 
 import android.content.Context
 import android.text.Spannable
@@ -62,11 +62,11 @@ internal class WordSensesTextGenerator(context: Context) : SpannableTextGenerato
 
             if (text == null) {
                 builder.append(context.getString(
-                        R.string.search_origin, language))
+                        R.string.word_origin, language))
 
             } else {
                 builder.append(context.getString(
-                        R.string.search_origin_with_text, language, text))
+                        R.string.word_origin_with_text, language, text))
             }
         }
 

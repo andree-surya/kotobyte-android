@@ -20,15 +20,15 @@ import android.widget.Toolbar
 
 import com.kotobyte.R
 import com.kotobyte.base.ServiceLocator
-import com.kotobyte.databinding.ActivityMainPageBinding
-import com.kotobyte.search.SearchPageFragment
+import com.kotobyte.databinding.ActivityMainScreenBinding
+import com.kotobyte.word.WordSearchFragment
 import com.kotobyte.utils.ErrorDialogFragment
 import com.kotobyte.utils.ProgressDialogFragment
 
-class MainPageActivity : FragmentActivity(), MainPageContracts.View {
+class MainScreenActivity : FragmentActivity(), MainScreenContracts.View {
 
-    private var binding: ActivityMainPageBinding? = null
-    private var presenter: MainPageContracts.Presenter? = null
+    private lateinit var binding: ActivityMainScreenBinding
+    private lateinit var presenter: MainScreenContracts.Presenter
 
     private val plainTextFromClipboard: CharSequence?
 
@@ -44,7 +44,7 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
     private val errorDialogFragmentCallback =  object : ErrorDialogFragment.Callback {
 
         override fun onClickPositiveButton() {
-            presenter?.onClickRetryButton()
+            presenter.onClickRetryButton()
         }
     }
 
@@ -55,7 +55,7 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
         override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) = Unit
 
         override fun afterTextChanged(s: Editable) {
-            presenter?.onChangeTextOnQueryEditor(s)
+            presenter.onChangeTextOnQueryEditor(s)
         }
     }
 
@@ -68,7 +68,7 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
             val isPressedDownEvent = event != null && event.action == KeyEvent.ACTION_DOWN
 
             if (actionFromSoftKeyboard || actionFromHardKeyboard && isPressedDownEvent) {
-                presenter?.onReceiveSearchRequest(textView.text)
+                presenter.onReceiveSearchRequest(textView.text)
 
                 return@OnEditorActionListener true
             }
@@ -80,22 +80,22 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
     private val onButtonClickListener = View.OnClickListener { v ->
 
         if (v.id == R.id.search_button) {
-            presenter?.onReceiveSearchRequest(binding?.queryEditor?.text ?: "")
+            presenter.onReceiveSearchRequest(binding.queryEditor?.text ?: "")
         }
 
         if (v.id == R.id.clear_button) {
-            presenter?.onClickClearButton()
+            presenter.onClickClearButton()
         }
     }
 
     private val onMenuItemClickListener = Toolbar.OnMenuItemClickListener { item ->
 
         if (item.itemId == R.id.action_about) {
-            presenter?.onClickAboutMenuItem()
+            presenter.onClickAboutMenuItem()
         }
 
         if (item.itemId == R.id.action_paste) {
-            presenter?.onClickPasteMenuItem(plainTextFromClipboard ?: "")
+            presenter.onClickPasteMenuItem(plainTextFromClipboard ?: "")
         }
 
         true
@@ -104,7 +104,7 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
     private val onBackStackChangedListener = FragmentManager.OnBackStackChangedListener {
         val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
 
-        if (fragment is SearchPageFragment) {
+        if (fragment is WordSearchFragment) {
             setTextOnQueryEditor(fragment.query)
 
         } else {
@@ -115,13 +115,13 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main_page)
-        binding?.toolbar?.inflateMenu(R.menu.menu_main_page)
-        binding?.toolbar?.setOnMenuItemClickListener(onMenuItemClickListener)
-        binding?.queryEditor?.setOnEditorActionListener(onEditorActionListener)
-        binding?.queryEditor?.addTextChangedListener(queryTextWatcher)
-        binding?.clearButton?.setOnClickListener(onButtonClickListener)
-        binding?.searchButton?.setOnClickListener(onButtonClickListener)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main_screen)
+        binding.toolbar.inflateMenu(R.menu.menu_main_screen)
+        binding.toolbar.setOnMenuItemClickListener(onMenuItemClickListener)
+        binding.queryEditor.setOnEditorActionListener(onEditorActionListener)
+        binding.queryEditor.addTextChangedListener(queryTextWatcher)
+        binding.clearButton.setOnClickListener(onButtonClickListener)
+        binding.searchButton.setOnClickListener(onButtonClickListener)
 
         supportFragmentManager.addOnBackStackChangedListener(onBackStackChangedListener)
 
@@ -131,7 +131,7 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
     override fun onDestroy() {
         super.onDestroy()
 
-        presenter?.onDestroy()
+        presenter.onDestroy()
 
         supportFragmentManager.removeOnBackStackChangedListener(onBackStackChangedListener)
     }
@@ -147,17 +147,17 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
     }
 
     override fun enableSearchButton(enable: Boolean) {
-        binding?.searchButton?.isEnabled = enable
+        binding.searchButton.isEnabled = enable
     }
 
     override fun showClearButton(show: Boolean) {
-        binding?.clearButton?.visibility = if (show) View.VISIBLE else View.GONE
+        binding.clearButton.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     override fun setTextOnQueryEditor(text: CharSequence?) {
 
-        binding?.queryEditor?.setText(text)
-        binding?.queryEditor?.selectAll()
+        binding.queryEditor.setText(text)
+        binding.queryEditor.selectAll()
     }
 
     override fun assignFocusToQueryEditor(focus: Boolean) {
@@ -165,14 +165,14 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
         val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
         if (focus) {
-            binding?.queryEditor?.requestFocus()
+            binding.queryEditor.requestFocus()
 
-            inputMethodManager.showSoftInput(binding?.queryEditor, InputMethodManager.SHOW_IMPLICIT)
+            inputMethodManager.showSoftInput(binding.queryEditor, InputMethodManager.SHOW_IMPLICIT)
 
         } else {
-            binding?.queryEditor?.clearFocus()
+            binding.queryEditor.clearFocus()
 
-            inputMethodManager.hideSoftInputFromWindow(binding?.queryEditor?.windowToken, 0)
+            inputMethodManager.hideSoftInputFromWindow(binding.queryEditor.windowToken, 0)
         }
     }
 
@@ -194,7 +194,7 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
     override fun showMigrationProgressDialog(show: Boolean) {
 
         val fragmentTag = ProgressDialogFragment::class.java.simpleName
-        var dialogFragment: ProgressDialogFragment? = supportFragmentManager.findFragmentByTag(fragmentTag) as ProgressDialogFragment
+        var dialogFragment: ProgressDialogFragment? = supportFragmentManager.findFragmentByTag(fragmentTag) as? ProgressDialogFragment
 
         if (show) {
             if (dialogFragment == null) {
@@ -215,8 +215,10 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
 
     override fun showSearchResultsScreen(query: CharSequence) {
 
+        val fragment = WordSearchFragment.create(query.toString())
+
         val fragmentTransaction = supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, SearchPageFragment.create(query), SearchPageFragment::class.java.simpleName)
+                .replace(R.id.fragment_container, fragment, WordSearchFragment::class.java.simpleName)
 
         if (Intent.ACTION_MAIN == intent.action) {
             fragmentTransaction.addToBackStack(null)
@@ -230,15 +232,15 @@ class MainPageActivity : FragmentActivity(), MainPageContracts.View {
 
     private fun prepareAndStartPresenter() {
 
-        presenter = MainPagePresenter(this, ServiceLocator.databaseProvider!!)
-        presenter?.onCreate()
+        presenter = MainScreenPresenter(this, ServiceLocator.databaseProvider)
+        presenter.onCreate()
 
         if (intent.hasExtra(Intent.EXTRA_TEXT)) {
-            presenter?.onReceiveSearchRequest(intent.getStringExtra(Intent.EXTRA_TEXT))
+            presenter.onReceiveSearchRequest(intent.getStringExtra(Intent.EXTRA_TEXT))
         }
     }
 
     companion object {
-        private val TAG = MainPageActivity::class.java.simpleName
+        private val TAG = MainScreenActivity::class.java.simpleName
     }
 }

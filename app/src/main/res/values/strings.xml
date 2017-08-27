@@ -14,9 +14,15 @@
     <string name="main.migration_error_title">Sorry, not enough space.</string>
     <string name="main.migration_error_message">We need 80 MB of spaces to store dictionary files. Please provide the required amount of spaces and try again.</string>
 
-    <string name="search.origin">from %s</string>
-    <string name="search.origin_with_text">from %1$s “%2$s”</string>
-    <string name="search.empty">Sorry, no matching search results.\nPlease try again with a different query.</string>
+    <string name="word.origin">from %s</string>
+    <string name="word.origin_with_text">from %1$s “%2$s”</string>
+    <string name="word.empty">Sorry, no matching search results.\nPlease try again with a different query.</string>
+    <string name="word.details">Entry Details</string>
+    <string name="word.kanji">Kanji</string>
+    <string name="word.sentences">Sentences</string>
+
+    <string name="kanji.empty">Sorry, no Kanji for this entry.</string>
+    <string name="sentence.empty">Sorry, no sample sentences for this entry.</string>
 
     <string name="common.okay">Got It</string>
     <string name="common.unknown_error_title">Sorry, we got an error.</string>
