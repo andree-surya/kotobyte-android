@@ -43,12 +43,12 @@ internal class WordSearchResultsAdapter(
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        holder?.binding?.literalsTextView?.text = literalsTexts.get(position) ?:
+        holder.binding.literalsTextView.text = literalsTexts.get(position) ?:
                 literalsTextGenerator.createFrom(words[position]).also { literalsTexts.put(position, it) }
 
-        holder?.binding?.sensesTextView?.text = sensesTexts.get(position) ?:
+        holder.binding.sensesTextView.text = sensesTexts.get(position) ?:
                 sensesTextGenerator.createFrom(words[position]).also { sensesTexts.put(position, it) }
     }
 

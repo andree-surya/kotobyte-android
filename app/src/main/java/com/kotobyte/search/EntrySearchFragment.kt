@@ -12,14 +12,15 @@ import com.kotobyte.R
 import com.kotobyte.databinding.FragmentEntrySearchBinding
 import com.kotobyte.utils.ErrorDialogFragment
 
-abstract class EntrySearchFragment<in T>: Fragment(), EntrySearchContracts.View<T> {
+abstract class EntrySearchFragment<T>: Fragment(), EntrySearchContracts.View<T> {
 
     abstract protected var emptySearchResultsLabel: String get
-    abstract protected var presenter: EntrySearchContracts.Presenter get
+    abstract protected var dataSource: EntrySearchContracts.DataSource<T> get
 
     abstract protected fun createSearchResultsAdapter(entries: List<T>): RecyclerView.Adapter<*>
 
     private lateinit var binding: FragmentEntrySearchBinding
+    private lateinit var presenter: EntrySearchPresenter<T>
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 
@@ -32,6 +33,7 @@ abstract class EntrySearchFragment<in T>: Fragment(), EntrySearchContracts.View<
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        presenter = EntrySearchPresenter<T>(this, dataSource)
         presenter.onCreate()
     }
 

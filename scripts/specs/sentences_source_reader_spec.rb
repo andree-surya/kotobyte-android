@@ -78,7 +78,7 @@ describe SentencesSourceReader do
     sentences = reader.read_all
 
     expect(sentences.count).to eq(2)
-    expect(sentences[0].tokenized).to eq('道 と言う[という] 漢字 総画数 何 画 ですか')
+    expect(sentences[0].tokenized).to eq('道(みち) と言う[という] 漢字 総画数 何 画(かく) ですか')
     expect(sentences[1].tokenized).to eq('老齢 人口 健康管理 益々[ますます] 多く 出費 必要 となる だろう')
   end
 end

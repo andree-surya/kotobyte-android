@@ -44,7 +44,7 @@
         <activity
             android:name=".word.WordDetailsActivity"
             android:label="@string/word.details"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme"
             android:parentActivityName=".main.MainScreenActivity" />
 
     </application>

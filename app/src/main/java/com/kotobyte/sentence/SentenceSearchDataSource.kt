@@ -1,15 +1,15 @@
-package com.kotobyte.kanji
+package com.kotobyte.sentence
 
 import com.kotobyte.base.DatabaseProvider
-import com.kotobyte.models.Kanji
+import com.kotobyte.models.Sentence
 import com.kotobyte.search.EntrySearchContracts
 
-class KanjiSearchDataSource(
+class SentenceSearchDataSource(
         private val databaseProvider: DatabaseProvider,
         private val queries: List<String>
 
-) : EntrySearchContracts.DataSource<Kanji> {
+) : EntrySearchContracts.DataSource<Sentence> {
 
     override fun searchEntries() =
-        databaseProvider.obtainDatabaseConnection().searchKanji(queries)
+        databaseProvider.obtainDatabaseConnection().searchSentences(queries)
 }

@@ -7,7 +7,6 @@ import com.kotobyte.base.ServiceLocator
 import com.kotobyte.models.Word
 import com.kotobyte.search.EntrySearchContracts
 import com.kotobyte.search.EntrySearchFragment
-import com.kotobyte.search.EntrySearchPresenter
 
 class WordSearchFragment : EntrySearchFragment<Word>() {
 
@@ -15,15 +14,13 @@ class WordSearchFragment : EntrySearchFragment<Word>() {
         get() = arguments?.getString(ARG_QUERY) ?: ""
 
     override lateinit var emptySearchResultsLabel: String
-    override lateinit var presenter: EntrySearchContracts.Presenter
+    override lateinit var dataSource: EntrySearchContracts.DataSource<Word>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val dataSource = WordSearchDataSource(ServiceLocator.databaseProvider, query)
-
         emptySearchResultsLabel = getString(R.string.word_empty)
-        presenter = EntrySearchPresenter<Word>(this, dataSource)
+        dataSource = WordSearchDataSource(ServiceLocator.databaseProvider, query)
     }
 
     override fun createSearchResultsAdapter(entries: List<Word>): RecyclerView.Adapter<*> =

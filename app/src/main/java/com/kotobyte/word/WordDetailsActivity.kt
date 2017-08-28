@@ -12,20 +12,19 @@ import com.kotobyte.models.Word
 
 class WordDetailsActivity : AppCompatActivity() {
 
-    private lateinit var word: Word
     private lateinit var binding: ActivityWordDetailsBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        word = intent.getParcelableExtra(EXTRA_WORD)
         binding = DataBindingUtil.setContentView<ActivityWordDetailsBinding>(this, R.layout.activity_word_details)
+
+        val word: Word = intent.getParcelableExtra(EXTRA_WORD)
 
         binding.literalsTextView.text = WordLiteralsTextGenerator(this).createFrom(word)
         binding.sensesTextView.text = WordSensesTextGenerator(this).createFrom(word)
         binding.viewPager.adapter = WordDetailsPageAdapter(word, this, supportFragmentManager)
 
-        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 

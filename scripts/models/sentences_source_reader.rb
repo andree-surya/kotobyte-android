@@ -3,7 +3,7 @@ require_relative 'sentence'
 
 class SentencesSourceReader
 
-  STOP_WORDS = 'へ|か|が|の|に|と|で|や|も|わ|は|さ|よ|ね'
+  STOP_WORDS = 'へ|か|が|の|に|と|で|や|も|わ|は|さ|よ|ね|を'
 
   def initialize(source_csv: '', indices_csv: '')
     @source_csv = source_csv
@@ -54,7 +54,6 @@ class SentencesSourceReader
 
     def clean_tokenized_text(text)
       text.gsub!(/([[:graph:]]+\|\d+)/, '') # Remove particles, e.g. は|1
-      text.gsub!(/\([[:graph:]]+\)/, '') # Remove readings, e.g. 時(じ)
       text.gsub!(/\[\d+\]/, '') # Remove number marksers, e.g. から[01]
       text.gsub!(/\b(#{STOP_WORDS})\b/, '') # Remove Japanese stop words.
       text.gsub!(/\s+/, ' ') # Replace consecutive white spaces to a single space.

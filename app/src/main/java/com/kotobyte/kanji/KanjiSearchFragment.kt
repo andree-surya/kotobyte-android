@@ -7,21 +7,19 @@ import com.kotobyte.base.ServiceLocator
 import com.kotobyte.models.Kanji
 import com.kotobyte.search.EntrySearchContracts
 import com.kotobyte.search.EntrySearchFragment
-import com.kotobyte.search.EntrySearchPresenter
 
 class KanjiSearchFragment : EntrySearchFragment<Kanji>() {
 
     override lateinit var emptySearchResultsLabel: String
-    override lateinit var presenter: EntrySearchContracts.Presenter
+    override lateinit var dataSource: EntrySearchContracts.DataSource<Kanji>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val queries = arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf()
-        val dataSource = KanjiSearchDataSource(ServiceLocator.databaseProvider, queries)
-
         emptySearchResultsLabel = getString(R.string.kanji_empty)
-        presenter = EntrySearchPresenter<Kanji>(this, dataSource)
+
+        dataSource = KanjiSearchDataSource(ServiceLocator.databaseProvider,
+                arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf())
     }
 
     override fun createSearchResultsAdapter(entries: List<Kanji>): RecyclerView.Adapter<*> =

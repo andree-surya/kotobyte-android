@@ -7,7 +7,7 @@
         android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/word_container"
+            android:id="@+id/sentence_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -21,13 +21,13 @@
 
             <TextView
                 style="@style/Text.Large"
-                android:id="@+id/literals_text_view"
+                android:id="@+id/original_text_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <TextView
                 style="@style/Text"
-                android:id="@+id/senses_text_view"
+                android:id="@+id/translated_text_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp" />

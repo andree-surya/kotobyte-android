@@ -15,22 +15,19 @@ class WordDetailsPageAdapter(val word: Word, val context: Context, fm: FragmentM
 
     override fun getPageTitle(position: Int): String = when(position) {
 
-        0 -> context.getString(R.string.word_kanji)
-        1 -> context.getString(R.string.word_sentences)
+        0 -> context.getString(R.string.word_sentences)
+        1 -> context.getString(R.string.word_kanji)
 
         else -> throwUnknownPageError(position)
     }
 
     override fun getItem(position: Int): Fragment = when(position) {
 
-        0 -> KanjiSearchFragment.create(word.literals.map { it.text })
-        1 -> SentenceSearchFragment.create(createQueriesForSentence())
+        0 -> SentenceSearchFragment.create((word.literals + word.readings).map { it.text })
+        1 -> KanjiSearchFragment.create(word.literals.map { it.text })
 
         else -> throwUnknownPageError(position)
     }
-
-    private fun createQueriesForSentence(): Array<CharSequence> =
-            (word.literals + word.readings).map { it.text }.toTypedArray()
 
     private fun throwUnknownPageError(position: Int): Nothing {
         throw IllegalArgumentException("Unknown page: $position")

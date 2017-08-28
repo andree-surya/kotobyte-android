@@ -4,6 +4,7 @@ import android.database.Cursor
 
 import com.kotobyte.base.DatabaseConnection
 import com.kotobyte.models.Kanji
+import com.kotobyte.models.Sentence
 import com.kotobyte.models.Word
 import com.moji4j.MojiConverter
 import com.moji4j.MojiDetector
@@ -59,23 +60,12 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
         return convertWordMatchesToWords(wordMatches)
     }
 
-    override fun searchKanji(query: String): List<Kanji> {
+    override fun searchKanji(queries: List<String>): List<Kanji> {
 
-        val queryBuilder = StringBuilder()
+        val sanitizedQuery = queries.joinToString(separator = "") { it.filter { mojiDetector.isKanji(it) } }
+        val finalQueryString = sanitizedQuery.toCharArray().joinToString(separator = " OR ")
 
-        for (character in query.toCharArray()) {
-
-            if (mojiDetector.isKanji(character)) {
-
-                if (queryBuilder.isNotEmpty()) {
-                    queryBuilder.append(" OR ")
-                }
-
-                queryBuilder.append(character)
-            }
-        }
-
-        if (queryBuilder.isNotEmpty()) {
+        if (finalQueryString.isNotEmpty()) {
 
             if (JLPTMap.isEmpty()) {
                 JLPTMap = readStringMapFromCursor(database.rawQuery(SELECT_JLPT_SQL, null))
@@ -86,12 +76,22 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
             }
 
             val cursor = database.rawQuery(SEARCH_KANJI_SQL,
-                    arrayOf(queryBuilder.toString(), KANJI_SEARCH_LIMIT.toString()))
+                    arrayOf(finalQueryString, KANJI_SEARCH_LIMIT.toString()))
 
             return readKanjiListFromCursor(cursor)
         }
 
         return emptyList()
+    }
+
+    override fun searchSentences(queries: List<String>): List<Sentence> {
+
+        val queryString = queries.joinToString(separator = " OR ") { "\"$it\"" }
+
+        val cursor = database.rawQuery(SEARCH_SENTENCES_SQL,
+                arrayOf(queryString, SENTENCE_SEARCH_LIMIT.toString()))
+
+        return readSentencesFromCursor(cursor)
     }
 
     private fun searchWordsByLiterals(query: String, limit: Int): List<WordMatch> {
@@ -165,6 +165,17 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
         return kanjiList
     }
 
+    private fun readSentencesFromCursor(cursor: Cursor): List<Sentence> {
+
+        val sentences = mutableListOf<Sentence>()
+
+        while (cursor.moveToNext()) {
+            sentences.add(Sentence(cursor.getString(0), cursor.getString(1), cursor.getString(2)))
+        }
+
+        return sentences
+    }
+
     private fun convertWordMatchesToWords(wordMatches: List<WordMatch>): List<Word> {
 
         val words = mutableListOf<Word>()
@@ -218,12 +229,13 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
 
         private val KANJI_SEARCH_LIMIT = 10
         private val WORD_SEARCH_LIMIT = 50
+        private val SENTENCE_SEARCH_LIMIT = 20
         private val ROMAJI_SEARCH_THRESHOLD = 10
 
         private val SEARCH_WORDS_SQL = "" +
                 "with search_results as (%s)\n" +
-                "    select ID, JSON, group_concat(highlight, ';') highlights, min(score) score\n" +
-                "    from words join search_results on (ID = word_id) group by ID order by score;"
+                "    select id, json, group_concat(highlight, ';') highlights, min(score) score\n" +
+                "    from words join search_results on (id = word_id) group by id order by score;"
 
         private val SEARCH_LITERALS_SQL = String.format(SEARCH_WORDS_SQL,
                 "select word_id, highlight(literals_fts, 0, '{', '}') highlight, rank * priority score from literals_fts(?) order by score limit ?")
@@ -231,7 +243,11 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
         private val SEARCH_SENSES_SQL = String.format(SEARCH_WORDS_SQL,
                 "select word_id, highlight(senses_fts, 0, '{', '}') highlight, rank score from senses_fts(?) order by score limit ?")
 
-        private val SEARCH_KANJI_SQL = "select ID, JSON from kanji join kanji_fts(?) on (ID = kanji_id) order by rank limit ?;"
+        private val SEARCH_KANJI_SQL =
+                "select id, json from kanji join kanji_fts(?) on (id = kanji_id) order by rank limit ?;"
+
+        private val SEARCH_SENTENCES_SQL =
+                "select original, highlight(sentences_fts, 0, '{', '}') highlight, translated from sentences join sentences_fts(?) on (id = sentence_id) order by rank limit ?;"
 
         private val SELECT_LABELS_SQL = "select code, text from labels;"
         private val SELECT_LANGUAGES_SQL = "select code, text from languages;"
