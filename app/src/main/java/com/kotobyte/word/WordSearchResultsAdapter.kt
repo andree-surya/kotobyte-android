@@ -15,7 +15,7 @@ import com.kotobyte.models.Word
 internal class WordSearchResultsAdapter(
         private val context: Context,
         private val words: List<Word>,
-        private val listener: Listener
+        private val onClickWord: (Word) -> Unit
 
 ) : RecyclerView.Adapter<WordSearchResultsAdapter.ViewHolder>() {
 
@@ -39,7 +39,7 @@ internal class WordSearchResultsAdapter(
                 LayoutInflater.from(context), R.layout.view_word_item, parent, false)
 
         return ViewHolder(binding).apply {
-            binding.wordContainer.setOnClickListener { listener.onClickWord(words[adapterPosition]) }
+            binding.wordContainer.setOnClickListener { onClickWord(words[adapterPosition]) }
         }
     }
 
@@ -50,10 +50,6 @@ internal class WordSearchResultsAdapter(
 
         holder.binding.sensesTextView.text = sensesTexts.get(position) ?:
                 sensesTextGenerator.createFrom(words[position]).also { sensesTexts.put(position, it) }
-    }
-
-    interface Listener {
-        fun onClickWord(word: Word)
     }
 
     class ViewHolder(val binding: ViewWordItemBinding) : RecyclerView.ViewHolder(binding.root)

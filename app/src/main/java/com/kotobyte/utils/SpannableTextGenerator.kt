@@ -9,7 +9,7 @@ import android.text.style.BackgroundColorSpan
 
 import com.kotobyte.R
 
-abstract class SpannableTextGenerator<T> protected constructor(protected val context: Context) {
+abstract class SpannableTextGenerator<in T> protected constructor(protected val context: Context) {
 
     private val spannableStringBuilder = SpannableStringBuilder()
 

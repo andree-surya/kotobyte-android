@@ -242,5 +242,8 @@ class MainScreenActivity : FragmentActivity(), MainScreenContracts.View {
 
     companion object {
         private val TAG = MainScreenActivity::class.java.simpleName
+
+        fun createIntent(context: Context, query: String): Intent =
+            Intent(context, MainScreenActivity::class.java).putExtra(Intent.EXTRA_TEXT, query)
     }
 }

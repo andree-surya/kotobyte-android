@@ -14,7 +14,7 @@ import com.kotobyte.models.Kanji
 class KanjiSearchResultsAdapter(
         private val context: Context,
         private val kanjiList: List<Kanji>,
-        private val listener: Listener
+        private val onClickKanji: (Kanji) -> Unit
 
 ) : RecyclerView.Adapter<KanjiSearchResultsAdapter.ViewHolder>() {
 
@@ -34,7 +34,7 @@ class KanjiSearchResultsAdapter(
         val binding = DataBindingUtil.inflate<ViewKanjiItemBinding>(LayoutInflater.from(context), R.layout.view_kanji_item, parent, false)
 
         return ViewHolder(binding).apply {
-            binding.kanjiContainer.setOnClickListener({ listener.onClickKanji(kanjiList[adapterPosition]) })
+            binding.kanjiContainer.setOnClickListener({ onClickKanji(kanjiList[adapterPosition]) })
         }
     }
 
@@ -46,10 +46,6 @@ class KanjiSearchResultsAdapter(
     }
 
     override fun getItemCount(): Int = kanjiList.size
-
-    interface Listener {
-        fun onClickKanji(kanji: Kanji)
-    }
 
     class ViewHolder(val binding: ViewKanjiItemBinding) : RecyclerView.ViewHolder(binding.root)
 }

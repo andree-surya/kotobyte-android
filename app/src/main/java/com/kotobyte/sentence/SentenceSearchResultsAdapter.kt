@@ -15,11 +15,11 @@ import com.kotobyte.models.Sentence
 class SentenceSearchResultsAdapter(
         private val context: Context,
         private val sentences: List<Sentence>,
-        private val listener: Listener
+        onClickToken: (Sentence.Token) -> Unit
 
 ) : RecyclerView.Adapter<SentenceSearchResultsAdapter.ViewHolder>() {
 
-    private val textHighlightGenerator = SentenceTextGenerator(context)
+    private val textHighlightGenerator = SentenceTextGenerator(context, onClickToken)
     private val highlightedTexts = SparseArray<SpannableString>(sentences.size)
 
     override fun getItemCount() = sentences.size
@@ -33,10 +33,6 @@ class SentenceSearchResultsAdapter(
                 textHighlightGenerator.createFrom(sentences[position]).also { highlightedTexts.put(position, it) }
 
         holder.binding.translatedTextView.text = sentences[position].translated
-    }
-
-    interface Listener {
-        fun onClickText(text: String)
     }
 
     class ViewHolder(val binding: ViewSentenceItemBinding) : RecyclerView.ViewHolder(binding.root) {

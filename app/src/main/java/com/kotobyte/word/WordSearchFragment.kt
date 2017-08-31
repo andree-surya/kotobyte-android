@@ -25,12 +25,10 @@ class WordSearchFragment : EntrySearchFragment<Word>() {
 
     override fun createSearchResultsAdapter(entries: List<Word>): RecyclerView.Adapter<*> =
 
-            WordSearchResultsAdapter(context, entries, object : WordSearchResultsAdapter.Listener {
+            WordSearchResultsAdapter(context, entries) { clickedWord ->
 
-                override fun onClickWord(word: Word) {
-                    startActivity(WordDetailsActivity.createIntent(context, word))
-                }
-            })
+                startActivity(WordDetailsActivity.createIntent(context, clickedWord))
+            }
 
     companion object {
         val ARG_QUERY = "query"

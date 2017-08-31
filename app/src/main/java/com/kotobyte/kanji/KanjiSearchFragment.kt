@@ -24,14 +24,11 @@ class KanjiSearchFragment : EntrySearchFragment<Kanji>() {
 
     override fun createSearchResultsAdapter(entries: List<Kanji>): RecyclerView.Adapter<*> =
 
-            KanjiSearchResultsAdapter(context, entries, object : KanjiSearchResultsAdapter.Listener {
+            KanjiSearchResultsAdapter(context, entries) { clickedKanji ->
 
-                override fun onClickKanji(kanji: Kanji) {
-
-                    KanjiDetailsDialogFragment.create(kanji).show(fragmentManager,
-                            KanjiDetailsDialogFragment::class.java.simpleName)
-                }
-            })
+                KanjiDetailsDialogFragment.create(clickedKanji)
+                        .show(fragmentManager, KanjiDetailsDialogFragment::class.java.simpleName)
+            }
 
     companion object {
         private val ARG_QUERIES = "queries"

@@ -22,6 +22,6 @@ class ClickableTokenSpan(
     }
 
     override fun onClick(widget: View?) {
-        TODO("not implemented")
+        callback(token)
     }
 }
