@@ -109,7 +109,7 @@ class MainSearchActivity : FragmentActivity(), MainSearchContracts.View {
         super.onCreate(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main_search)
-        binding.toolbar.inflateMenu(R.menu.menu_main_screen)
+        binding.toolbar.inflateMenu(R.menu.menu_main_search)
         binding.toolbar.setOnMenuItemClickListener(onMenuItemClickListener)
         binding.queryEditor.setOnEditorActionListener(onEditorActionListener)
         binding.queryEditor.addTextChangedListener(queryTextWatcher)
