@@ -4,14 +4,14 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class Kanji(
-        val ID: Long,
+        override val ID: Long,
         val character: Char,
         val readings: List<String>,
         val meanings: List<String>,
         val strokes: List<String>,
         val extras: List<String>
 
-) : Parcelable {
+) : Entry, Parcelable {
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(ID)

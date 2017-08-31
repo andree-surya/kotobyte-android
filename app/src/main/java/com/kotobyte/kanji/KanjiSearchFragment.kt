@@ -1,34 +1,33 @@
 package com.kotobyte.kanji
 
 import android.os.Bundle
-import android.support.v7.widget.RecyclerView
 import com.kotobyte.R
 import com.kotobyte.base.ServiceLocator
 import com.kotobyte.models.Kanji
 import com.kotobyte.search.EntrySearchContracts
 import com.kotobyte.search.EntrySearchFragment
+import com.kotobyte.search.EntrySearchResultsAdapter
 
 class KanjiSearchFragment : EntrySearchFragment<Kanji>() {
 
-    override lateinit var emptySearchResultsLabel: String
+    override lateinit var emptyMessage: String
     override lateinit var dataSource: EntrySearchContracts.DataSource<Kanji>
+    override lateinit var searchResultsAdapter: EntrySearchResultsAdapter<Kanji, *>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        emptySearchResultsLabel = getString(R.string.kanji_empty)
+        val queries = arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf()
 
-        dataSource = KanjiSearchDataSource(ServiceLocator.databaseProvider,
-                arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf())
+        emptyMessage = getString(R.string.kanji_empty)
+        dataSource = KanjiSearchDataSource(ServiceLocator.databaseProvider, queries)
+
+        searchResultsAdapter = KanjiSearchResultsAdapter(context) { clickedKanji ->
+
+            KanjiDetailsDialogFragment.create(clickedKanji)
+                    .show(fragmentManager, KanjiDetailsDialogFragment::class.java.simpleName)
+        }
     }
-
-    override fun createSearchResultsAdapter(entries: List<Kanji>): RecyclerView.Adapter<*> =
-
-            KanjiSearchResultsAdapter(context, entries) { clickedKanji ->
-
-                KanjiDetailsDialogFragment.create(clickedKanji)
-                        .show(fragmentManager, KanjiDetailsDialogFragment::class.java.simpleName)
-            }
 
     companion object {
         private val ARG_QUERIES = "queries"

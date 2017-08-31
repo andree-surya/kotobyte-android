@@ -1,8 +1,9 @@
 package com.kotobyte.search
 
+import com.kotobyte.models.Entry
 import com.kotobyte.utils.AsynchronousTask
 
-class EntrySearchPresenter<T>(
+class EntrySearchPresenter<T : Entry>(
         val view: EntrySearchContracts.View<T>,
         val dataSource: EntrySearchContracts.DataSource<T>
 
@@ -22,7 +23,7 @@ class EntrySearchPresenter<T>(
         searchTask = SearchEntriesTask().apply { execute() }
     }
 
-    private inner class SearchEntriesTask() : AsynchronousTask<List<T>>() {
+    private inner class SearchEntriesTask : AsynchronousTask<List<T>>() {
 
         override fun doInBackground(): List<T> = dataSource.searchEntries()
 
@@ -30,7 +31,6 @@ class EntrySearchPresenter<T>(
 
             view.showProgressBar(true)
             view.showNoSearchResultsLabel(false)
-            view.showSearchResultsView(false)
         }
 
         override fun onPostExecute(data: List<T>?, error: Throwable?) {
@@ -40,7 +40,6 @@ class EntrySearchPresenter<T>(
 
                 if (data != null && data.isNotEmpty()) {
                     view.showSearchResults(data)
-                    view.showSearchResultsView(true)
 
                 } else {
                     view.showNoSearchResultsLabel(true)

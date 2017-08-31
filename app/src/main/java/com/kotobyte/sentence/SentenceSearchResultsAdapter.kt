@@ -5,34 +5,37 @@ import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
 import android.text.SpannableString
 import android.text.method.LinkMovementMethod
-import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.kotobyte.R
 import com.kotobyte.databinding.ViewSentenceItemBinding
 import com.kotobyte.models.Sentence
+import com.kotobyte.search.EntrySearchResultsAdapter
 
 class SentenceSearchResultsAdapter(
         private val context: Context,
-        private val sentences: List<Sentence>,
         onClickToken: (Sentence.Token) -> Unit
 
-) : RecyclerView.Adapter<SentenceSearchResultsAdapter.ViewHolder>() {
+) : EntrySearchResultsAdapter<Sentence, SentenceSearchResultsAdapter.ViewHolder>() {
 
-    private val textHighlightGenerator = SentenceTextGenerator(context, onClickToken)
-    private val highlightedTexts = SparseArray<SpannableString>(sentences.size)
+    private val highlightedTextGenerator = SentenceTextGenerator(context, onClickToken)
+    private val highlightedTexts = mutableMapOf<Int, SpannableString>()
 
-    override fun getItemCount() = sentences.size
+    init {
+        setHasStableIds(true)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int) =
         ViewHolder(DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.view_sentence_item, parent, false))
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        holder.binding.originalTextView.text = highlightedTexts[position] ?:
-                textHighlightGenerator.createFrom(sentences[position]).also { highlightedTexts.put(position, it) }
+        val sentence = entries[position]
 
-        holder.binding.translatedTextView.text = sentences[position].translated
+        holder.binding.originalTextView.text = highlightedTexts[position] ?:
+                highlightedTextGenerator.createFrom(sentence).also { highlightedTexts.put(position, it) }
+
+        holder.binding.translatedTextView.text = sentence.translated
     }
 
     class ViewHolder(val binding: ViewSentenceItemBinding) : RecyclerView.ViewHolder(binding.root) {

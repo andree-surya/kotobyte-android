@@ -9,43 +9,44 @@ import android.view.ViewGroup
 import com.kotobyte.R
 import com.kotobyte.databinding.ViewKanjiItemBinding
 import com.kotobyte.models.Kanji
+import com.kotobyte.search.EntrySearchResultsAdapter
 
 
 class KanjiSearchResultsAdapter(
         private val context: Context,
-        private val kanjiList: List<Kanji>,
         private val onClickKanji: (Kanji) -> Unit
 
-) : RecyclerView.Adapter<KanjiSearchResultsAdapter.ViewHolder>() {
+) : EntrySearchResultsAdapter<Kanji, KanjiSearchResultsAdapter.ViewHolder>() {
 
-    private val readingsTexts: List<SpannableString>
-    private val meaningsTexts: List<SpannableString>
+    private val readingsTextGenerator = KanjiReadingsTextGenerator(context)
+    private val meaningsTextGenerator = KanjiMeaningsTextGenerator(context)
+
+    private val readingsTexts = mutableMapOf<Int, SpannableString>()
+    private val meaningsTexts = mutableMapOf<Int, SpannableString>()
 
     init {
-        val readingsTextGenerator = KanjiReadingsTextGenerator(context)
-        val meaningsTextGenerator = KanjiMeaningsTextGenerator(context)
-
-        readingsTexts = kanjiList.map { readingsTextGenerator.createFrom(it) }
-        meaningsTexts = kanjiList.map { meaningsTextGenerator.createFrom(it) }
+        setHasStableIds(true)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
-        val binding = DataBindingUtil.inflate<ViewKanjiItemBinding>(LayoutInflater.from(context), R.layout.view_kanji_item, parent, false)
-
-        return ViewHolder(binding).apply {
-            binding.kanjiContainer.setOnClickListener({ onClickKanji(kanjiList[adapterPosition]) })
+        return ViewHolder(DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.view_kanji_item, parent, false)).apply {
+            binding.kanjiContainer.setOnClickListener({ onClickKanji(entries[adapterPosition]) })
         }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
-        holder.binding.literalTextView.text = kanjiList[position].character.toString()
-        holder.binding.readingsTextView.text = readingsTexts[position]
-        holder.binding.meaningsTextView.text = meaningsTexts[position]
-    }
+        val kanji = entries[position]
 
-    override fun getItemCount(): Int = kanjiList.size
+        holder.binding.literalTextView.text = kanji.character.toString()
+
+        holder.binding.readingsTextView.text = readingsTexts[position] ?:
+                readingsTextGenerator.createFrom(kanji).also { readingsTexts[position] = it }
+
+        holder.binding.meaningsTextView.text = meaningsTexts[position] ?:
+                meaningsTextGenerator.createFrom(kanji).also { meaningsTexts[position] = it }
+    }
 
     class ViewHolder(val binding: ViewKanjiItemBinding) : RecyclerView.ViewHolder(binding.root)
 }

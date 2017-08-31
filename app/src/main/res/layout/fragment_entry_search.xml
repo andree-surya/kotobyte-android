@@ -8,6 +8,14 @@
         android:layout_height="match_parent"
         android:background="@color/background">
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/search_results_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"
+            app:spanCount="@integer/search_results_span_count"
+            app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager" />
+
         <ProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="match_parent"
@@ -25,17 +33,9 @@
             android:layout_marginBottom="32dp"
             android:textAlignment="center"
             android:gravity="center"
-            android:drawableTop="@drawable/ic_error_outline_black_144dp"
-            android:drawablePadding="16dp"
+            android:drawableTop="@drawable/ic_sad_smiley_72dp"
+            android:drawablePadding="24dp"
             android:visibility="gone" />
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/search_results_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            app:spanCount="@integer/search_results_span_count"
-            app:layoutManager="android.support.v7.widget.StaggeredGridLayoutManager" />
 
     </RelativeLayout>
 </layout>

@@ -6,7 +6,6 @@
     <color name="background">#ffffff</color>
     <color name="divider">#eeeeee</color>
     <color name="primary_text">#333</color>
-    <color name="secondary_text">#777</color>
     <color name="tertiary_text">#aaa</color>
     <color name="highlight">#fffaba</color>
 </resources>

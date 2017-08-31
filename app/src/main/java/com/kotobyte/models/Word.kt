@@ -4,12 +4,12 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class Word(
-        val ID: Long,
+        override val ID: Long,
         val literals: List<Literal>,
         val readings: List<Literal>,
         val senses: List<Sense>
 
-) : Parcelable {
+) : Entry, Parcelable {
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(ID)

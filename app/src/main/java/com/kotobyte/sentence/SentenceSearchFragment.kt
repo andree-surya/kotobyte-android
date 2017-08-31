@@ -7,26 +7,26 @@ import com.kotobyte.main.MainSearchActivity
 import com.kotobyte.models.Sentence
 import com.kotobyte.search.EntrySearchContracts
 import com.kotobyte.search.EntrySearchFragment
+import com.kotobyte.search.EntrySearchResultsAdapter
 
 class SentenceSearchFragment : EntrySearchFragment<Sentence>() {
 
-    override lateinit var emptySearchResultsLabel: String
+    override lateinit var emptyMessage: String
     override lateinit var dataSource: EntrySearchContracts.DataSource<Sentence>
+    override lateinit var searchResultsAdapter: EntrySearchResultsAdapter<Sentence, *>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        emptySearchResultsLabel = getString(R.string.sentence_empty)
+        val queries = arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf()
 
-        dataSource = SentenceSearchDataSource(ServiceLocator.databaseProvider,
-                arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf())
+        emptyMessage = getString(R.string.sentence_empty)
+        dataSource = SentenceSearchDataSource(ServiceLocator.databaseProvider, queries)
+
+        searchResultsAdapter = SentenceSearchResultsAdapter(context) { clickedToken ->
+            startActivity(MainSearchActivity.createIntent(context, clickedToken.lemma))
+        }
     }
-
-    override fun createSearchResultsAdapter(entries: List<Sentence>) =
-
-            SentenceSearchResultsAdapter(context, entries) { clickedToken ->
-                startActivity(MainSearchActivity.createIntent(context, clickedToken.lemma))
-            }
 
     companion object {
         private val ARG_QUERIES = "queries"

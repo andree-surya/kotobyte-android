@@ -20,14 +20,14 @@ import android.widget.Toolbar
 
 import com.kotobyte.R
 import com.kotobyte.base.ServiceLocator
-import com.kotobyte.databinding.ActivityMainScreenBinding
+import com.kotobyte.databinding.ActivityMainSearchBinding
 import com.kotobyte.word.WordSearchFragment
 import com.kotobyte.utils.ErrorDialogFragment
 import com.kotobyte.utils.ProgressDialogFragment
 
 class MainSearchActivity : FragmentActivity(), MainSearchContracts.View {
 
-    private lateinit var binding: ActivityMainScreenBinding
+    private lateinit var binding: ActivityMainSearchBinding
     private lateinit var presenter: MainSearchContracts.Presenter
 
     private val plainTextFromClipboard: CharSequence?
@@ -73,7 +73,7 @@ class MainSearchActivity : FragmentActivity(), MainSearchContracts.View {
     private val onButtonClickListener = View.OnClickListener { v ->
 
         if (v.id == R.id.search_button) {
-            presenter.onReceiveSearchRequest(binding.queryEditor?.text ?: "")
+            presenter.onReceiveSearchRequest(binding.queryEditor.text ?: "")
         }
 
         if (v.id == R.id.clear_button) {
