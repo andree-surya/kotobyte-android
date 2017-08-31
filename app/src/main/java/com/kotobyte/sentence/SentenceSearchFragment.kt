@@ -3,7 +3,7 @@ package com.kotobyte.sentence
 import android.os.Bundle
 import com.kotobyte.R
 import com.kotobyte.base.ServiceLocator
-import com.kotobyte.main.MainScreenActivity
+import com.kotobyte.main.MainSearchActivity
 import com.kotobyte.models.Sentence
 import com.kotobyte.search.EntrySearchContracts
 import com.kotobyte.search.EntrySearchFragment
@@ -25,7 +25,7 @@ class SentenceSearchFragment : EntrySearchFragment<Sentence>() {
     override fun createSearchResultsAdapter(entries: List<Sentence>) =
 
             SentenceSearchResultsAdapter(context, entries) { clickedToken ->
-                startActivity(MainScreenActivity.createIntent(context, clickedToken.lemma))
+                startActivity(MainSearchActivity.createIntent(context, clickedToken.lemma))
             }
 
     companion object {

@@ -25,7 +25,7 @@ import com.kotobyte.word.WordSearchFragment
 import com.kotobyte.utils.ErrorDialogFragment
 import com.kotobyte.utils.ProgressDialogFragment
 
-class MainScreenActivity : FragmentActivity(), MainScreenContracts.View {
+class MainSearchActivity : FragmentActivity(), MainScreenContracts.View {
 
     private lateinit var binding: ActivityMainScreenBinding
     private lateinit var presenter: MainScreenContracts.Presenter
@@ -40,13 +40,6 @@ class MainScreenActivity : FragmentActivity(), MainScreenContracts.View {
 
             } else null
         }
-
-    private val errorDialogFragmentCallback =  object : ErrorDialogFragment.Callback {
-
-        override fun onClickPositiveButton() {
-            presenter.onClickRetryButton()
-        }
-    }
 
     private val queryTextWatcher = object : TextWatcher {
 
@@ -142,7 +135,7 @@ class MainScreenActivity : FragmentActivity(), MainScreenContracts.View {
         if (fragment is ErrorDialogFragment) {
 
             fragment.isCancelable = false
-            fragment.callback = errorDialogFragmentCallback
+            fragment.onClose = { presenter.onClickRetryButton() }
         }
     }
 
@@ -241,9 +234,9 @@ class MainScreenActivity : FragmentActivity(), MainScreenContracts.View {
     }
 
     companion object {
-        private val TAG = MainScreenActivity::class.java.simpleName
+        private val TAG = MainSearchActivity::class.java.simpleName
 
         fun createIntent(context: Context, query: String): Intent =
-            Intent(context, MainScreenActivity::class.java).putExtra(Intent.EXTRA_TEXT, query)
+            Intent(context, MainSearchActivity::class.java).putExtra(Intent.EXTRA_TEXT, query)
     }
 }

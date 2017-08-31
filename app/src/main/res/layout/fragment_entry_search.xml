@@ -25,7 +25,7 @@
             android:layout_marginBottom="32dp"
             android:textAlignment="center"
             android:gravity="center"
-            android:drawableTop="@drawable/ic_warning_gray_72dp"
+            android:drawableTop="@drawable/ic_error_outline_black_144dp"
             android:drawablePadding="16dp"
             android:visibility="gone" />
 

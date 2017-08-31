@@ -8,7 +8,7 @@ import com.kotobyte.R
 
 class ErrorDialogFragment : DialogFragment() {
 
-    var callback: Callback? = null
+    var onClose: (() -> Unit)? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 
@@ -17,15 +17,9 @@ class ErrorDialogFragment : DialogFragment() {
         dialogBuilder.setTitle(arguments?.getString(ARG_TITLE) ?: getString(R.string.common_unknown_error_title))
         dialogBuilder.setMessage(arguments?.getString(ARG_MESSAGE) ?: getString(R.string.common_unknown_error_message))
 
-        dialogBuilder.setPositiveButton(R.string.common_okay, { _, _ ->
-            callback?.onClickPositiveButton()
-        })
+        dialogBuilder.setPositiveButton(R.string.common_okay, { _, _ -> onClose?.invoke() })
 
         return dialogBuilder.create()
-    }
-
-    interface Callback {
-        fun onClickPositiveButton()
     }
 
     companion object {

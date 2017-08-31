@@ -52,7 +52,10 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
 
     override fun searchKanji(queries: List<String>): List<Kanji> {
 
-        val searchParameter = queries.joinToString("").toCharArray().joinToString(" OR ")
+        val searchParameter = queries.joinToString("") {
+            it.filter { char -> mojiDetector.isKanji(char) }
+
+        }.toCharArray().joinToString(" OR ")
 
         if (searchParameter.isNotEmpty()) {
             val kanjiList = mutableListOf<Kanji>()

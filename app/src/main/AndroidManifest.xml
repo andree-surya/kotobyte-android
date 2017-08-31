@@ -16,7 +16,7 @@
         tools:replace="android:supportsRtl,android:allowBackup">
 
         <activity
-            android:name=".main.MainScreenActivity"
+            android:name=".main.MainSearchActivity"
             android:theme="@style/AppTheme.NoActionBar">
 
             <intent-filter>
@@ -45,7 +45,7 @@
             android:name=".word.WordDetailsActivity"
             android:label="@string/word.details"
             android:theme="@style/AppTheme"
-            android:parentActivityName=".main.MainScreenActivity" />
+            android:parentActivityName=".main.MainSearchActivity" />
 
     </application>
 </manifest>
