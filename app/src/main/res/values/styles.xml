@@ -35,7 +35,7 @@
     </style>
 
     <style name="Text.Light">
-        <item name="android:textColor">@color/light_text</item>
+        <item name="android:textColor">@color/tertiary_text</item>
     </style>
 
     <style name="Text.Light.Italic">

@@ -1,19 +1,13 @@
 package com.kotobyte.models.db
 
-import android.database.Cursor
-
 import com.kotobyte.base.DatabaseConnection
 import com.kotobyte.models.Kanji
 import com.kotobyte.models.Sentence
 import com.kotobyte.models.Word
 import com.moji4j.MojiConverter
 import com.moji4j.MojiDetector
-
 import org.sqlite.database.sqlite.SQLiteDatabase
 
-import java.util.ArrayList
-import java.util.Collections
-import java.util.HashMap
 
 internal class DictionaryConnection(name: String, version: Int) : DatabaseConnection, AutoCloseable {
 
@@ -24,24 +18,20 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
     private val mojiConverter = MojiConverter()
     private val mojiDetector = MojiDetector()
 
-    private var labelsMap = mapOf<String, String>()
-    private var languagesMap = mapOf<String, String>()
-    private var JLPTMap = mapOf<String, String>()
-    private var gradesMap = mapOf<String, String>()
+    private val wordEntryDecoder by lazy { WordEntryDecoder(labelsMap, languagesMap) }
+    private val kanjiEntryDecoder by lazy { KanjiEntryDecoder(JLPTMap, gradesMap) }
+    private val sentenceEntryDecoder by lazy { SentenceEntryDecoder() }
+
+    private val labelsMap: Map<String, String> by lazy { readStringMap("select code, text from labels") }
+    private val languagesMap: Map<String, String> by lazy { readStringMap("select code, text from languages") }
+    private val JLPTMap: Map<String, String> by lazy { readStringMap("select number, text from jlpt") }
+    private val gradesMap: Map<String, String> by lazy { readStringMap("select number, text from grades") }
 
     override fun close() = database.close()
 
     override fun searchWords(query: String): List<Word> {
 
         val wordMatches = ArrayList<WordMatch>()
-
-        if (labelsMap.isEmpty()) {
-            labelsMap = readStringMapFromCursor(database.rawQuery(SELECT_LABELS_SQL, null))
-        }
-
-        if (languagesMap.isEmpty()) {
-            languagesMap = readStringMapFromCursor(database.rawQuery(SELECT_LANGUAGES_SQL, null))
-        }
 
         if (mojiDetector.hasKanji(query) || mojiDetector.hasKana(query)) {
             wordMatches.addAll(searchWordsByLiterals(query, WORD_SEARCH_LIMIT))
@@ -57,28 +47,28 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
             }
         }
 
-        return convertWordMatchesToWords(wordMatches)
+        return wordMatches.map { wordEntryDecoder.decode(it.ID, it.JSON, it.highlights) }
     }
 
     override fun searchKanji(queries: List<String>): List<Kanji> {
 
-        val sanitizedQuery = queries.joinToString(separator = "") { it.filter { mojiDetector.isKanji(it) } }
-        val finalQueryString = sanitizedQuery.toCharArray().joinToString(separator = " OR ")
+        val searchParameter = queries.joinToString("").toCharArray().joinToString(" OR ")
 
-        if (finalQueryString.isNotEmpty()) {
+        if (searchParameter.isNotEmpty()) {
+            val kanjiList = mutableListOf<Kanji>()
 
-            if (JLPTMap.isEmpty()) {
-                JLPTMap = readStringMapFromCursor(database.rawQuery(SELECT_JLPT_SQL, null))
+            executeQuery(SEARCH_KANJI_SQL, searchParameter, KANJI_SEARCH_LIMIT.toString()).use {
+
+                while (it.moveToNext()) {
+
+                    kanjiList.add(kanjiEntryDecoder.decode(
+                            it.getLong(0),
+                            it.getString(1)
+                    ))
+                }
             }
 
-            if (gradesMap.isEmpty()) {
-                gradesMap = readStringMapFromCursor(database.rawQuery(SELECT_GRADES_SQL, null))
-            }
-
-            val cursor = database.rawQuery(SEARCH_KANJI_SQL,
-                    arrayOf(finalQueryString, KANJI_SEARCH_LIMIT.toString()))
-
-            return readKanjiListFromCursor(cursor)
+            return kanjiList
         }
 
         return emptyList()
@@ -86,32 +76,39 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
 
     override fun searchSentences(queries: List<String>): List<Sentence> {
 
-        val queryString = queries.joinToString(separator = " OR ") { "\"$it\"" }
+        val searchParameter = queries.joinToString(" OR ") { "\"$it\"" }
+        val sentences = mutableListOf<Sentence>()
 
-        val cursor = database.rawQuery(SEARCH_SENTENCES_SQL,
-                arrayOf(queryString, SENTENCE_SEARCH_LIMIT.toString()))
+        executeQuery(SEARCH_SENTENCES_SQL, searchParameter, SENTENCE_SEARCH_LIMIT.toString()).use {
 
-        return readSentencesFromCursor(cursor)
+            while (it.moveToNext()) {
+
+                sentences.add(sentenceEntryDecoder.decode(
+                        it.getLong(0),
+                        it.getString(1),
+                        it.getString(2),
+                        it.getString(3)
+                ))
+            }
+        }
+
+        return sentences
     }
 
     private fun searchWordsByLiterals(query: String, limit: Int): List<WordMatch> {
 
-        val sanitizedQuery= query.replace("\\p{Blank}".toRegex(), "")
-        val queryBuilder = StringBuilder(sanitizedQuery)
+        val sanitizedSearchParameter = query.replace("\\p{Blank}".toRegex(), "")
+        val searchParameterBuilder = StringBuilder(sanitizedSearchParameter)
 
-        for (i in sanitizedQuery.length downTo 1) {
+        for (i in sanitizedSearchParameter.length downTo 1) {
 
-            queryBuilder.append(" OR ")
-            queryBuilder.append(sanitizedQuery.substring(0, i))
-            queryBuilder.append('*')
+            searchParameterBuilder.append(" OR ")
+            searchParameterBuilder.append(sanitizedSearchParameter.substring(0, i))
+            searchParameterBuilder.append('*')
         }
 
-        if (queryBuilder.isNotEmpty()) {
-
-            val cursor = database.rawQuery(SEARCH_LITERALS_SQL,
-                    arrayOf(queryBuilder.toString(), limit.toString()))
-
-            return readWordMatchesFromCursor(cursor)
+        if (searchParameterBuilder.isNotEmpty()) {
+            return queryWordMatches(SEARCH_LITERALS_SQL, searchParameterBuilder.toString(), limit.toString())
         }
 
         return emptyList()
@@ -119,14 +116,10 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
 
     private fun searchWordsBySenses(query: String, limit: Int): List<WordMatch> {
 
-        val sanitizedQuery = query.trim { it <= ' ' }
+        val sanitizedQuery = query.trim()
 
         if (sanitizedQuery.isNotEmpty()) {
-
-            val cursor = database.rawQuery(SEARCH_SENSES_SQL,
-                    arrayOf(sanitizedQuery, limit.toString()))
-
-            return readWordMatchesFromCursor(cursor)
+            return queryWordMatches(SEARCH_SENSES_SQL, sanitizedQuery, limit.toString())
         }
 
         return emptyList()
@@ -141,85 +134,46 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
         val katakana = mojiConverter.convertRomajiToKatakana(query)
         wordMatches.addAll(searchWordsByLiterals(katakana, limit / 2))
 
-        Collections.sort(wordMatches, WordMatch.ScoreComparator())
+        wordMatches.sortWith(WordMatch.ScoreComparator())
 
         return wordMatches
     }
 
-    private fun readKanjiListFromCursor(cursor: Cursor): List<Kanji> {
-
-        val kanjiList = mutableListOf<Kanji>()
-        val kanjiEntryDecoder = KanjiEntryDecoder(JLPTMap, gradesMap)
-
-        while (cursor.moveToNext()) {
-
-            val kanji = kanjiEntryDecoder.decode(
-                    cursor.getLong(0),
-                    cursor.getString(1))
-
-            kanjiList.add(kanji)
-        }
-
-        cursor.close()
-
-        return kanjiList
-    }
-
-    private fun readSentencesFromCursor(cursor: Cursor): List<Sentence> {
-
-        val sentences = mutableListOf<Sentence>()
-
-        while (cursor.moveToNext()) {
-            sentences.add(Sentence(cursor.getString(0), cursor.getString(1), cursor.getString(2)))
-        }
-
-        return sentences
-    }
-
-    private fun convertWordMatchesToWords(wordMatches: List<WordMatch>): List<Word> {
-
-        val words = mutableListOf<Word>()
-        val wordEntryDecoder = WordEntryDecoder(labelsMap, languagesMap)
-
-        for ((ID, JSON, highlights) in wordMatches) {
-            words.add(wordEntryDecoder.decode(ID, JSON, highlights))
-        }
-
-        return words
-    }
-
-    private fun readWordMatchesFromCursor(cursor: Cursor): List<WordMatch> {
+    private fun queryWordMatches(sql: String, vararg parameters: String): List<WordMatch> {
 
         val wordMatches = mutableListOf<WordMatch>()
 
-        while (cursor.moveToNext()) {
+        executeQuery(sql, *parameters).use {
 
-            val wordMatch = WordMatch(
-                    cursor.getLong(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
-                    cursor.getFloat(3))
+            while (it.moveToNext()) {
 
-            wordMatches.add(wordMatch)
+                wordMatches.add(WordMatch(
+                        it.getLong(0),
+                        it.getString(1),
+                        it.getString(2),
+                        it.getFloat(3)
+                ))
+            }
         }
-
-        cursor.close()
 
         return wordMatches
     }
 
-    private fun readStringMapFromCursor(cursor: Cursor): Map<String, String> {
+    private fun readStringMap(sql: String): Map<String, String> {
 
-        val map = HashMap<String, String>()
+        val map = mutableMapOf<String, String>()
 
-        while (cursor.moveToNext()) {
-            map.put(cursor.getString(0), cursor.getString(1))
+        executeQuery(sql).use {
+
+            while (it.moveToNext()) {
+                map.put(it.getString(0), it.getString(1))
+            }
         }
-
-        cursor.close()
 
         return map
     }
+
+    private fun executeQuery(sql: String, vararg parameters: String) = database.rawQuery(sql, parameters)
 
     companion object {
 
@@ -247,11 +201,6 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
                 "select id, json from kanji join kanji_fts(?) on (id = kanji_id) order by rank limit ?;"
 
         private val SEARCH_SENTENCES_SQL =
-                "select original, highlight(sentences_fts, 0, '{', '}') highlight, translated from sentences join sentences_fts(?) on (id = sentence_id) order by rank limit ?;"
-
-        private val SELECT_LABELS_SQL = "select code, text from labels;"
-        private val SELECT_LANGUAGES_SQL = "select code, text from languages;"
-        private val SELECT_JLPT_SQL = "select number, text from jlpt;"
-        private val SELECT_GRADES_SQL = "select number, text from grades;"
+                "select id, original, translated, highlight(sentences_fts, 0, '{', '}') tokenized from sentences join sentences_fts(?) on (id = sentence_id) order by rank limit ?;"
     }
 }

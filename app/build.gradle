@@ -6,13 +6,13 @@ def dictionaryFileName = 'dictionary.sqlite3'
 def dictionaryVersion = '1'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.1'
 
     defaultConfig {
         applicationId 'com.kotobyte'
         minSdkVersion 21
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 5
         versionName '3.1.0'
 
@@ -38,13 +38,12 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':sqlite')
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-
     compile 'com.andree-surya:moji4j:1.2.0'
-    compile 'com.android.support:design:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 
-    kapt "com.android.databinding:compiler:$gradle_version"
+    compile "com.android.support:design:26.0.1"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlinVersion"
+
+    kapt "com.android.databinding:compiler:$gradleVersion"
 
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'

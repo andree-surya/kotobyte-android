@@ -52,7 +52,7 @@ internal class WordLiteralsTextGenerator(context: Context) : SpannableTextGenera
         if (wordLiteral.priority === Literal.Priority.LOW) {
 
             builder.setSpan(
-                    ForegroundColorSpan(ContextCompat.getColor(context, R.color.light_text)),
+                    ForegroundColorSpan(ContextCompat.getColor(context, R.color.tertiary_text)),
                     literalStartIndex,
                     literalEndIndex,
                     Spannable.SPAN_INCLUSIVE_EXCLUSIVE)

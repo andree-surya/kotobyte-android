@@ -6,7 +6,6 @@ import org.junit.Test
 class KanjiEntryDecoderTest {
 
     @Test
-    @Throws(Exception::class)
     fun decode_shouldDecodeJsonToKanji() {
 
         val (ID, character, readings, meanings, strokes) = KanjiEntryDecoder().decode(27531,
@@ -32,7 +31,6 @@ class KanjiEntryDecoderTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun decode_shouldHandleEmptyReadings() {
 
         val (_, _, readings) = KanjiEntryDecoder().decode(1,
@@ -42,7 +40,6 @@ class KanjiEntryDecoderTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun decode_shouldHandleEmptyMeanings() {
 
         val (_, _, _, meanings) = KanjiEntryDecoder().decode(1,
@@ -52,7 +49,6 @@ class KanjiEntryDecoderTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun decode_shouldHandleEmptyStrokes() {
 
         val (_, _, _, _, strokes) = KanjiEntryDecoder().decode(1,
@@ -62,7 +58,6 @@ class KanjiEntryDecoderTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun decode_shouldHandleMatchingExtras() {
 
         val jlptMap = HashMap<String, String>()
@@ -81,7 +76,6 @@ class KanjiEntryDecoderTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun decode_shouldHandleMissingExtras() {
 
         val jlptMap = HashMap<String, String>()

@@ -23,7 +23,8 @@
                 style="@style/Text.Large"
                 android:id="@+id/original_text_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textColor="@color/tertiary_text"/>
 
             <TextView
                 style="@style/Text"

@@ -2,54 +2,27 @@ package com.kotobyte.models.db
 
 import com.kotobyte.models.Kanji
 import org.json.JSONArray
-import java.util.regex.Pattern
 
 internal class KanjiEntryDecoder(
         private val JLPTMap: Map<String, String> = mapOf(),
         private val gradesMap: Map<String, String> = mapOf()
 ) {
 
-    private val stringItemsDelimiter = Pattern.compile(";")
-    private val kanjiBuilder = Kanji.Builder()
+    fun decode(ID: Long, JSON: String): Kanji {
 
-    fun decode(kanjiId: Long, jsonString: String): Kanji {
+        val fields = JSONArray(JSON)
 
-        try {
-            val fields = JSONArray(jsonString)
+        val character = fields.get(0).toString().first()
+        val readings = fields.get(1).toString().takeUnless { it == "0" }?.split(";") ?: emptyList()
+        val meanings = fields.get(2).toString().takeUnless { it == "0" }?.split(";") ?: emptyList()
+        val strokes = fields.get(5).toString().takeUnless { it == "0" }?.split(";") ?: emptyList()
 
-            kanjiBuilder.setID(kanjiId)
-            kanjiBuilder.setCharacter(fields.get(0).toString()[0])
+        val extras = mutableListOf<String>().apply {
 
-            val readingsField = fields.get(1).toString()
-            val meaningsField = fields.get(2).toString()
-            val JLPT = JLPTMap[fields.get(3).toString()]
-            val grade = gradesMap[fields.get(4).toString()]
-            val strokesField = fields.get(5).toString()
-
-            if ("0" != readingsField) {
-                kanjiBuilder.addReadings(stringItemsDelimiter.split(readingsField))
-            }
-
-            if ("0" != meaningsField) {
-                kanjiBuilder.addMeanings(stringItemsDelimiter.split(meaningsField))
-            }
-
-            if ("0" != strokesField) {
-                kanjiBuilder.addStrokes(stringItemsDelimiter.split(strokesField))
-            }
-
-            if (JLPT != null) {
-                kanjiBuilder.addExtra(JLPT)
-            }
-
-            if (grade != null) {
-                kanjiBuilder.addExtra(grade)
-            }
-
-            return kanjiBuilder.build()
-
-        } finally {
-            kanjiBuilder.reset()
+            JLPTMap[fields.get(3).toString()]?.let { extra -> add(extra) }
+            gradesMap[fields.get(4).toString()]?.let { extra -> add(extra) }
         }
+
+        return Kanji(ID, character, readings, meanings, strokes, extras)
     }
 }

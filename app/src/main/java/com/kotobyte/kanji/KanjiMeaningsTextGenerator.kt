@@ -53,7 +53,7 @@ internal class KanjiMeaningsTextGenerator(context: Context, private val shouldSh
 
                 } else {
                     builder.setSpan(
-                            ForegroundColorSpan(ContextCompat.getColor(context, R.color.light_text)),
+                            ForegroundColorSpan(ContextCompat.getColor(context, R.color.tertiary_text)),
                             extrasStartIndex,
                             builder.length,
                             Spanned.SPAN_INCLUSIVE_EXCLUSIVE)

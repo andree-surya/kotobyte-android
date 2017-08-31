@@ -4,6 +4,7 @@ import android.content.Context
 import android.databinding.DataBindingUtil
 import android.support.v7.widget.RecyclerView
 import android.text.SpannableString
+import android.text.method.LinkMovementMethod
 import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,16 +19,13 @@ class SentenceSearchResultsAdapter(
 
 ) : RecyclerView.Adapter<SentenceSearchResultsAdapter.ViewHolder>() {
 
-    private val textHighlightGenerator = SentenceTextHighlightGenerator(context)
+    private val textHighlightGenerator = SentenceTextGenerator(context)
     private val highlightedTexts = SparseArray<SpannableString>(sentences.size)
 
     override fun getItemCount() = sentences.size
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int) =
-
-            ViewHolder(DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.view_sentence_item, parent, false)).apply {
-                binding.sentenceContainer.setOnClickListener({ listener.onClickSentence(sentences[adapterPosition]) })
-            }
+        ViewHolder(DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.view_sentence_item, parent, false))
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
@@ -38,8 +36,13 @@ class SentenceSearchResultsAdapter(
     }
 
     interface Listener {
-        fun onClickSentence(sentence: Sentence)
+        fun onClickText(text: String)
     }
 
-    class ViewHolder(val binding: ViewSentenceItemBinding) : RecyclerView.ViewHolder(binding.root)
+    class ViewHolder(val binding: ViewSentenceItemBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.originalTextView.movementMethod = LinkMovementMethod()
+        }
+    }
 }
