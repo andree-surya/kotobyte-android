@@ -4,7 +4,7 @@ import com.kotobyte.base.DatabaseConnection
 import com.kotobyte.base.DatabaseProvider
 import com.kotobyte.utils.AsynchronousTask
 
-internal class MainScreenPresenter(private val view: MainScreenContracts.View, private val databaseProvider: DatabaseProvider) : MainScreenContracts.Presenter {
+internal class MainSearchPresenter(private val view: MainSearchContracts.View, private val databaseProvider: DatabaseProvider) : MainSearchContracts.Presenter {
 
     private var mostRecentSearchRequestQuery: String? = null
     private var databaseMigrationTask: AsynchronousTask<*>? = null

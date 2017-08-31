@@ -1,6 +1,6 @@
 package com.kotobyte.main
 
-internal object MainScreenContracts {
+internal object MainSearchContracts {
 
     interface View {
 

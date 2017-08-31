@@ -25,10 +25,10 @@ import com.kotobyte.word.WordSearchFragment
 import com.kotobyte.utils.ErrorDialogFragment
 import com.kotobyte.utils.ProgressDialogFragment
 
-class MainSearchActivity : FragmentActivity(), MainScreenContracts.View {
+class MainSearchActivity : FragmentActivity(), MainSearchContracts.View {
 
     private lateinit var binding: ActivityMainScreenBinding
-    private lateinit var presenter: MainScreenContracts.Presenter
+    private lateinit var presenter: MainSearchContracts.Presenter
 
     private val plainTextFromClipboard: CharSequence?
 
@@ -108,7 +108,7 @@ class MainSearchActivity : FragmentActivity(), MainScreenContracts.View {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main_screen)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_main_search)
         binding.toolbar.inflateMenu(R.menu.menu_main_screen)
         binding.toolbar.setOnMenuItemClickListener(onMenuItemClickListener)
         binding.queryEditor.setOnEditorActionListener(onEditorActionListener)
@@ -225,7 +225,7 @@ class MainSearchActivity : FragmentActivity(), MainScreenContracts.View {
 
     private fun prepareAndStartPresenter() {
 
-        presenter = MainScreenPresenter(this, ServiceLocator.databaseProvider)
+        presenter = MainSearchPresenter(this, ServiceLocator.databaseProvider)
         presenter.onCreate()
 
         if (intent.hasExtra(Intent.EXTRA_TEXT)) {
