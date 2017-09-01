@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Kotobyte</string>
     <string name="copyright">&#169; Kotobyte 2017, Andree Surya</string>
-    <string name="attributions">The dictionary entries in this software are derived from JMdict and KANJIDIC2 projects from EDRDG. www.edrdg.org\n\nThe Kanji strokes diagram are the work of Ulrich Apel and team in KanjiVG. kanjivg.tagaini.net</string>
+    <string name="attributions">The dictionary entries in this software are derived from JMdict and KANJIDIC2 projects from EDRDG. www.edrdg.org\n\nThe Kanji strokes diagram are the work of Ulrich Apel and team in KanjiVG. kanjivg.tagaini.net\n\nThe sample sentences are compiled together by individual contributors in Tatoeba project. tatoeba.org</string>
 
     <string name="main.search">Search</string>
     <string name="main.about">About</string>
