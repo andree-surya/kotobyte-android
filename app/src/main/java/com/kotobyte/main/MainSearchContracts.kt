@@ -11,6 +11,8 @@ internal object MainSearchContracts {
 
         fun showMigrationError(error: Throwable)
         fun showUnknownError(error: Throwable)
+
+        fun readTextFromClipboard(): String
     }
 
     interface Presenter {
@@ -19,6 +21,7 @@ internal object MainSearchContracts {
         fun onDestroy()
 
         fun onClickAboutMenuItem()
+        fun onClickPasteMenuItem()
         fun onClickSearchMenuItem()
     }
 }

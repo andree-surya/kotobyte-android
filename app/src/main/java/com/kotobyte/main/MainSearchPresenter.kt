@@ -35,6 +35,10 @@ internal class MainSearchPresenter(
         view.expandSearchViewWithText(searchQuery)
     }
 
+    override fun onClickPasteMenuItem() {
+        view.expandSearchViewWithText(view.readTextFromClipboard())
+    }
+
     private fun initiateSearchTask() {
 
         if (searchQuery != null) {

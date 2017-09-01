@@ -5,6 +5,7 @@
 
     <string name="main.search">Search</string>
     <string name="main.about">About</string>
+    <string name="main.paste">Paste</string>
     <string name="main.hint">Enter search query</string>
     <string name="main.title">Search for “%s”</string>
 
