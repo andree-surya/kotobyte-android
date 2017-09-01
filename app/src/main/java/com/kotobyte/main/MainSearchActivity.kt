@@ -34,7 +34,10 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
     private val onQueryTextListener = object : SearchView.OnQueryTextListener {
 
         override fun onQueryTextSubmit(query: String?): Boolean {
-            collapseSearchViewAfterDelay()
+
+            // Reset search view state on submission.
+            searchMenuItem.collapseActionView()
+            searchView.setQuery("", false)
 
             return false
         }
@@ -175,10 +178,6 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
             clipboardManager.primaryClip.getItemAt(0).text.toString()
 
         } else ""
-    }
-
-    private fun collapseSearchViewAfterDelay() {
-        binding.root.postDelayed({ searchMenuItem.collapseActionView() }, 500)
     }
 
     companion object {
