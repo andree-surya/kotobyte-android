@@ -24,8 +24,8 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
     private lateinit var binding: ActivityMainSearchBinding
     private lateinit var presenter: MainSearchContracts.Presenter
 
-    private lateinit var searchMenuItem: MenuItem
-    private lateinit var searchView: SearchView
+    private var searchMenuItem: MenuItem? = null
+    private var searchView: SearchView? = null
 
     private val searchQuery: String?
         get() = intent.getStringExtra(Intent.EXTRA_TEXT) ?: intent.getStringExtra(SearchManager.QUERY)
@@ -45,6 +45,7 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
         super.onCreate(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main_search)
+        presenter = MainSearchPresenter(this, ServiceLocator.databaseProvider, searchQuery)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -54,14 +55,12 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
         val searchableInfo = searchManager.getSearchableInfo(ComponentName(this, this.javaClass))
 
         searchMenuItem = menu.findItem(R.id.action_search)
-        searchView = searchMenuItem.actionView as SearchView
+        searchView = searchMenuItem?.actionView as SearchView
 
-        searchView.isSubmitButtonEnabled = true
-        searchView.setSearchableInfo(searchableInfo)
-        searchView.setOnQueryTextListener(onQueryTextListener)
+        searchView?.setSearchableInfo(searchableInfo)
+        searchView?.setOnQueryTextListener(onQueryTextListener)
 
-        createAndStartPresenter()
-
+        presenter.onCreate()
         return true
     }
 
@@ -74,8 +73,8 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
     override fun onStop() {
         super.onStop()
 
-        if (searchMenuItem.isActionViewExpanded) {
-            searchMenuItem.collapseActionView()
+        if (searchMenuItem?.isActionViewExpanded == true) {
+            searchMenuItem?.collapseActionView()
         }
     }
 
@@ -144,8 +143,8 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
 
     override fun expandSearchViewWithText(text: String?) {
 
-        searchMenuItem.expandActionView()
-        searchView.setQuery(text, false)
+        searchMenuItem?.expandActionView()
+        searchView?.setQuery(text, false)
     }
 
     override fun showUnknownError(error: Throwable) {
@@ -165,14 +164,8 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
         }
     }
 
-    private fun createAndStartPresenter() {
-
-        presenter = MainSearchPresenter(this, ServiceLocator.databaseProvider, searchQuery)
-        presenter.onCreate()
-    }
-
     private fun collapseSearchViewAfterDelay() {
-        binding.root.postDelayed({ searchMenuItem.collapseActionView() }, 500)
+        binding.root.postDelayed({ searchMenuItem?.collapseActionView() }, 500)
     }
 
     companion object {

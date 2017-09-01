@@ -100,7 +100,7 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
 
     private fun searchWordsByLiterals(query: String, limit: Int): List<WordMatch> {
 
-        val sanitizedSearchParameter = query.replace("\\p{Blank}".toRegex(), "")
+        val sanitizedSearchParameter = query.replace("""[\p{Blank}\p{Punct}]""".toRegex(), "")
         val searchParameterBuilder = StringBuilder(sanitizedSearchParameter)
 
         for (i in sanitizedSearchParameter.length downTo 1) {
@@ -119,10 +119,10 @@ internal class DictionaryConnection(name: String, version: Int) : DatabaseConnec
 
     private fun searchWordsBySenses(query: String, limit: Int): List<WordMatch> {
 
-        val sanitizedQuery = query.trim()
+        val sanitizedSearchParameter = query.trim().replace("""\p{Punct}+""".toRegex(), " ")
 
-        if (sanitizedQuery.isNotEmpty()) {
-            return queryWordMatches(SEARCH_SENSES_SQL, sanitizedQuery, limit.toString())
+        if (sanitizedSearchParameter.isNotEmpty()) {
+            return queryWordMatches(SEARCH_SENSES_SQL, sanitizedSearchParameter, limit.toString())
         }
 
         return emptyList()
