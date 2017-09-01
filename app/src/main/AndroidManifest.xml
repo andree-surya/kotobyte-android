@@ -51,8 +51,7 @@
 
         <activity
             android:name=".word.WordDetailsActivity"
-            android:theme="@style/AppTheme"
-            android:parentActivityName=".main.MainSearchActivity" />
+            android:theme="@style/AppTheme"/>
 
     </application>
 </manifest>

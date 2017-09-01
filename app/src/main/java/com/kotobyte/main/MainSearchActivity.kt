@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.kotobyte.R
+import com.kotobyte.about.AboutPageFragment
 import com.kotobyte.base.ServiceLocator
 import com.kotobyte.databinding.ActivityMainSearchBinding
 import com.kotobyte.utils.ErrorDialogFragment

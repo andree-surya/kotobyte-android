@@ -1,4 +1,4 @@
-package com.kotobyte.main
+package com.kotobyte.about
 
 import android.app.Dialog
 import android.os.Bundle
