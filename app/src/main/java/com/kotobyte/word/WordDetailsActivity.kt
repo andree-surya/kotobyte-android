@@ -27,8 +27,7 @@ class WordDetailsActivity : AppCompatActivity() {
         binding.sensesTextView.text = WordSensesTextGenerator(this).createFrom(word)
         binding.viewPager.adapter = WordDetailsPageAdapter(word, this, supportFragmentManager)
 
-        supportActionBar?.title = getString(R.string.word_details,
-                (word.literals.firstOrNull() ?: word.readings.first()).text)
+        setupActionBarTitle(word)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -46,6 +45,14 @@ class WordDetailsActivity : AppCompatActivity() {
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun setupActionBarTitle(word: Word) {
+
+        var representativeText = (word.literals.firstOrNull() ?: word.readings.first()).text
+        representativeText = representativeText.replace("""[{}]""".toRegex(), "")
+
+        supportActionBar?.title = getString(R.string.word_details, representativeText)
     }
 
     companion object {

@@ -34,7 +34,7 @@
             android:textAlignment="center"
             android:gravity="center"
             android:drawableTop="@drawable/ic_sad_smiley_72dp"
-            android:drawablePadding="24dp"
+            android:drawablePadding="32dp"
             android:visibility="gone" />
 
     </RelativeLayout>
