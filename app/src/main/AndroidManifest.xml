@@ -17,7 +17,7 @@
 
         <activity
             android:name=".main.MainSearchActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -32,6 +32,10 @@
             </intent-filter>
 
             <intent-filter>
+                <action android:name="android.intent.action.SEARCH"/>
+            </intent-filter>
+
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
 
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -39,11 +43,14 @@
 
                 <data android:host="kotobyte.com" android:scheme="http"/>
             </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable"/>
         </activity>
 
         <activity
             android:name=".word.WordDetailsActivity"
-            android:label="@string/word.details"
             android:theme="@style/AppTheme"
             android:parentActivityName=".main.MainSearchActivity" />
 

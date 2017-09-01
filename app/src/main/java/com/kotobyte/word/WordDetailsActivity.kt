@@ -17,13 +17,16 @@ class WordDetailsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = DataBindingUtil.setContentView<ActivityWordDetailsBinding>(this, R.layout.activity_word_details)
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_word_details)
 
         val word: Word = intent.getParcelableExtra(EXTRA_WORD)
 
         binding.literalsTextView.text = WordLiteralsTextGenerator(this).createFrom(word)
         binding.sensesTextView.text = WordSensesTextGenerator(this).createFrom(word)
         binding.viewPager.adapter = WordDetailsPageAdapter(word, this, supportFragmentManager)
+
+        supportActionBar?.title = getString(R.string.word_details,
+                (word.literals.firstOrNull() ?: word.readings.first()).text)
 
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }

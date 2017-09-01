@@ -33,7 +33,7 @@ abstract class EntrySearchFragment<T : Entry>: Fragment(), EntrySearchContracts.
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        presenter = EntrySearchPresenter<T>(this, dataSource)
+        presenter = EntrySearchPresenter(this, dataSource)
         presenter.onCreate()
     }
 

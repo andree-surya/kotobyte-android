@@ -4,19 +4,13 @@ internal object MainSearchContracts {
 
     interface View {
 
-        fun enableSearchButton(enable: Boolean)
-        fun showClearButton(show: Boolean)
-
-        fun showMigrationErrorDialog()
         fun showMigrationProgressDialog(show: Boolean)
-
-        fun showSearchResultsScreen(query: CharSequence)
+        fun showSearchResultsScreen(query: String)
+        fun expandSearchViewWithText(text: String?)
         fun showAboutApplicationScreen()
 
-        fun setTextOnQueryEditor(text: CharSequence?)
-        fun assignFocusToQueryEditor(focus: Boolean)
-
-        fun showError(error: Throwable)
+        fun showMigrationError(error: Throwable)
+        fun showUnknownError(error: Throwable)
     }
 
     interface Presenter {
@@ -24,12 +18,7 @@ internal object MainSearchContracts {
         fun onCreate()
         fun onDestroy()
 
-        fun onClickClearButton()
-        fun onClickPasteMenuItem(text: CharSequence)
         fun onClickAboutMenuItem()
-        fun onClickRetryButton()
-
-        fun onChangeTextOnQueryEditor(text: CharSequence)
-        fun onReceiveSearchRequest(query: CharSequence)
+        fun onClickSearchMenuItem()
     }
 }

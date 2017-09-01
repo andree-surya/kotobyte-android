@@ -4,10 +4,9 @@
     <string name="attributions">The dictionary entries in this software are derived from JMdict and KANJIDIC2 projects from EDRDG. www.edrdg.org\n\nThe Kanji strokes diagram are the work of Ulrich Apel and team in KanjiVG. kanjivg.tagaini.net</string>
 
     <string name="main.search">Search</string>
-    <string name="main.paste">Paste</string>
     <string name="main.about">About</string>
-    <string name="main.clear">Clear query</string>
     <string name="main.hint">Enter search query</string>
+    <string name="main.title">Search for “%s”</string>
 
     <string name="main.migration_progress_title">Preparing dictionary …</string>
     <string name="main.migration_progress_message">Please wait for a few seconds …</string>
@@ -17,12 +16,11 @@
     <string name="word.origin">from %s</string>
     <string name="word.origin_with_text">from %1$s “%2$s”</string>
     <string name="word.empty">Sorry, no matching search results.\nPlease try again with a different query.</string>
-    <string name="word.details">Entry Details</string>
+    <string name="word.details">Details for “%s”</string>
     <string name="word.kanji">Kanji</string>
     <string name="word.sentences">Sentences</string>
-
-    <string name="kanji.empty">Sorry, no Kanji for this entry.</string>
-    <string name="sentence.empty">Sorry, no sample sentences for this entry.</string>
+    <string name="word.empty_kanji">Sorry, no Kanji for this entry.</string>
+    <string name="word.empty_sentence">Sorry, no sample sentences for this entry.</string>
 
     <string name="common.okay">Got It</string>
     <string name="common.unknown_error_title">Sorry, we got an error.</string>

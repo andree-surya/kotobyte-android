@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<searchable
+    android:label="@string/app_name"
+    android:hint="@string/main.hint"
+    android:icon="@drawable/ic_search_white_24dp"
+    xmlns:android="http://schemas.android.com/apk/res/android"/>

@@ -20,7 +20,7 @@ class SentenceSearchFragment : EntrySearchFragment<Sentence>() {
 
         val queries = arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf()
 
-        emptyMessage = getString(R.string.sentence_empty)
+        emptyMessage = getString(R.string.word_empty_sentence)
         dataSource = SentenceSearchDataSource(ServiceLocator.databaseProvider, queries)
 
         searchResultsAdapter = SentenceSearchResultsAdapter(context) { clickedToken ->

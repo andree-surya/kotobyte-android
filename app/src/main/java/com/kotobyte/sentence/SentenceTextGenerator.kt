@@ -5,7 +5,6 @@ import android.support.v4.content.ContextCompat
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
-import android.text.style.RelativeSizeSpan
 import com.kotobyte.R
 import com.kotobyte.models.Sentence
 import com.kotobyte.utils.SpannableTextGenerator

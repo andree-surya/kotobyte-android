@@ -19,7 +19,7 @@ class KanjiSearchFragment : EntrySearchFragment<Kanji>() {
 
         val queries = arguments?.getStringArrayList(ARG_QUERIES) ?: arrayListOf()
 
-        emptyMessage = getString(R.string.kanji_empty)
+        emptyMessage = getString(R.string.word_empty_kanji)
         dataSource = KanjiSearchDataSource(ServiceLocator.databaseProvider, queries)
 
         searchResultsAdapter = KanjiSearchResultsAdapter(context) { clickedKanji ->

@@ -4,15 +4,17 @@
     tools:context="com.kotobyte.main.MainSearchActivity">
 
     <item
-        android:id="@+id/action_paste"
-        android:title="@string/main.paste"
-        android:icon="@drawable/ic_content_paste_white_24dp"
+        android:id="@+id/action_search"
+        android:title="@string/main.search"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom" />
+        android:icon="@drawable/ic_search_white_24dp"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="always|collapseActionView"
+        tools:ignore="AlwaysShowAction"/>
 
     <item
         android:id="@+id/action_about"
         android:title="@string/main.about"
-        android:orderInCategory="200"
-        app:showAsAction="never" />
+        android:orderInCategory="300"
+        app:showAsAction="never"/>
 </menu>

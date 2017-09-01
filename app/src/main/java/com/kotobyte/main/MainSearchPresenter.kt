@@ -4,92 +4,64 @@ import com.kotobyte.base.DatabaseConnection
 import com.kotobyte.base.DatabaseProvider
 import com.kotobyte.utils.AsynchronousTask
 
-internal class MainSearchPresenter(private val view: MainSearchContracts.View, private val databaseProvider: DatabaseProvider) : MainSearchContracts.Presenter {
+internal class MainSearchPresenter(
+        private val view: MainSearchContracts.View,
+        private val databaseProvider: DatabaseProvider,
+        private val searchQuery: String?
 
-    private var mostRecentSearchRequestQuery: String? = null
+) : MainSearchContracts.Presenter {
+
     private var databaseMigrationTask: AsynchronousTask<*>? = null
 
     override fun onCreate() {
 
-        view.showClearButton(false)
-        view.enableSearchButton(false)
+        if (databaseProvider.isMigrationNeeded) {
+            initiateDatabaseMigration()
 
-        executeDatabaseMigrationIfNeeded()
+        } else {
+            initiateSearchTask()
+        }
     }
 
     override fun onDestroy() {
         databaseMigrationTask?.cancel(true)
     }
 
-    override fun onClickClearButton() {
-
-        view.setTextOnQueryEditor("")
-        view.assignFocusToQueryEditor(true)
+    override fun onClickAboutMenuItem() {
+        view.showAboutApplicationScreen()
     }
 
-    override fun onClickPasteMenuItem(text: CharSequence) {
-
-        view.setTextOnQueryEditor(text)
-        view.assignFocusToQueryEditor(true)
+    override fun onClickSearchMenuItem() {
+        view.expandSearchViewWithText(searchQuery)
     }
 
-    override fun onClickAboutMenuItem() = view.showAboutApplicationScreen()
+    private fun initiateSearchTask() {
 
-    override fun onClickRetryButton() = executeDatabaseMigrationIfNeeded()
+        if (searchQuery != null) {
+            view.showSearchResultsScreen(searchQuery)
 
-    override fun onChangeTextOnQueryEditor(text: CharSequence) {
-
-        view.showClearButton(text.isNotEmpty())
-        view.enableSearchButton(text.isNotEmpty())
-    }
-
-    override fun onReceiveSearchRequest(query: CharSequence) {
-        val searchRequestQuery = query.toString().trim { it <= ' ' }
-
-        if (searchRequestQuery.isNotEmpty()) {
-            mostRecentSearchRequestQuery = searchRequestQuery
-
-            if (!databaseProvider.isMigrationInProgress) {
-                executeSearchForMostRecentQuery()
-            }
+        } else {
+            view.expandSearchViewWithText(searchQuery)
         }
     }
 
-    private fun executeSearchForMostRecentQuery() {
+    private fun initiateDatabaseMigration() {
 
-        val mostRecentSearchRequestQuery = mostRecentSearchRequestQuery
+        when {
+            databaseProvider.isMigrationInProgress ->
+                view.showMigrationProgressDialog(true)
 
-        if (mostRecentSearchRequestQuery != null) {
+            databaseProvider.isMigrationPossible ->
+                databaseMigrationTask = MigrateDatabaseTask().apply { execute() }
 
-            view.setTextOnQueryEditor(mostRecentSearchRequestQuery)
-            view.showSearchResultsScreen(mostRecentSearchRequestQuery)
-
-            view.assignFocusToQueryEditor(false)
+            else -> view.showMigrationError(RuntimeException("Not enough space for database."))
         }
-    }
-
-    private fun executeDatabaseMigrationIfNeeded() {
-
-        if (!databaseProvider.isMigrationNeeded) {
-            return
-        }
-
-        if (databaseMigrationTask != null) {
-            return
-        }
-
-        if (!databaseProvider.isMigrationPossible) {
-            view.showMigrationErrorDialog()
-
-            return
-        }
-
-        databaseMigrationTask = MigrateDatabaseTask().apply { execute() }
     }
 
     private inner class MigrateDatabaseTask : AsynchronousTask<DatabaseConnection>() {
 
-        override fun doInBackground() = databaseProvider.obtainDatabaseConnection()
+        override fun doInBackground(): DatabaseConnection =
+                databaseProvider.obtainDatabaseConnection()
 
         override fun onPreExecute() {
             view.showMigrationProgressDialog(true)
@@ -99,10 +71,10 @@ internal class MainSearchPresenter(private val view: MainSearchContracts.View, p
             view.showMigrationProgressDialog(false)
 
             if (error == null) {
-                executeSearchForMostRecentQuery()
+                initiateSearchTask()
 
             } else {
-                view.showError(error)
+                view.showMigrationError(error)
             }
 
             databaseMigrationTask = null

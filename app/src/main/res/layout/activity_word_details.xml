@@ -24,7 +24,7 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:background="@color/background"
-                app:layout_scrollFlags="scroll">
+                app:layout_scrollFlags="scroll|enterAlways">
 
                 <TextView
                     style="@style/Text.Large"

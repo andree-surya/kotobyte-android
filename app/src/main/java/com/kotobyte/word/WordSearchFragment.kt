@@ -10,7 +10,7 @@ import com.kotobyte.search.EntrySearchResultsAdapter
 
 class WordSearchFragment : EntrySearchFragment<Word>() {
 
-    val query: String
+    private val query: String
         get() = arguments?.getString(ARG_QUERY) ?: ""
 
     override lateinit var emptyMessage: String
