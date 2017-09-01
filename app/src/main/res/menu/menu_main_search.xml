@@ -15,9 +15,8 @@
     <item
         android:id="@+id/action_paste"
         android:title="@string/main.paste"
-        android:icon="@drawable/ic_paste_white_24dp"
         android:orderInCategory="200"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="never"/>
 
     <item
         android:id="@+id/action_about"

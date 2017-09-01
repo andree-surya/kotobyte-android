@@ -27,7 +27,8 @@ class WordDetailsActivity : AppCompatActivity() {
         binding.sensesTextView.text = WordSensesTextGenerator(this).createFrom(word)
         binding.viewPager.adapter = WordDetailsPageAdapter(word, this, supportFragmentManager)
 
-        setupActionBarTitle(word)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = createActionBarTitle(word)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -38,21 +39,28 @@ class WordDetailsActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-        if (item.itemId == R.id.action_about) {
-            AboutPageFragment().run { show(supportFragmentManager, this::class.java.simpleName) }
+        return when(item.itemId) {
 
-            return true
+            R.id.action_about -> {
+                AboutPageFragment().run { show(supportFragmentManager, this::class.java.simpleName) }
+
+                true
+            }
+
+            android.R.id.home -> {
+                finish()
+
+                true
+            }
+
+            else -> false
         }
-
-        return super.onOptionsItemSelected(item)
     }
 
-    private fun setupActionBarTitle(word: Word) {
+    private fun createActionBarTitle(word: Word): String {
+        val representativeText = (word.literals.firstOrNull() ?: word.readings.first()).text
 
-        var representativeText = (word.literals.firstOrNull() ?: word.readings.first()).text
-        representativeText = representativeText.replace("""[{}]""".toRegex(), "")
-
-        supportActionBar?.title = getString(R.string.word_details, representativeText)
+        return getString(R.string.word_details, representativeText.replace("""[{}]""".toRegex(), ""))
     }
 
     companion object {
