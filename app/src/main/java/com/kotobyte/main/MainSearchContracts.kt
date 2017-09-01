@@ -6,7 +6,8 @@ internal object MainSearchContracts {
 
         fun showMigrationProgressDialog(show: Boolean)
         fun showSearchResultsScreen(query: String)
-        fun expandSearchViewWithText(text: String?)
+        fun showSearchViewWithText(text: String?)
+        fun showEmptyPlaceholderLogo()
         fun showAboutApplicationScreen()
 
         fun showMigrationError(error: Throwable)

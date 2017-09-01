@@ -16,9 +16,6 @@ class DictionaryProvider(
 
     private var databaseConnection: DatabaseConnection? = null
 
-    override var isMigrationInProgress: Boolean = false
-        private set
-
     override val isMigrationNeeded: Boolean
 
         get() {
@@ -27,7 +24,7 @@ class DictionaryProvider(
             val latestDictionaryVersion = configuration.latestDictionaryVersion
             val currentDictionaryVersion = configuration.currentDictionaryVersion
 
-            return dictionaryFileNotFound || latestDictionaryVersion > currentDictionaryVersion
+            return dictionaryFileNotFound || latestDictionaryVersion != currentDictionaryVersion
         }
 
     override val isMigrationPossible: Boolean
@@ -57,7 +54,6 @@ class DictionaryProvider(
 
     private fun copyDatabaseFileFromAssets() {
 
-        isMigrationInProgress = true
         configuration.currentDictionaryVersion = 0
 
         var inputStream: InputStream? = null
@@ -77,7 +73,6 @@ class DictionaryProvider(
             }
 
             configuration.currentDictionaryVersion = configuration.latestDictionaryVersion
-            isMigrationInProgress = false
 
         } finally {
             inputStream?.close()
@@ -86,6 +81,6 @@ class DictionaryProvider(
     }
 
     companion object {
-        private val MIN_SPACE_FOR_DICTIONARY_FILE = 80 * 1024 * 1024
+        private val MIN_SPACE_FOR_DICTIONARY_FILE = 120 * 1024 * 1024
     }
 }

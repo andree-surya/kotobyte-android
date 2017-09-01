@@ -37,24 +37,21 @@ class WordDetailsActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
 
-        return when(item.itemId) {
+        R.id.action_about -> {
+            AboutPageFragment().run { show(supportFragmentManager, this::class.java.simpleName) }
 
-            R.id.action_about -> {
-                AboutPageFragment().run { show(supportFragmentManager, this::class.java.simpleName) }
-
-                true
-            }
-
-            android.R.id.home -> {
-                finish()
-
-                true
-            }
-
-            else -> false
+            true
         }
+
+        android.R.id.home -> {
+            finish()
+
+            true
+        }
+
+        else -> false
     }
 
     private fun createActionBarTitle(word: Word): String {

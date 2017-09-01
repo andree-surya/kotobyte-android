@@ -140,7 +140,11 @@ class MainSearchActivity : AppCompatActivity(), MainSearchContracts.View {
         AboutPageFragment().run { show(supportFragmentManager, this::class.java.simpleName) }
     }
 
-    override fun expandSearchViewWithText(text: String?) {
+    override fun showEmptyPlaceholderLogo() {
+        binding.logoImageView.animate().alpha(0.05f).start()
+    }
+
+    override fun showSearchViewWithText(text: String?) {
 
         searchMenuItem.expandActionView()
         searchView.setQuery(text, false)

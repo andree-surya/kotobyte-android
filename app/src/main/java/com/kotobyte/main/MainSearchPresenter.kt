@@ -32,11 +32,11 @@ internal class MainSearchPresenter(
     }
 
     override fun onClickSearchMenuItem() {
-        view.expandSearchViewWithText(searchQuery)
+        view.showSearchViewWithText(searchQuery)
     }
 
     override fun onClickPasteMenuItem() {
-        view.expandSearchViewWithText(view.readTextFromClipboard())
+        view.showSearchViewWithText(view.readTextFromClipboard())
     }
 
     private fun initiateSearchTask() {
@@ -45,20 +45,18 @@ internal class MainSearchPresenter(
             view.showSearchResultsScreen(searchQuery)
 
         } else {
-            view.expandSearchViewWithText(searchQuery)
+            view.showEmptyPlaceholderLogo()
+            view.showSearchViewWithText(searchQuery)
         }
     }
 
     private fun initiateDatabaseMigration() {
 
-        when {
-            databaseProvider.isMigrationInProgress ->
-                view.showMigrationProgressDialog(true)
+        if (databaseProvider.isMigrationPossible) {
+            databaseMigrationTask = MigrateDatabaseTask().apply { execute() }
 
-            databaseProvider.isMigrationPossible ->
-                databaseMigrationTask = MigrateDatabaseTask().apply { execute() }
-
-            else -> view.showMigrationError(RuntimeException("Not enough space for database."))
+        } else {
+            view.showMigrationError(RuntimeException("Not enough space for database."))
         }
     }
 

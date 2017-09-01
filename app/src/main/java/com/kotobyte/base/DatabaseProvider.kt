@@ -4,7 +4,6 @@ interface DatabaseProvider {
 
     val isMigrationNeeded: Boolean
     val isMigrationPossible: Boolean
-    val isMigrationInProgress: Boolean
 
     /**
      * Get the shared database connection.

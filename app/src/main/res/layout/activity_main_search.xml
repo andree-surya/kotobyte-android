@@ -14,7 +14,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:alpha="0.05"
+            android:alpha="0"
             android:src="@mipmap/ic_silhouette"
             android:contentDescription="@string/app_name" />
 
